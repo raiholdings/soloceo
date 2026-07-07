@@ -3,8 +3,12 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { API_URL, setToken } from "@/lib/api";
-import { signIn, supabaseEnabled } from "@/lib/auth";
+import { signIn } from "@/lib/auth";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@soloceo/ui";
+
+// Đăng nhập email/password chỉ dùng khi phát triển local — production chỉ có
+// OAuth SoloCEO Community.
+const DEV_LOGIN = process.env.NODE_ENV !== "production";
 
 // Đăng nhập chính: OAuth qua SoloCEO Community (WoWonder my.soloceo.vn).
 // api-core lo đổi code → JWT rồi chuyển về đây kèm ?token=.
@@ -72,8 +76,8 @@ function LoginInner() {
             tại my.soloceo.vn.
           </p>
 
-          {/* Dev/local fallback — chỉ hiện khi cấu hình Supabase (môi trường dev) */}
-          {supabaseEnabled && (
+          {/* Dev/local fallback — chỉ hiện khi phát triển local */}
+          {DEV_LOGIN && (
             <details className="mt-2 text-sm text-[#A0A0B8]">
               <summary className="cursor-pointer">
                 Đăng nhập bằng email (dev)

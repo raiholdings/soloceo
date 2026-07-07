@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { api, API_URL, clearToken, getToken, setToken } from "@/lib/api";
-import { signIn, supabaseEnabled } from "@/lib/auth";
+import { signIn } from "@/lib/auth";
 import { Button } from "@soloceo/ui";
+
+// Đăng nhập email chỉ dùng khi phát triển local — production chỉ OAuth Community.
+const DEV_LOGIN = process.env.NODE_ENV !== "production";
 import { Dock } from "./dock";
 import { ShellWindow } from "./window";
 import { WindowManagerProvider, useWindowManager } from "./window-manager";
@@ -96,7 +99,7 @@ function BootScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
         </a>
 
         {/* Dev/local fallback */}
-        {supabaseEnabled && (
+        {DEV_LOGIN && (
           <form onSubmit={login} className="mt-2 flex flex-col gap-3">
             <input
               type="email"
