@@ -32,7 +32,11 @@ function LoginInner() {
     }
   }, [params, router]);
 
-  const communityLoginUrl = `${API_URL}/v1/auth/wowonder/login`;
+  const communityLoginUrl = `${API_URL}/v1/auth/wowonder/login?return_url=${encodeURIComponent(
+    typeof window !== "undefined"
+      ? window.location.origin + "/dang-nhap"
+      : "https://soloceo.vn/dang-nhap",
+  )}`;
 
   async function devSubmit(e: React.FormEvent) {
     e.preventDefault();

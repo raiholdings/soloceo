@@ -92,7 +92,13 @@ function BootScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
       </div>
       <div className="flex w-full max-w-xs flex-col gap-3">
         {error && <p className="text-sm text-red-400">{error}</p>}
-        <a href={`${API_URL}/v1/auth/wowonder/login`}>
+        <a
+          href={`${API_URL}/v1/auth/wowonder/login?return_url=${encodeURIComponent(
+            typeof window !== "undefined"
+              ? window.location.origin + "/"
+              : "https://platform.soloceo.vn/",
+          )}`}
+        >
           <Button className="w-full gap-2" disabled={busy}>
             <span className="text-lg">👥</span> Đăng nhập bằng SoloCEO Community
           </Button>

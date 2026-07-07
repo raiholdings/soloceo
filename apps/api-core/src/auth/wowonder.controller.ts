@@ -2,14 +2,24 @@ import {
   Controller,
   Get,
   Query,
+  Req,
   Res,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import { CurrentUser, Public } from "./decorators";
 import type { RequestUser } from "./auth.types";
 import { WowonderService } from "./wowonder.service";
+
+// Chỉ cho phép trả token về các frontend của SoloCEO (chống open-redirect)
+const ALLOWED_RETURN_HOSTS = [
+  "soloceo.vn",
+  "www.soloceo.vn",
+  "platform.soloceo.vn",
+  "localhost",
+];
+const RETURN_COOKIE = "wo_return";
 
 @ApiTags("auth")
 @Controller("auth/wowonder")
@@ -19,28 +29,75 @@ export class WowonderController {
     private readonly config: ConfigService,
   ) {}
 
+  private defaultFrontend(): string {
+    return (
+      this.config.get<string>("FRONTEND_AFTER_LOGIN_URL") ??
+      "https://soloceo.vn/dang-nhap"
+    );
+  }
+
+  private sanitizeReturnUrl(raw?: string): string | null {
+    if (!raw) return null;
+    try {
+      const u = new URL(raw);
+      if (!ALLOWED_RETURN_HOSTS.includes(u.hostname)) return null;
+      return u.toString();
+    } catch {
+      return null;
+    }
+  }
+
+  private readReturnCookie(req: Request): string | null {
+    const raw = req.headers.cookie ?? "";
+    const match = raw
+      .split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith(`${RETURN_COOKIE}=`));
+    if (!match) return null;
+    return this.sanitizeReturnUrl(
+      decodeURIComponent(match.slice(RETURN_COOKIE.length + 1)),
+    );
+  }
+
   @Public()
   @Get("login")
   @ApiOperation({ summary: "Bắt đầu đăng nhập bằng SoloCEO Community (OAuth)" })
-  login(@Res() res: Response) {
+  login(
+    @Query("return_url") returnUrl: string | undefined,
+    @Res() res: Response,
+  ) {
+    // Nhớ nơi bắt đầu (soloceo.vn hay platform.soloceo.vn) qua cookie sống
+    // suốt vòng OAuth — vì WoWonder chỉ có 1 callback URL cố định.
+    const clean = this.sanitizeReturnUrl(returnUrl);
+    if (clean) {
+      res.cookie(RETURN_COOKIE, clean, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        domain: ".soloceo.vn",
+        maxAge: 10 * 60 * 1000, // 10 phút
+      });
+    }
     return res.redirect(this.wowonder.getLoginUrl());
   }
 
   @Public()
   @Get("callback")
   @ApiOperation({
-    summary: "Callback OAuth: đổi code → JWT, chuyển về frontend kèm token",
+    summary: "Callback OAuth: đổi code → JWT, chuyển về đúng frontend kèm token",
   })
-  async callback(@Query("code") code: string, @Res() res: Response) {
-    const frontend =
-      this.config.get<string>("FRONTEND_AFTER_LOGIN_URL") ??
-      "https://soloceo.vn/dang-nhap";
+  async callback(
+    @Query("code") code: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const frontend = this.readReturnCookie(req) ?? this.defaultFrontend();
+    res.clearCookie(RETURN_COOKIE, { domain: ".soloceo.vn" });
     if (!code) {
       return res.redirect(`${frontend}?error=missing_code`);
     }
     try {
       const { token, isNew } = await this.wowonder.handleCallback(code);
-      // Chuyển token về frontend; frontend lưu vào localStorage
       const url = new URL(frontend);
       url.searchParams.set("token", token);
       url.searchParams.set("new", isNew ? "1" : "0");
