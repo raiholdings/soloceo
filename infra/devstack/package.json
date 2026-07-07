@@ -1,0 +1,18 @@
+{
+  "name": "@soloceo/devstack",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Postgres + Redis nhúng cho dev local — không cần Docker/Homebrew",
+  "scripts": {
+    "start": "tsx src/start.ts"
+  },
+  "dependencies": {
+    "embedded-postgres": "^17.2.0-beta.15",
+    "redis-memory-server": "^0.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

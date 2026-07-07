@@ -14,6 +14,9 @@ dist/
 !.env.example
 !infra/env/.env.example
 
+# devstack local data
+infra/devstack/.pgdata/
+
 # misc
 coverage/
 .DS_Store
