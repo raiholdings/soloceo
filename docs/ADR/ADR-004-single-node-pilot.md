@@ -1,25 +1,21 @@
-# ADR-004 — Pilot chạy trên 1 node Contabo Cloud VDS S
+# ADR-004 — Sơ đồ node production pilot
 
-**Trạng thái:** Đề xuất — cần Phạm Văn Thư phê duyệt.
-**Ngày:** 08/07/2026
-
-## Bối cảnh
-CLAUDE.md Phần 2.2 thiết kế 2 VPS (VPS-CORE 16GB + VPS-TENANT-01 32GB).
-Thực tế mua 1 máy: Contabo Cloud VDS S — 3 core AMD EPYC 7282, 24GB RAM,
-180GB NVMe, 250 Mbit/s (~€27.52/tháng, cam kết 12 tháng).
+**Trạng thái:** ĐÃ DUYỆT bởi Phạm Văn Thư — 08/07/2026.
 
 ## Quyết định
-Pilot (≤ ~5–8 tenant) chạy TOÀN BỘ trên 1 node:
-- Coolify controller + core stack (api-core, 2 web, 2 svc, Postgres, Redis,
-  LiteLLM) ≈ 4–6GB RAM.
-- Tenant stack deploy vào CHÍNH node này (Coolify "localhost" server),
-  vẫn mỗi tenant 1 project riêng như Phần 7.
-- Dify (~2–3GB/instance) là hạng mục ngốn RAM chính → pilot giới hạn
-  số tenant GROWTH có Dify theo RAM còn trống (ngưỡng 70% giữ nguyên).
+Giữ đúng kiến trúc 2 node của CLAUDE.md Phần 2.2:
 
-## Hệ quả & lối thoát
-- Khi RAM >70% ổn định: mua VPS-TENANT-01 (32GB) thêm vào Coolify qua SSH
-  — svc-provision đã chọn node theo tải, không cần đổi code.
-- Single point of failure: chấp nhận ở pilot; backup đêm bắt buộc (GĐ7).
-- Supabase self-host (~2GB) cân nhắc đặt cùng node hoặc dùng Supabase Cloud
-  free tier cho pilot để tiết kiệm RAM (khuyến nghị: Cloud cho pilot).
+| Node | Máy | Vai trò |
+|---|---|---|
+| **VPS-CORE** (`core-01`) | Contabo Cloud VDS S — 3 core EPYC 7282, 24GB RAM, 180GB NVMe (đã mua) | Coolify controller, api-core, web-community, web-platform, svc-provision, svc-billing-webhooks, Postgres, Redis, LiteLLM, Langfuse, **Supabase self-host** |
+| **VPS-TENANT-01** (`tenant-01`) | Mua thêm (khuyến nghị Contabo Cloud VDS M hoặc VPS 32GB) | Toàn bộ stack tenant (Dify + Activepieces + site per-tenant), thêm vào Coolify qua SSH key |
+
+## Auth
+**Supabase self-host trên VPS-CORE** (không dùng Supabase Cloud) — deploy bằng
+service template Supabase của Coolify. `JWT_SUPABASE_SECRET` lấy từ stack này;
+RLS SQL trong `packages/db/rls/` chạy trên Postgres của Supabase.
+
+## Ghi chú RAM VPS-CORE (24GB)
+Core stack ~4–6GB + Supabase self-host ~2–3GB + Langfuse ~1–2GB → dư địa an
+toàn. Tenant KHÔNG chạy trên core (đúng spec) — svc-provision chỉ chọn server
+tenant (RAM <70%).

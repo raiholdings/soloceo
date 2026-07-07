@@ -1,19 +1,22 @@
-# DEPLOY SOLOCEO LÊN CONTABO CLOUD VDS S (1 node — ADR-004)
+# DEPLOY SOLOCEO — 2 NODE (ADR-004 đã duyệt)
 
-> Máy: 3 core AMD EPYC / 24GB RAM / 180GB NVMe / Ubuntu 24.04.
-> Toàn bộ app deploy qua Coolify, build trực tiếp từ GitHub bằng Dockerfile
-> trong repo. Ước RAM core stack ~5GB, còn ~17GB cho tenant.
+> **VPS-CORE** = Contabo Cloud VDS S (3 core EPYC / 24GB / 180GB NVMe, Ubuntu 24.04)
+> chạy Coolify + core stack + **Supabase self-host**.
+> **VPS-TENANT-01** = VPS thứ 2 (khuyến nghị 32GB) chỉ chạy stack tenant,
+> thêm vào Coolify qua SSH (Servers → Add).
+> App build trực tiếp từ GitHub bằng Dockerfile trong repo.
 
-## 0. DNS (Cloudflare) — trỏ về IP VDS
-| Bản ghi | Loại | Proxy |
+## 0. DNS (Cloudflare)
+| Bản ghi | Trỏ về | Proxy |
 |---|---|---|
-| soloceo.vn | A | ON |
-| platform.soloceo.vn | A | ON |
-| api.soloceo.vn | A | ON |
-| pay.soloceo.vn (webhooks) | A | ON |
-| coolify.soloceo.vn | A | OFF |
-| llm.soloceo.vn | A | OFF (chặn IP sau) |
-| *.app.soloceo.vn | A | **OFF lúc cấp SSL đầu**, bật lại sau |
+| soloceo.vn | IP VPS-CORE | ON |
+| platform.soloceo.vn | IP VPS-CORE | ON |
+| api.soloceo.vn | IP VPS-CORE | ON |
+| pay.soloceo.vn (webhooks) | IP VPS-CORE | ON |
+| auth.soloceo.vn (Supabase) | IP VPS-CORE | ON |
+| coolify.soloceo.vn | IP VPS-CORE | OFF |
+| llm.soloceo.vn | IP VPS-CORE | OFF (chặn IP sau) |
+| *.app.soloceo.vn | **IP VPS-TENANT-01** | **OFF lúc cấp SSL đầu**, bật lại sau |
 
 ## 1. Bootstrap server (1 lệnh, ~5 phút)
 ```bash
@@ -22,15 +25,23 @@ curl -fsSL https://raw.githubusercontent.com/raiholdings/soloceo/soloceo-mvp/inf
 ```
 Xong: mở `http://<IP>:8000`, tạo tài khoản admin Coolify NGAY, tạo API token.
 
-## 2. Hạ tầng dùng chung (Coolify → Projects → soloceo-core)
+## 1b. Thêm VPS-TENANT-01 vào Coolify
+Sau khi mua VPS thứ 2 (Ubuntu 24.04): Coolify → Servers → Add Server →
+nhập IP + SSH key (Coolify tự cài Docker). Đặt tên `tenant-01`.
+Stack tenant (svc-provision tạo) sẽ deploy vào server này.
+
+## 2. Hạ tầng dùng chung (Coolify → Projects → soloceo-core, server localhost)
 Tạo bằng Coolify one-click resources:
 1. **PostgreSQL 16** — db `soloceo` → lấy `DATABASE_URL`
 2. **Redis 7** → `REDIS_URL`
 3. **LiteLLM**: service compose từ `infra/docker-compose.core.yml` (block litellm)
    + mount `infra/litellm/config.yaml`; domain `llm.soloceo.vn`
-4. (Khuyến nghị pilot) **Supabase Cloud** free tier thay vì self-host:
-   lấy `SUPABASE_URL`, `ANON_KEY`, `SERVICE_ROLE_KEY`, JWT secret →
-   `JWT_SUPABASE_SECRET`
+4. **Supabase self-host** (ADR-004): Coolify → New Resource → Service →
+   Supabase template; domain `auth.soloceo.vn`. Lấy từ stack:
+   `SUPABASE_URL=https://auth.soloceo.vn`, `ANON_KEY`, `SERVICE_ROLE_KEY`,
+   và `JWT_SECRET` → điền vào `JWT_SUPABASE_SECRET` của api-core.
+   Bật Google OAuth + email OTP trong GoTrue env. Chạy RLS:
+   `packages/db/rls/001_rls_policies.sql` trên Postgres của Supabase.
 
 ## 3. Deploy 5 app (Coolify → New Resource → Public Repository)
 Repo: `https://github.com/raiholdings/soloceo`, branch `soloceo-mvp`,
