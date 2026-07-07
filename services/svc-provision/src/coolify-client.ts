@@ -26,11 +26,28 @@ export interface CreateComposeAppInput {
   envs: Record<string, string>;
 }
 
+// Deploy từ image dựng sẵn (registry) + domain — cách đáng tin cậy nhất (ADR-005)
+export interface CreateDockerImageInput {
+  projectUuid: string;
+  serverUuid: string;
+  name: string;
+  image: string; // vd localhost:5000/soloceo/claw3d
+  tag: string; // vd patched
+  port: string; // cổng expose trong container
+  domain: string;
+  envs: Record<string, string>;
+}
+
 export interface ICoolifyClient {
   createProject(name: string): Promise<CoolifyProject>;
+  /** Tái dùng project theo tên nếu đã có, tránh tạo trùng mỗi lần launch */
+  findOrCreateProject(name: string): Promise<CoolifyProject>;
   createComposeApp(input: CreateComposeAppInput): Promise<CoolifyApp>;
+  createDockerImageApp(input: CreateDockerImageInput): Promise<CoolifyApp>;
   deploy(appUuid: string): Promise<void>;
   getStatus(appUuid: string): Promise<string>;
+  /** Trạng thái của application (dockerimage) — khác service */
+  getAppStatus(appUuid: string): Promise<string>;
   getLogs(appUuid: string): Promise<string>;
   delete(appUuid: string): Promise<void>;
   deleteProject(projectUuid: string): Promise<void>;
@@ -69,6 +86,52 @@ export class CoolifyClient implements ICoolifyClient {
       name,
     });
     return { uuid: r.uuid, name };
+  }
+
+  async findOrCreateProject(name: string): Promise<CoolifyProject> {
+    const projects = await this.request<Array<{ uuid: string; name: string }>>(
+      "GET",
+      "/projects",
+    );
+    const existing = projects.find((p) => p.name === name);
+    if (existing) return { uuid: existing.uuid, name };
+    return this.createProject(name);
+  }
+
+  async createDockerImageApp(
+    input: CreateDockerImageInput,
+  ): Promise<CoolifyApp> {
+    const r = await this.request<{ uuid: string }>(
+      "POST",
+      "/applications/dockerimage",
+      {
+        project_uuid: input.projectUuid,
+        server_uuid: input.serverUuid,
+        environment_name: "production",
+        name: input.name,
+        docker_registry_image_name: input.image,
+        docker_registry_image_tag: input.tag,
+        ports_exposes: input.port,
+        domains: input.domain,
+        instant_deploy: false,
+      },
+    );
+    for (const [key, value] of Object.entries(input.envs)) {
+      await this.request("POST", `/applications/${r.uuid}/envs`, {
+        key,
+        value,
+        is_preview: false,
+      });
+    }
+    return { uuid: r.uuid, status: "created", fqdn: input.domain };
+  }
+
+  async getAppStatus(appUuid: string): Promise<string> {
+    const r = await this.request<{ status?: string }>(
+      "GET",
+      `/applications/${appUuid}`,
+    );
+    return r.status ?? "unknown";
   }
 
   async createComposeApp(input: CreateComposeAppInput): Promise<CoolifyApp> {
@@ -142,6 +205,23 @@ export class FakeCoolifyClient implements ICoolifyClient {
   async createProject(name: string): Promise<CoolifyProject> {
     await this.sleep(300);
     return { uuid: `fake-prj-${name}-${++this.counter}`, name };
+  }
+
+  async findOrCreateProject(name: string): Promise<CoolifyProject> {
+    return this.createProject(name);
+  }
+
+  async createDockerImageApp(
+    input: CreateDockerImageInput,
+  ): Promise<CoolifyApp> {
+    await this.sleep(300);
+    const uuid = `fake-app-${input.name}-${++this.counter}`;
+    this.apps.set(uuid, { status: "created" });
+    return { uuid, status: "created", fqdn: input.domain };
+  }
+
+  async getAppStatus(appUuid: string): Promise<string> {
+    return this.getStatus(appUuid);
   }
 
   async createComposeApp(input: CreateComposeAppInput): Promise<CoolifyApp> {

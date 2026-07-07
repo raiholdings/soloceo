@@ -6,10 +6,37 @@
 import { Worker, type Job } from "bullmq";
 import { prisma } from "@soloceo/db";
 import { readFileSync } from "node:fs";
-import { randomBytes } from "node:crypto";
+import { randomBytes, createDecipheriv } from "node:crypto";
 import path from "node:path";
 import Mustache from "mustache";
 import { createCoolifyClient, type ICoolifyClient } from "./coolify-client";
+
+/** Giải mã Secret (AES-256-GCM, MASTER_KEY) — cùng định dạng api-core crypto.util */
+function decryptSecret(stored: string): string {
+  const key = Buffer.from(process.env.MASTER_KEY ?? "", "hex");
+  const buf = Buffer.from(stored, "base64");
+  const iv = buf.subarray(0, 12);
+  const tag = buf.subarray(12, 28);
+  const data = buf.subarray(28);
+  const decipher = createDecipheriv("aes-256-gcm", key, iv);
+  decipher.setAuthTag(tag);
+  return Buffer.concat([decipher.update(data), decipher.final()]).toString(
+    "utf8",
+  );
+}
+
+/** LiteLLM virtual key của org (cho OpenClaw dùng model qua gateway) */
+async function getOrgLitellmKey(orgId: string): Promise<string> {
+  const secret = await prisma.secret.findUnique({
+    where: { orgId_key: { orgId, key: "litellm_virtual_key" } },
+  });
+  if (!secret || !process.env.MASTER_KEY) return "";
+  try {
+    return decryptSecret(secret.valueEnc);
+  } catch {
+    return "";
+  }
+}
 
 export interface ProvisionJobData {
   ventureId: string;
@@ -24,16 +51,48 @@ const APP_DOMAIN = process.env.PUBLIC_APP_DOMAIN ?? "app.soloceo.vn";
 const DEPLOY_TIMEOUT_MS = 10 * 60 * 1000; // 10 phút (Phần 7)
 const POLL_INTERVAL_MS = Number(process.env.PROVISION_POLL_MS ?? 5000);
 
+const REGISTRY = process.env.SOLOCEO_REGISTRY ?? "localhost:5000";
+
+// Cấu hình app dựng-sẵn (ADR-005 approach B): deploy image từ registry + domain,
+// không build-from-git (không chạy được). Mỗi app: image, tag, cổng, subdomain, env.
+interface AppDeployConfig {
+  image: string;
+  tag: string;
+  port: string;
+  subdomain: string; // "" = domain chính (nền desktop)
+  buildEnvs: (ctx: {
+    secret: string;
+    litellmBase: string;
+    litellmKey: string;
+  }) => Record<string, string>;
+}
+
+const APP_CONFIGS: Record<string, AppDeployConfig> = {
+  claw3d: {
+    image: `${REGISTRY}/soloceo/claw3d`,
+    tag: "patched",
+    port: "3000",
+    subdomain: "",
+    buildEnvs: () => ({ HOST: "0.0.0.0", PORT: "3000", NODE_ENV: "production" }),
+  },
+  openclaw: {
+    image: `${REGISTRY}/soloceo/openclaw`,
+    tag: "soloceo",
+    port: "8080",
+    subdomain: "-ai",
+    buildEnvs: ({ secret, litellmBase, litellmKey }) => ({
+      OPENCLAW_GATEWAY_TOKEN: secret,
+      OPENAI_API_BASE: litellmBase,
+      OPENAI_API_KEY: litellmKey,
+      OPENCLAW_DEFAULT_MODEL: "soloceo-smart",
+      OPENCLAW_MODEL: "soloceo-smart",
+    }),
+  },
+};
+
 function subdomainFor(slug: string, appKey: string): string {
-  // ADR-005: claw3d = domain chính (nền desktop); openclaw/erpnext có subdomain riêng
-  const suffix =
-    appKey === "claw3d"
-      ? ""
-      : appKey === "openclaw"
-        ? "-ai"
-        : appKey === "erpnext"
-          ? "-erp"
-          : `-${appKey.split("-")[0]}`;
+  const cfg = APP_CONFIGS[appKey];
+  const suffix = cfg ? cfg.subdomain : `-${appKey.split("-")[0]}`;
   return `${slug}${suffix}.${APP_DOMAIN}`;
 }
 
@@ -51,7 +110,7 @@ async function waitUntilRunning(
 ): Promise<void> {
   const deadline = Date.now() + DEPLOY_TIMEOUT_MS;
   while (Date.now() < deadline) {
-    const status = await coolify.getStatus(appUuid);
+    const status = await coolify.getAppStatus(appUuid);
     if (status.includes("running")) return;
     if (status.includes("exited") || status.includes("failed")) {
       throw new Error(`Deploy thất bại — trạng thái Coolify: ${status}`);
@@ -70,15 +129,19 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
     include: { org: true },
   });
 
-  // 1. Project Coolify per-tenant: "vt-{slug}" — cô lập network (Phần 7)
+  // 1. Project Coolify per-tenant: "vt-{slug}" — TÁI DÙNG nếu đã có (tránh trùng)
   const serverUuid = await coolify.pickServerUuid();
-  const project = await coolify.createProject(`vt-${venture.slug}`);
+  const project = await coolify.findOrCreateProject(`vt-${venture.slug}`);
   await job.log(`Project Coolify: ${project.uuid} trên server ${serverUuid}`);
 
   const installs = await prisma.appInstall.findMany({
     where: { id: { in: installIds } },
     include: { catalogApp: true },
   });
+
+  // LiteLLM virtual key của org (cho OpenClaw)
+  const litellmBase = process.env.LITELLM_BASE_URL ?? "https://llm.soloceo.vn";
+  const litellmKey = await getOrgLitellmKey(venture.orgId).catch(() => "");
 
   let anyFailed = false;
 
@@ -90,32 +153,47 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
         where: { id: install.id },
         data: { status: "DEPLOYING" },
       });
-      await job.log(`[${appKey}] render template + tạo app...`);
 
-      // secrets sinh ngẫu nhiên 32 bytes (Phần 7) — không log
-      const view: Record<string, string> = {
-        DOMAIN: domain,
-        VENTURE_SLUG: venture.slug,
-        ORG_ID: venture.orgId,
-        APP_SECRET: randomBytes(32).toString("hex"),
-        DB_PASSWORD: randomBytes(16).toString("hex"),
-        LITELLM_BASE_URL:
-          process.env.LITELLM_BASE_URL ?? "https://llm.soloceo.vn",
-        LITELLM_VIRTUAL_KEY: "", // gắn ở GĐ4 khi org có virtual key
-      };
-      const compose = renderTemplate(
-        path.basename(install.catalogApp.composeTemplate),
-        view,
-      );
-
-      const app = await coolify.createComposeApp({
-        projectUuid: project.uuid,
-        serverUuid,
-        name: `${venture.slug}-${appKey}`,
-        dockerCompose: compose,
-        domain,
-        envs: {},
-      });
+      const cfg = APP_CONFIGS[appKey];
+      let app;
+      if (cfg) {
+        // Deploy từ image dựng sẵn (registry) — cách đáng tin cậy (ADR-005 approach B)
+        const secret = randomBytes(32).toString("hex");
+        await job.log(`[${appKey}] deploy image ${cfg.image}:${cfg.tag}...`);
+        app = await coolify.createDockerImageApp({
+          projectUuid: project.uuid,
+          serverUuid,
+          name: `${venture.slug}-${appKey}`,
+          image: cfg.image,
+          tag: cfg.tag,
+          port: cfg.port,
+          domain,
+          envs: cfg.buildEnvs({ secret, litellmBase, litellmKey }),
+        });
+      } else {
+        // App khác (erpnext...) vẫn dùng compose template
+        const view: Record<string, string> = {
+          DOMAIN: domain,
+          VENTURE_SLUG: venture.slug,
+          ORG_ID: venture.orgId,
+          APP_SECRET: randomBytes(32).toString("hex"),
+          DB_PASSWORD: randomBytes(16).toString("hex"),
+          LITELLM_BASE_URL: litellmBase,
+          LITELLM_VIRTUAL_KEY: litellmKey,
+        };
+        const compose = renderTemplate(
+          path.basename(install.catalogApp.composeTemplate),
+          view,
+        );
+        app = await coolify.createComposeApp({
+          projectUuid: project.uuid,
+          serverUuid,
+          name: `${venture.slug}-${appKey}`,
+          dockerCompose: compose,
+          domain,
+          envs: {},
+        });
+      }
       await coolify.deploy(app.uuid);
       await job.log(`[${appKey}] đang deploy (${app.uuid})...`);
       await waitUntilRunning(coolify, app.uuid);
