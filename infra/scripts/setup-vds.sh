@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 # =====================================================================
-# SoloCEO — Bootstrap Contabo Cloud VDS (Ubuntu 24.04) MỘT LỆNH
-# Chạy bằng root:  bash setup-vds.sh
-# Làm: cập nhật hệ thống, swap, firewall, fail2ban, cài Coolify.
+# SoloCEO — Bootstrap Contabo VPS (Ubuntu 24.04) MỘT LỆNH
+# Chạy bằng root:
+#   ROLE=core   bash setup-vds.sh   # VPS-CORE: hardening + Coolify
+#   ROLE=tenant bash setup-vds.sh   # VPS-TENANT: hardening (Coolify quản qua SSH)
 # Idempotent — chạy lại an toàn.
 # =====================================================================
 set -euo pipefail
+ROLE="${ROLE:-core}"
+HOSTNAME_SET="${HOSTNAME_SET:-}"
+[ -n "$HOSTNAME_SET" ] && hostnamectl set-hostname "$HOSTNAME_SET"
 
 echo "==> [1/6] Cập nhật hệ thống..."
 export DEBIAN_FRONTEND=noninteractive
@@ -24,21 +28,29 @@ if ! swapon --show | grep -q /swapfile; then
   echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
 
-echo "==> [4/6] Firewall UFW (22 SSH, 80/443 web, 8000 Coolify UI)..."
+echo "==> [4/6] Firewall UFW..."
 ufw allow 22/tcp
 ufw allow 80/tcp
 ufw allow 443/tcp
-ufw allow 8000/tcp   # Coolify dashboard — khóa lại sau khi setup xong: ufw delete allow 8000/tcp
+if [ "$ROLE" = "core" ]; then
+  ufw allow 8000/tcp   # Coolify dashboard — khóa lại sau: ufw delete allow 8000/tcp
+  ufw allow 6001/tcp   # Coolify realtime
+  ufw allow 6002/tcp   # Coolify terminal
+fi
 ufw --force enable
 
 echo "==> [5/6] fail2ban bảo vệ SSH..."
 systemctl enable --now fail2ban
 
-echo "==> [6/6] Cài Coolify (kèm Docker)..."
-if ! command -v docker >/dev/null || [ ! -d /data/coolify ]; then
-  curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+if [ "$ROLE" = "core" ]; then
+  echo "==> [6/6] Cài Coolify (kèm Docker)..."
+  if [ ! -d /data/coolify ]; then
+    curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+  else
+    echo "Coolify đã cài — bỏ qua."
+  fi
 else
-  echo "Coolify đã cài — bỏ qua."
+  echo "==> [6/6] ROLE=tenant — bỏ qua Coolify (controller trên core sẽ quản máy này qua SSH)."
 fi
 
 IP=$(curl -s -4 ifconfig.me || hostname -I | awk '{print $1}')
