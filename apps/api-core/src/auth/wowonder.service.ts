@@ -26,6 +26,7 @@ export interface WowonderUser {
 }
 
 const WOWONDER_TOKEN_SECRET = "wowonder_access_token";
+const WOWONDER_V2_TOKEN_SECRET = "wowonder_v2_token";
 
 @Injectable()
 export class WowonderService {
@@ -135,11 +136,134 @@ export class WowonderService {
       },
     });
 
+    // Đổi lấy API v2 session token (đăng bài/bình luận/sửa hồ sơ) qua cầu nối
+    await this.mintAndStoreV2Token(org.id, accessToken).catch((e) =>
+      this.logger.warn(`Không lấy được API v2 token: ${e}`),
+    );
+
     const token = this.authService.issueSessionToken({
       userId: identity,
       email: user.email ?? null,
     });
     return { token, isNew, user };
+  }
+
+  private get serverKey(): string {
+    return this.config.get<string>("WOWONDER_SERVER_KEY") ?? "";
+  }
+
+  /** Đổi OAuth token → API v2 session token qua soloceo_bridge.php, lưu mã hoá */
+  private async mintAndStoreV2Token(
+    orgId: string,
+    oauthToken: string,
+  ): Promise<string> {
+    const res = await fetch(`${this.baseUrl}/soloceo_bridge.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        server_key: this.serverKey,
+        oauth_token: oauthToken,
+      }),
+    });
+    const json = (await res.json().catch(() => null)) as {
+      status?: string;
+      access_token?: string;
+    } | null;
+    if (!json?.access_token) {
+      throw new Error(`bridge lỗi: ${JSON.stringify(json)}`);
+    }
+    await this.prisma.secret.upsert({
+      where: { orgId_key: { orgId, key: WOWONDER_V2_TOKEN_SECRET } },
+      update: { valueEnc: encryptSecret(json.access_token) },
+      create: {
+        orgId,
+        key: WOWONDER_V2_TOKEN_SECRET,
+        valueEnc: encryptSecret(json.access_token),
+      },
+    });
+    return json.access_token;
+  }
+
+  /** Lấy API v2 token của org (giải mã); tự mint lại từ OAuth token nếu thiếu */
+  private async getV2Token(orgId: string): Promise<string | null> {
+    const { decryptSecret } = await import("../ai/crypto.util");
+    const v2 = await this.prisma.secret.findUnique({
+      where: { orgId_key: { orgId, key: WOWONDER_V2_TOKEN_SECRET } },
+    });
+    if (v2) return decryptSecret(v2.valueEnc);
+    // fallback: mint lại từ OAuth token đã lưu
+    const oauth = await this.prisma.secret.findUnique({
+      where: { orgId_key: { orgId, key: WOWONDER_TOKEN_SECRET } },
+    });
+    if (!oauth) return null;
+    try {
+      return await this.mintAndStoreV2Token(orgId, decryptSecret(oauth.valueEnc));
+    } catch {
+      return null;
+    }
+  }
+
+  /** Gọi endpoint API v2 bất kỳ bằng token của org */
+  private async callV2<T = Record<string, unknown>>(
+    orgId: string,
+    endpoint: string,
+    fields: Record<string, string>,
+  ): Promise<T> {
+    const token = await this.getV2Token(orgId);
+    if (!token) {
+      throw new Error("Chưa có API v2 token — đăng nhập lại cộng đồng");
+    }
+    const res = await fetch(
+      `${this.baseUrl}/api/${endpoint}?access_token=${encodeURIComponent(token)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ server_key: this.serverKey, ...fields }),
+      },
+    );
+    return (await res.json()) as T;
+  }
+
+  // ---------- Cộng đồng (proxy API v2) ----------
+
+  async getFeed(orgId: string, limit = 20, afterPostId = 0) {
+    return this.callV2(orgId, "posts", {
+      type: "get_news_feed",
+      limit: String(limit),
+      after_post_id: String(afterPostId),
+    });
+  }
+
+  async createPost(orgId: string, text: string) {
+    return this.callV2(orgId, "new_post", { postText: text });
+  }
+
+  async getComments(orgId: string, postId: string, limit = 30) {
+    return this.callV2(orgId, "comments", {
+      type: "fetch_comments",
+      post_id: postId,
+      limit: String(limit),
+    });
+  }
+
+  async createComment(orgId: string, postId: string, text: string) {
+    return this.callV2(orgId, "comments", {
+      type: "create",
+      post_id: postId,
+      text,
+    });
+  }
+
+  async reactPost(orgId: string, postId: string, reaction = "1") {
+    return this.callV2(orgId, "post-actions", {
+      post_id: postId,
+      action: "reaction",
+      reaction,
+    });
+  }
+
+  async updateProfile(orgId: string, fields: Record<string, string>) {
+    return this.callV2(orgId, "update-user-data", fields);
   }
 
   private displayName(user: WowonderUser): string {
