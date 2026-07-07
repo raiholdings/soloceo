@@ -11,7 +11,7 @@ RUN pnpm install --frozen-lockfile --filter @soloceo/api-core... --filter @soloc
 RUN pnpm --filter @soloceo/db build && pnpm --filter @soloceo/shared build \
     && pnpm --filter @soloceo/api-core build
 # gói production độc lập (node_modules đã prune)
-RUN pnpm --filter @soloceo/api-core --prod deploy --legacy /out
+RUN pnpm --filter @soloceo/api-core --prod deploy /out
 RUN cp -r apps/api-core/dist /out/dist \
     && cp -r packages/db/prisma /out/prisma
 

@@ -10,7 +10,7 @@ COPY packages ./packages
 RUN pnpm install --frozen-lockfile --filter @soloceo/svc-billing-webhooks...
 RUN pnpm --filter @soloceo/db build && pnpm --filter @soloceo/shared build \
     && pnpm --filter @soloceo/svc-billing-webhooks build
-RUN pnpm --filter @soloceo/svc-billing-webhooks --prod deploy --legacy /out
+RUN pnpm --filter @soloceo/svc-billing-webhooks --prod deploy /out
 RUN cp -r services/svc-billing-webhooks/dist /out/dist
 
 FROM node:22-alpine
