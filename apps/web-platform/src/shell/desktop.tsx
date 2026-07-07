@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, clearToken, getToken, setToken } from "@/lib/api";
+import { api, clearToken, getToken } from "@/lib/api";
+import { signIn, supabaseEnabled } from "@/lib/auth";
 import { Button } from "@soloceo/ui";
 import { Dock } from "./dock";
 import { ShellWindow } from "./window";
@@ -58,6 +59,7 @@ function WindowLayer() {
 
 function BootScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,11 +68,7 @@ function BootScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await api<{ accessToken: string }>("/auth/dev-login", {
-        method: "POST",
-        body: JSON.stringify({ email }),
-      });
-      setToken(res.accessToken);
+      await signIn(email, password);
       onLoggedIn();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
@@ -98,6 +96,27 @@ function BootScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
           onChange={(e) => setEmail(e.target.value)}
           className="h-11 rounded-xl border border-surface-border bg-surface px-4 text-sm outline-none backdrop-blur-glass focus:border-accent"
         />
+        {supabaseEnabled && (
+          <input
+            type="password"
+            required
+            placeholder="Mật khẩu"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="h-11 rounded-xl border border-surface-border bg-surface px-4 text-sm outline-none backdrop-blur-glass focus:border-accent"
+          />
+        )}
+        <p className="text-center text-xs text-[#A0A0B8]">
+          Chưa có tài khoản?{" "}
+          <a
+            href={
+              process.env.NEXT_PUBLIC_COMMUNITY_URL ?? "https://soloceo.vn"
+            }
+            className="text-accent-soft hover:underline"
+          >
+            Đăng ký tại soloceo.vn
+          </a>
+        </p>
         {error && <p className="text-sm text-red-400">{error}</p>}
         <Button type="submit" disabled={busy}>
           {busy ? "Đang khởi động..." : "Đăng nhập"}
@@ -148,7 +167,7 @@ export function ShellRoot() {
             })
             .catch(() => {
               // đã đăng nhập nhưng chưa có Org → đưa về web-community onboarding
-              window.location.href = "http://localhost:3000/bat-dau";
+              window.location.href = `${process.env.NEXT_PUBLIC_COMMUNITY_URL ?? "https://soloceo.vn"}/bat-dau`;
             });
         }}
       />

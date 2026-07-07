@@ -2,30 +2,39 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { api, setToken } from "@/lib/api";
+import { signIn, signUp, supabaseEnabled } from "@/lib/auth";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@soloceo/ui";
 
-// MVP local: dev-login (JWT cùng chuẩn Supabase). Khi nối Supabase Auth thật,
-// thay bằng supabase.auth.signInWithOtp / signInWithOAuth — phần còn lại giữ nguyên.
 export default function LoginPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setNotice(null);
     setLoading(true);
     try {
-      const res = await api<{ accessToken: string }>("/auth/dev-login", {
-        method: "POST",
-        body: JSON.stringify({ email }),
-      });
-      setToken(res.accessToken);
+      if (mode === "register" && supabaseEnabled) {
+        const { needsConfirmation } = await signUp(email, password);
+        if (needsConfirmation) {
+          setNotice(
+            "Đã gửi email xác nhận — kiểm tra hộp thư (kể cả Spam), bấm link xác nhận rồi quay lại đăng nhập.",
+          );
+          setMode("login");
+          return;
+        }
+      } else {
+        await signIn(email, password);
+      }
       router.push("/bat-dau");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
+      setError(err instanceof Error ? err.message : "Thao tác thất bại");
     } finally {
       setLoading(false);
     }
@@ -35,9 +44,13 @@ export default function LoginPage() {
     <main className="flex min-h-[70vh] items-center justify-center px-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Đăng nhập / Đăng ký</CardTitle>
+          <CardTitle>
+            {mode === "login" ? "Đăng nhập" : "Đăng ký tài khoản"}
+          </CardTitle>
           <p className="text-sm text-[#A0A0B8]">
-            Nhập email để bắt đầu hành trình Solo CEO của bạn.
+            {mode === "login"
+              ? "Chào mừng trở lại SoloCEO."
+              : "Bắt đầu hành trình Solo CEO của bạn."}
           </p>
         </CardHeader>
         <CardContent>
@@ -50,10 +63,40 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="h-10 rounded-xl border border-surface-border bg-transparent px-4 text-sm outline-none focus:border-accent"
             />
+            {supabaseEnabled && (
+              <input
+                type="password"
+                required
+                minLength={8}
+                placeholder="Mật khẩu (tối thiểu 8 ký tự)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-10 rounded-xl border border-surface-border bg-transparent px-4 text-sm outline-none focus:border-accent"
+              />
+            )}
             {error && <p className="text-sm text-red-400">{error}</p>}
+            {notice && <p className="text-sm text-emerald-400">{notice}</p>}
             <Button type="submit" disabled={loading}>
-              {loading ? "Đang xử lý..." : "Tiếp tục"}
+              {loading
+                ? "Đang xử lý..."
+                : mode === "login"
+                  ? "Đăng nhập"
+                  : "Đăng ký"}
             </Button>
+            {supabaseEnabled && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode(mode === "login" ? "register" : "login");
+                  setError(null);
+                }}
+                className="text-sm text-accent-soft hover:underline"
+              >
+                {mode === "login"
+                  ? "Chưa có tài khoản? Đăng ký"
+                  : "Đã có tài khoản? Đăng nhập"}
+              </button>
+            )}
           </form>
         </CardContent>
       </Card>

@@ -134,7 +134,12 @@ export default function OnboardingPage() {
                       Hồ sơ public
                     </Button>
                   </Link>
-                  <a href="http://localhost:3001">
+                  <a
+                    href={
+                      process.env.NEXT_PUBLIC_PLATFORM_URL ??
+                      "https://platform.soloceo.vn"
+                    }
+                  >
                     <Button size="sm">Mở SoloCEO OS</Button>
                   </a>
                 </div>
