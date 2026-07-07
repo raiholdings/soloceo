@@ -11,7 +11,9 @@ RUN pnpm install --frozen-lockfile --filter @soloceo/svc-billing-webhooks...
 RUN pnpm --filter @soloceo/db build && pnpm --filter @soloceo/shared build \
     && pnpm --filter @soloceo/svc-billing-webhooks build
 RUN pnpm --filter @soloceo/svc-billing-webhooks --prod deploy /out
-RUN cp -r services/svc-billing-webhooks/dist /out/dist
+RUN cp -r services/svc-billing-webhooks/dist /out/dist \
+    && cp -r packages/db/prisma /out/prisma \
+    && cd /out && ./node_modules/.bin/prisma generate --schema prisma/schema.prisma
 
 FROM node:22-alpine
 RUN apk add --no-cache openssl

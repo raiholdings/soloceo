@@ -13,13 +13,14 @@ RUN pnpm --filter @soloceo/db build && pnpm --filter @soloceo/shared build \
 # gói production độc lập (node_modules đã prune)
 RUN pnpm --filter @soloceo/api-core --prod deploy /out
 RUN cp -r apps/api-core/dist /out/dist \
-    && cp -r packages/db/prisma /out/prisma
+    && cp -r packages/db/prisma /out/prisma \
+    && cd /out && ./node_modules/.bin/prisma generate --schema prisma/schema.prisma
 
 FROM node:22-alpine
-RUN apk add --no-cache openssl && corepack enable pnpm
+RUN apk add --no-cache openssl
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /out .
 # chạy migration rồi khởi động API
-CMD ["sh", "-c", "npx prisma migrate deploy --schema prisma/schema.prisma && node dist/main.js"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma && node dist/main.js"]
 EXPOSE 4000
