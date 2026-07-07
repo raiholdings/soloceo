@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, clearToken, getToken } from "@/lib/api";
+import { api, API_URL, clearToken, getToken, setToken } from "@/lib/api";
 import { signIn, supabaseEnabled } from "@/lib/auth";
 import { Button } from "@soloceo/ui";
 import { Dock } from "./dock";
@@ -87,41 +87,39 @@ function BootScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
           Đăng nhập để vào bàn làm việc của bạn
         </p>
       </div>
-      <form onSubmit={login} className="flex w-full max-w-xs flex-col gap-3">
-        <input
-          type="email"
-          required
-          placeholder="email@cua-ban.vn"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="h-11 rounded-xl border border-surface-border bg-surface px-4 text-sm outline-none backdrop-blur-glass focus:border-accent"
-        />
-        {supabaseEnabled && (
-          <input
-            type="password"
-            required
-            placeholder="Mật khẩu"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="h-11 rounded-xl border border-surface-border bg-surface px-4 text-sm outline-none backdrop-blur-glass focus:border-accent"
-          />
-        )}
-        <p className="text-center text-xs text-[#A0A0B8]">
-          Chưa có tài khoản?{" "}
-          <a
-            href={
-              process.env.NEXT_PUBLIC_COMMUNITY_URL ?? "https://soloceo.vn"
-            }
-            className="text-accent-soft hover:underline"
-          >
-            Đăng ký tại soloceo.vn
-          </a>
-        </p>
+      <div className="flex w-full max-w-xs flex-col gap-3">
         {error && <p className="text-sm text-red-400">{error}</p>}
-        <Button type="submit" disabled={busy}>
-          {busy ? "Đang khởi động..." : "Đăng nhập"}
-        </Button>
-      </form>
+        <a href={`${API_URL}/v1/auth/wowonder/login`}>
+          <Button className="w-full gap-2" disabled={busy}>
+            <span className="text-lg">👥</span> Đăng nhập bằng SoloCEO Community
+          </Button>
+        </a>
+
+        {/* Dev/local fallback */}
+        {supabaseEnabled && (
+          <form onSubmit={login} className="mt-2 flex flex-col gap-3">
+            <input
+              type="email"
+              required
+              placeholder="email@cua-ban.vn (dev)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-11 rounded-xl border border-surface-border bg-surface px-4 text-sm outline-none backdrop-blur-glass focus:border-accent"
+            />
+            <input
+              type="password"
+              required
+              placeholder="Mật khẩu"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-11 rounded-xl border border-surface-border bg-surface px-4 text-sm outline-none backdrop-blur-glass focus:border-accent"
+            />
+            <Button type="submit" variant="outline" disabled={busy}>
+              {busy ? "Đang khởi động..." : "Đăng nhập email (dev)"}
+            </Button>
+          </form>
+        )}
+      </div>
     </main>
   );
 }
@@ -131,6 +129,15 @@ export function ShellRoot() {
   const [org, setOrg] = useState<OrgMe | null>(null);
 
   useEffect(() => {
+    // Nhận token từ callback OAuth WoWonder (?token=...)
+    const url = new URL(window.location.href);
+    const tokenParam = url.searchParams.get("token");
+    if (tokenParam) {
+      setToken(tokenParam);
+      url.searchParams.delete("token");
+      url.searchParams.delete("new");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
     if (!getToken()) {
       setState("login");
       return;

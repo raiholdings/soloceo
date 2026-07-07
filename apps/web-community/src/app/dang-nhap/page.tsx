@@ -1,40 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signIn, signUp, supabaseEnabled } from "@/lib/auth";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { API_URL, setToken } from "@/lib/api";
+import { signIn, supabaseEnabled } from "@/lib/auth";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@soloceo/ui";
 
-export default function LoginPage() {
+// Đăng nhập chính: OAuth qua SoloCEO Community (WoWonder my.soloceo.vn).
+// api-core lo đổi code → JWT rồi chuyển về đây kèm ?token=.
+function LoginInner() {
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const params = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function submit(e: React.FormEvent) {
+  // Nhận token từ callback OAuth
+  useEffect(() => {
+    const token = params.get("token");
+    const err = params.get("error");
+    if (token) {
+      setToken(token);
+      router.replace("/bat-dau");
+    } else if (err) {
+      setError(decodeURIComponent(err));
+    }
+  }, [params, router]);
+
+  const communityLoginUrl = `${API_URL}/v1/auth/wowonder/login`;
+
+  async function devSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    setNotice(null);
     setLoading(true);
+    setError(null);
     try {
-      if (mode === "register" && supabaseEnabled) {
-        const { needsConfirmation } = await signUp(email, password);
-        if (needsConfirmation) {
-          setNotice(
-            "Đã gửi email xác nhận — kiểm tra hộp thư (kể cả Spam), bấm link xác nhận rồi quay lại đăng nhập.",
-          );
-          setMode("login");
-          return;
-        }
-      } else {
-        await signIn(email, password);
-      }
+      await signIn(email, password);
       router.push("/bat-dau");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Thao tác thất bại");
+      setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
     } finally {
       setLoading(false);
     }
@@ -44,62 +48,69 @@ export default function LoginPage() {
     <main className="flex min-h-[70vh] items-center justify-center px-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>
-            {mode === "login" ? "Đăng nhập" : "Đăng ký tài khoản"}
-          </CardTitle>
+          <CardTitle>Đăng nhập / Đăng ký</CardTitle>
           <p className="text-sm text-[#A0A0B8]">
-            {mode === "login"
-              ? "Chào mừng trở lại SoloCEO."
-              : "Bắt đầu hành trình Solo CEO của bạn."}
+            Dùng tài khoản SoloCEO Community để vào hệ điều hành doanh nghiệp của
+            bạn. Một tài khoản cho cả cộng đồng và nền tảng.
           </p>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="flex flex-col gap-4">
-            <input
-              type="email"
-              required
-              placeholder="email@cua-ban.vn"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-10 rounded-xl border border-surface-border bg-transparent px-4 text-sm outline-none focus:border-accent"
-            />
-            {supabaseEnabled && (
-              <input
-                type="password"
-                required
-                minLength={8}
-                placeholder="Mật khẩu (tối thiểu 8 ký tự)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="h-10 rounded-xl border border-surface-border bg-transparent px-4 text-sm outline-none focus:border-accent"
-              />
-            )}
-            {error && <p className="text-sm text-red-400">{error}</p>}
-            {notice && <p className="text-sm text-emerald-400">{notice}</p>}
-            <Button type="submit" disabled={loading}>
-              {loading
-                ? "Đang xử lý..."
-                : mode === "login"
-                  ? "Đăng nhập"
-                  : "Đăng ký"}
+        <CardContent className="flex flex-col gap-4">
+          {error && (
+            <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+              {error}
+            </p>
+          )}
+
+          <a href={communityLoginUrl}>
+            <Button className="w-full gap-2" size="lg">
+              <span className="text-lg">👥</span> Tiếp tục với SoloCEO Community
             </Button>
-            {supabaseEnabled && (
-              <button
-                type="button"
-                onClick={() => {
-                  setMode(mode === "login" ? "register" : "login");
-                  setError(null);
-                }}
-                className="text-sm text-accent-soft hover:underline"
-              >
-                {mode === "login"
-                  ? "Chưa có tài khoản? Đăng ký"
-                  : "Đã có tài khoản? Đăng nhập"}
-              </button>
-            )}
-          </form>
+          </a>
+
+          <p className="text-center text-xs text-[#A0A0B8]">
+            Chưa có tài khoản cộng đồng? Nút trên sẽ tự đưa bạn tới trang đăng ký
+            tại my.soloceo.vn.
+          </p>
+
+          {/* Dev/local fallback — chỉ hiện khi cấu hình Supabase (môi trường dev) */}
+          {supabaseEnabled && (
+            <details className="mt-2 text-sm text-[#A0A0B8]">
+              <summary className="cursor-pointer">
+                Đăng nhập bằng email (dev)
+              </summary>
+              <form onSubmit={devSubmit} className="mt-3 flex flex-col gap-3">
+                <input
+                  type="email"
+                  required
+                  placeholder="email@cua-ban.vn"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-10 rounded-xl border border-surface-border bg-transparent px-4 text-sm outline-none focus:border-accent"
+                />
+                <input
+                  type="password"
+                  required
+                  placeholder="Mật khẩu"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-10 rounded-xl border border-surface-border bg-transparent px-4 text-sm outline-none focus:border-accent"
+                />
+                <Button type="submit" variant="outline" disabled={loading}>
+                  {loading ? "Đang xử lý..." : "Đăng nhập email"}
+                </Button>
+              </form>
+            </details>
+          )}
         </CardContent>
       </Card>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<main className="p-24 text-center text-[#A0A0B8]">Đang tải...</main>}>
+      <LoginInner />
+    </Suspense>
   );
 }

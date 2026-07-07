@@ -36,4 +36,26 @@ export class AuthService {
     };
     return jwt.sign(payload, secret, { expiresIn: "7d" });
   }
+
+  /**
+   * Phát JWT phiên cho danh tính bất kỳ (dùng cho đăng nhập WoWonder OAuth).
+   * Ký cùng JWT_SUPABASE_SECRET nên AuthGuard hiện tại verify được ngay —
+   * userId là khoá danh tính ổn định (vd "wo:{wowonder_user_id}").
+   */
+  issueSessionToken(params: {
+    userId: string;
+    email?: string | null;
+    platformAdmin?: boolean;
+  }): string {
+    const secret = this.config.get<string>("JWT_SUPABASE_SECRET")!;
+    const payload: SupabaseJwtPayload = {
+      sub: params.userId,
+      email: params.email ?? undefined,
+      role: "authenticated",
+      app_metadata: params.platformAdmin
+        ? { platform_role: "platform_admin" }
+        : {},
+    };
+    return jwt.sign(payload, secret, { expiresIn: "30d" });
+  }
 }
