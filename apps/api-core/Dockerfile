@@ -1,26 +1,19 @@
 # api-core — build từ gốc monorepo: docker build -f apps/api-core/Dockerfile .
-FROM node:22-alpine AS base
-RUN corepack enable pnpm
-WORKDIR /repo
+# Single-stage có chủ đích: pnpm deploy (v9) lỗi layout với workspace,
+# đổi lấy image lớn hơn nhưng chắc chắn chạy. Tối ưu size ở giai đoạn sau.
+FROM node:22-alpine
+RUN corepack enable pnpm && apk add --no-cache openssl
+WORKDIR /app
+ENV CI=true
 
-FROM base AS build
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json tsconfig.base.json ./
 COPY apps/api-core ./apps/api-core
 COPY packages ./packages
-RUN pnpm install --frozen-lockfile --filter @soloceo/api-core... --filter @soloceo/db...
+RUN pnpm install --frozen-lockfile --filter "@soloceo/api-core..."
+# db build = prisma generate && tsc → client sinh ngay trong node_modules này
 RUN pnpm --filter @soloceo/db build && pnpm --filter @soloceo/shared build \
     && pnpm --filter @soloceo/api-core build
-# gói production độc lập (node_modules đã prune)
-RUN pnpm --filter @soloceo/api-core --prod deploy /out
-RUN cp -r apps/api-core/dist /out/dist \
-    && cp -r packages/db/prisma /out/prisma \
-    && cd /out && ./node_modules/.bin/prisma generate --schema prisma/schema.prisma
 
-FROM node:22-alpine
-RUN apk add --no-cache openssl
-WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=build /out .
-# chạy migration rồi khởi động API
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma && node dist/main.js"]
 EXPOSE 4000
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy --schema packages/db/prisma/schema.prisma && node apps/api-core/dist/main.js"]
