@@ -88,6 +88,7 @@ interface AppDeployConfig {
     secret: string;
     litellmBase: string;
     litellmKey: string;
+    gatewayUrl: string; // wss:// của OpenClaw gateway per-venture
   }) => Record<string, string>;
 }
 
@@ -97,7 +98,15 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
     tag: "patched",
     port: "3000",
     subdomain: "",
-    buildEnvs: () => ({ HOST: "0.0.0.0", PORT: "3000", NODE_ENV: "production" }),
+    // CLAW3D_GATEWAY_* = auto-connect tới OpenClaw của venture (CEO không phải nhập tay)
+    buildEnvs: ({ secret, gatewayUrl }) => ({
+      HOST: "0.0.0.0",
+      PORT: "3000",
+      NODE_ENV: "production",
+      CLAW3D_GATEWAY_URL: gatewayUrl,
+      CLAW3D_GATEWAY_TOKEN: secret,
+      CLAW3D_GATEWAY_ADAPTER_TYPE: "openclaw",
+    }),
   },
   openclaw: {
     image: `${REGISTRY}/soloceo/openclaw`,
@@ -170,6 +179,12 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
   const litellmBase = process.env.LITELLM_BASE_URL ?? "https://llm.soloceo.vn";
   const litellmKey = await getOrgLitellmKey(venture.orgId).catch(() => "");
 
+  // 1 token gateway DÙNG CHUNG per-venture: OpenClaw nhận nó, Claw3D + OS Shell
+  // dùng nó để kết nối — CEO không phải nhập tay bất kỳ URL/token nào.
+  const gatewaySecret = randomBytes(32).toString("hex");
+  const gatewayUrl = `wss://${subdomainFor(venture.slug, "openclaw")}`;
+  await saveOpenclawToken(venture.orgId, ventureId, gatewaySecret);
+
   let anyFailed = false;
 
   for (const install of installs) {
@@ -185,7 +200,6 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
       let app;
       if (cfg) {
         // Deploy từ image dựng sẵn (registry) — cách đáng tin cậy (ADR-005 approach B)
-        const secret = randomBytes(32).toString("hex");
         await job.log(`[${appKey}] deploy image ${cfg.image}:${cfg.tag}...`);
         app = await coolify.createDockerImageApp({
           projectUuid: project.uuid,
@@ -195,12 +209,13 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
           tag: cfg.tag,
           port: cfg.port,
           domain,
-          envs: cfg.buildEnvs({ secret, litellmBase, litellmKey }),
+          envs: cfg.buildEnvs({
+            secret: gatewaySecret,
+            litellmBase,
+            litellmKey,
+            gatewayUrl,
+          }),
         });
-        // OpenClaw: lưu token gateway để OS Shell mở Control UI (#token=)
-        if (appKey === "openclaw") {
-          await saveOpenclawToken(venture.orgId, ventureId, secret);
-        }
       } else {
         // App khác (erpnext...) vẫn dùng compose template
         const view: Record<string, string> = {

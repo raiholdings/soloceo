@@ -27,6 +27,35 @@ function controlUiSrc(url: string, token: string | null): string {
   return token ? `${base}/#token=${encodeURIComponent(token)}` : `${base}/`;
 }
 
+/** URL WebSocket của gateway (dùng khi app khác — vd Claw3D — hỏi "Gateway URL") */
+function gatewayWsUrl(url: string): string {
+  return url.replace(/^https:/, "wss:").replace(/\/$/, "");
+}
+
+function CopyField({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-28 shrink-0 text-xs text-[#A0A0B8]">{label}</span>
+      <code className="flex-1 truncate rounded bg-black/30 px-2 py-1 text-xs text-white">
+        {value}
+      </code>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => {
+          navigator.clipboard.writeText(value).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          });
+        }}
+      >
+        {copied ? "✓ Đã chép" : "Chép"}
+      </Button>
+    </div>
+  );
+}
+
 export default function AiStudioApp() {
   const [access, setAccess] = useState<OpenclawAccess | null>(null);
   const [summary, setSummary] = useState<UsageSummary | null>(null);
@@ -105,6 +134,27 @@ export default function AiStudioApp() {
               doanh nghiệp, quá trình cài đặt mất vài phút — cửa sổ sẽ tự hiện khi
               sẵn sàng.
             </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {access?.ready && access.url && access.token && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              Thông tin kết nối Gateway (khi ứng dụng hỏi)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <p className="text-xs text-[#A0A0B8]">
+              Nếu văn phòng 3D hoặc ứng dụng khác hiện màn hình{" "}
+              <span className="text-white">&ldquo;Connect Your Gateway&rdquo;</span>, dán 2
+              giá trị dưới đây vào ô <b>Gateway URL</b> và <b>Gateway Token</b>{" "}
+              rồi bấm Connect. Thông thường hệ thống đã tự kết nối sẵn — chỉ cần
+              làm bước này nếu được hỏi.
+            </p>
+            <CopyField label="Gateway URL" value={gatewayWsUrl(access.url)} />
+            <CopyField label="Gateway Token" value={access.token} />
           </CardContent>
         </Card>
       )}
