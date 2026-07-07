@@ -30,6 +30,12 @@ export function SiteHeader() {
               <Link href="/bat-dau" className="text-[#A0A0B8] hover:text-white">
                 Doanh nghiệp của tôi
               </Link>
+              <Link
+                href="/tai-khoan"
+                className="text-[#A0A0B8] hover:text-white"
+              >
+                Tài khoản
+              </Link>
               <Button
                 size="sm"
                 variant="outline"
