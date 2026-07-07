@@ -1,10 +1,11 @@
 # DEPLOY SOLOCEO — 2 NODE (ADR-004 đã duyệt)
 
-> **VPS-CORE** = Contabo Cloud VDS S (3 core EPYC / 24GB / 180GB NVMe, Ubuntu 24.04)
-> chạy Coolify + core stack + **Supabase self-host**.
-> **VPS-TENANT-01** = VPS thứ 2 (khuyến nghị 32GB) chỉ chạy stack tenant,
-> thêm vào Coolify qua SSH (Servers → Add).
+> **2× Contabo Cloud VPS 20** (6 vCPU / 12GB RAM / 100GB NVMe, Ubuntu 24.04):
+> `core-01` chạy Coolify + core stack + Supabase self-host;
+> `tenant-01` chỉ chạy stack tenant (thêm vào Coolify: Servers → Add, SSH key).
+> Langfuse HOÃN (RAM 12GB) — chi phí AI đo qua bảng AiUsage (đã có).
 > App build trực tiếp từ GitHub bằng Dockerfile trong repo.
+> Sức chứa pilot: ~3 tenant GROWTH + 3–4 STARTER (chi tiết ADR-004).
 
 ## 0. DNS (Cloudflare)
 | Bản ghi | Trỏ về | Proxy |
