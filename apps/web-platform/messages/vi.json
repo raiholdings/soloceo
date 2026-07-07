@@ -1,0 +1,17 @@
+{
+  "Boot": {
+    "title": "SoloCEO OS",
+    "subtitle": "Hệ điều hành cho doanh nghiệp một người",
+    "status": "Sẵn sàng — OS Shell sẽ được dựng ở Giai đoạn 2",
+    "apps": {
+      "overview": "Tổng quan",
+      "store": "App Store",
+      "ai": "AI Studio",
+      "automation": "Automation",
+      "revenue": "Doanh thu",
+      "community": "Cộng đồng",
+      "marketplace": "Sàn M&A",
+      "settings": "Cài đặt"
+    }
+  }
+}

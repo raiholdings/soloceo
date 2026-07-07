@@ -1,0 +1,235 @@
+// SoloCEO — schema gốc theo CLAUDE.md Phần 4.
+// Mọi bảng nghiệp vụ scope theo orgId (RLS bật trên Supabase — SQL trong packages/db/rls/).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1 Solo CEO = 1 Org (multi-tenancy gốc)
+model Org {
+  id            String         @id @default(uuid())
+  name          String
+  ownerUserId   String // Supabase auth.users.id
+  plan          Plan           @default(STARTER)
+  status        OrgStatus      @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  ventures      Venture[]
+  subscriptions Subscription[]
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  aiUsages      AiUsage[]
+  offers        Offer[]
+}
+
+// Doanh nghiệp một người — đơn vị giá trị lõi
+model Venture {
+  id              String        @id @default(uuid())
+  orgId           String
+  name            String
+  slug            String        @unique // → {slug}.app.soloceo.vn
+  industry        String? // real_estate|fnb|education|services|other
+  description     String?
+  logoUrl         String?
+  status          VentureStatus @default(DRAFT)
+  revenueVerified Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  org             Org           @relation(fields: [orgId], references: [id])
+  installs        AppInstall[]
+  transactions    Transaction[]
+  listing         Listing?
+  aiUsages        AiUsage[]
+
+  @@index([orgId])
+}
+
+// App Store — giải pháp mã nguồn mở đóng gói sẵn
+model CatalogApp {
+  id              String       @id @default(uuid())
+  key             String       @unique // "dify","activepieces","site-nextjs","crm-twenty",...
+  name            String
+  category        String // ai|automation|web|crm|commerce
+  composeTemplate String // đường dẫn infra/coolify/templates/{key}.yml
+  defaultEnv      Json
+  planMin         Plan         @default(STARTER)
+  active          Boolean      @default(true)
+  installs        AppInstall[]
+}
+
+// 1 app đã cài cho 1 venture
+model AppInstall {
+  id           String        @id @default(uuid())
+  ventureId    String
+  catalogAppId String
+  coolifyAppId String? // id resource bên Coolify
+  url          String? // https://{slug}-{app}.app.soloceo.vn
+  status       InstallStatus @default(QUEUED)
+  envOverrides Json?
+  createdAt    DateTime      @default(now())
+  venture      Venture       @relation(fields: [ventureId], references: [id])
+  catalogApp   CatalogApp    @relation(fields: [catalogAppId], references: [id])
+
+  @@index([ventureId])
+}
+
+// Gói cước nền tảng
+model Subscription {
+  id               String   @id @default(uuid())
+  orgId            String
+  plan             Plan
+  provider         String // stripe|payos
+  providerRef      String // subscription id / order code
+  status           String // active|past_due|canceled
+  currentPeriodEnd DateTime
+  org              Org      @relation(fields: [orgId], references: [id])
+
+  @@index([orgId])
+}
+
+// SỔ CÁI DOANH THU — trái tim của Sàn M&A
+model Transaction {
+  id          String      @id @default(uuid())
+  ventureId   String
+  direction   TxDirection // IN|OUT|PLATFORM_FEE
+  grossAmount Decimal     @db.Decimal(18, 2)
+  currency    String      @default("VND")
+  provider    String // stripe|payos|manual
+  providerRef String      @unique // idempotency key
+  customerRef String?
+  occurredAt  DateTime
+  verified    Boolean     @default(true) // true nếu từ webhook cổng thanh toán
+  meta        Json?
+  venture     Venture     @relation(fields: [ventureId], references: [id])
+
+  @@index([ventureId, occurredAt])
+}
+
+// Niêm yết M&A
+model Listing {
+  id           String        @id @default(uuid())
+  ventureId    String        @unique
+  askPrice     Decimal       @db.Decimal(18, 2)
+  currency     String        @default("VND")
+  ttmRevenue   Decimal?      @db.Decimal(18, 2) // doanh thu 12 tháng — tính từ Transaction
+  ttmProfitEst Decimal?      @db.Decimal(18, 2)
+  summary      String
+  status       ListingStatus @default(PENDING_REVIEW)
+  createdAt    DateTime      @default(now())
+  venture      Venture       @relation(fields: [ventureId], references: [id])
+  offers       Offer[]
+}
+
+model Offer {
+  id         String   @id @default(uuid())
+  listingId  String
+  buyerOrgId String
+  amount     Decimal  @db.Decimal(18, 2)
+  message    String?
+  status     String   @default("open") // open|accepted|rejected|withdrawn
+  createdAt  DateTime @default(now())
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  buyerOrg   Org      @relation(fields: [buyerOrgId], references: [id])
+
+  @@index([listingId])
+}
+
+// Feed cộng đồng MVP
+model Post {
+  id        String    @id @default(uuid())
+  orgId     String
+  ventureId String?
+  content   String
+  mediaUrls Json?
+  createdAt DateTime  @default(now())
+  org       Org       @relation(fields: [orgId], references: [id])
+  comments  Comment[]
+  likes     Like[]
+
+  @@index([orgId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  orgId     String
+  content   String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+  org       Org      @relation(fields: [orgId], references: [id])
+
+  @@index([postId])
+}
+
+model Like {
+  id     String @id @default(uuid())
+  postId String
+  orgId  String
+  post   Post   @relation(fields: [postId], references: [id])
+  org    Org    @relation(fields: [orgId], references: [id])
+
+  @@unique([postId, orgId])
+}
+
+// Đồng bộ từ LiteLLM/Langfuse mỗi giờ
+model AiUsage {
+  id           String   @id @default(uuid())
+  orgId        String
+  ventureId    String?
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  costUsd      Decimal  @db.Decimal(12, 6)
+  day          DateTime @db.Date
+  org          Org      @relation(fields: [orgId], references: [id])
+  venture      Venture? @relation(fields: [ventureId], references: [id])
+
+  @@index([orgId, day])
+}
+
+enum Plan {
+  STARTER
+  GROWTH
+  SCALE
+}
+
+enum OrgStatus {
+  ACTIVE
+  SUSPENDED
+  CHURNED
+}
+
+enum VentureStatus {
+  DRAFT
+  PROVISIONING
+  LIVE
+  PAUSED
+  LISTED
+  SOLD
+}
+
+enum InstallStatus {
+  QUEUED
+  DEPLOYING
+  RUNNING
+  FAILED
+  REMOVED
+}
+
+enum TxDirection {
+  IN
+  OUT
+  PLATFORM_FEE
+}
+
+enum ListingStatus {
+  PENDING_REVIEW
+  LIVE
+  IN_ESCROW
+  SOLD
+  WITHDRAWN
+}

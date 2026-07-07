@@ -1,0 +1,17 @@
+{
+  "Boot": {
+    "title": "SoloCEO OS",
+    "subtitle": "The operating system for one-person businesses",
+    "status": "Ready — the OS Shell will be built in Phase 2",
+    "apps": {
+      "overview": "Overview",
+      "store": "App Store",
+      "ai": "AI Studio",
+      "automation": "Automation",
+      "revenue": "Revenue",
+      "community": "Community",
+      "marketplace": "M&A Marketplace",
+      "settings": "Settings"
+    }
+  }
+}

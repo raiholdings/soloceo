@@ -1,0 +1,10 @@
+/* Nền tảng phong cách SoloCEO — nền tối, glassmorphism */
+:root {
+  --accent: #7c5cff;
+  --canvas: #0b0b12;
+}
+
+body {
+  background-color: var(--canvas);
+  color: #f4f4f8;
+}

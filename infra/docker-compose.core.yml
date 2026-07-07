@@ -1,0 +1,46 @@
+# =====================================================================
+# Stack VPS-CORE — khung Giai đoạn 0 (hoàn thiện dần ở Giai đoạn 3–5).
+# Supabase self-host deploy bằng template Coolify riêng (không nằm ở đây).
+# =====================================================================
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: soloceo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+      LITELLM_DB_URL: ${LITELLM_DB_URL}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
+      LANGFUSE_HOST: ${LANGFUSE_HOST}
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4100"]
+    ports:
+      - "4100:4100"
+
+  # langfuse: bổ sung ở GIAI ĐOẠN 4 (cần clickhouse + minio theo bản v3)
+  # api-core / web-community / web-platform / svc-*: build image ở GIAI ĐOẠN 3+
+
+volumes:
+  pgdata:

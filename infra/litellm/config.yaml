@@ -1,0 +1,23 @@
+# LiteLLM Proxy — CLAUDE.md Phần 8.1
+# Mọi lời gọi LLM của mọi tenant đi qua gateway này (nguyên tắc bất biến).
+
+model_list:
+  # Tác vụ rẻ: phân loại, tóm tắt
+  - model_name: soloceo-fast
+    litellm_params:
+      model: "anthropic/claude-haiku-4-5"
+      api_key: "os.environ/ANTHROPIC_API_KEY"
+  # Tác vụ chính: agent, viết nội dung
+  - model_name: soloceo-smart
+    litellm_params:
+      model: "anthropic/claude-sonnet-4-6"
+      api_key: "os.environ/ANTHROPIC_API_KEY"
+
+general_settings:
+  master_key: "os.environ/LITELLM_MASTER_KEY"
+  # Bật virtual keys + budget per-org
+  database_url: "os.environ/LITELLM_DB_URL"
+
+litellm_settings:
+  # Trace + cost về Langfuse
+  success_callback: ["langfuse"]

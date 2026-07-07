@@ -1,0 +1,23 @@
+{
+  "Home": {
+    "badge": "The platform for Vietnamese Solo CEOs",
+    "title": "One person. One business. Run it like a corporation.",
+    "subtitle": "SoloCEO provides a website, CRM, AI assistants, automation and payments — all installed in 5 minutes, with verified revenue, ready to list on the M&A marketplace.",
+    "ctaPrimary": "Get started",
+    "ctaSecondary": "Explore the community",
+    "features": {
+      "store": {
+        "title": "1-click App Store",
+        "description": "Website, CRM, e-commerce — installed automatically on your own infrastructure."
+      },
+      "ai": {
+        "title": "AI Studio",
+        "description": "Sales chatbot, content assistant — AI working for your business 24/7."
+      },
+      "ma": {
+        "title": "M&A Marketplace",
+        "description": "Revenue verified through the platform. When it's time to sell, your business already has a price."
+      }
+    }
+  }
+}

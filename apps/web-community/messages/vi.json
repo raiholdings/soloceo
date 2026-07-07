@@ -1,0 +1,23 @@
+{
+  "Home": {
+    "badge": "Nền tảng cho Solo CEO Việt Nam",
+    "title": "Một người. Một doanh nghiệp. Vận hành như một tập đoàn.",
+    "subtitle": "SoloCEO cung cấp website, CRM, trợ lý AI, automation và cổng thanh toán — tất cả cài đặt trong 5 phút, doanh thu xác thực, sẵn sàng niêm yết trên Sàn M&A.",
+    "ctaPrimary": "Bắt đầu ngay",
+    "ctaSecondary": "Khám phá cộng đồng",
+    "features": {
+      "store": {
+        "title": "App Store 1-click",
+        "description": "Website, CRM, thương mại điện tử — cài đặt tự động trên hạ tầng riêng của bạn."
+      },
+      "ai": {
+        "title": "AI Studio",
+        "description": "Chatbot bán hàng, trợ lý nội dung — AI làm việc cho doanh nghiệp của bạn 24/7."
+      },
+      "ma": {
+        "title": "Sàn M&A",
+        "description": "Doanh thu xác thực qua nền tảng. Đến lúc muốn bán, doanh nghiệp của bạn đã có giá."
+      }
+    }
+  }
+}
