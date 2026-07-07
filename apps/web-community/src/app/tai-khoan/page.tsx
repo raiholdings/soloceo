@@ -20,6 +20,9 @@ interface Profile {
   username: string;
   email: string | null;
   name: string;
+  firstName: string;
+  lastName: string;
+  about: string;
   avatar: string | null;
   verified: boolean;
   communityUrl: string;
@@ -47,6 +50,45 @@ export default function AccountPage() {
   const [org, setOrg] = useState<OrgMe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    about: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  function startEdit() {
+    if (!profile) return;
+    setForm({
+      first_name: profile.firstName,
+      last_name: profile.lastName,
+      about: profile.about,
+    });
+    setEditing(true);
+    setSaved(false);
+  }
+
+  async function saveProfile() {
+    setSaving(true);
+    setError(null);
+    try {
+      await api("/community/profile", {
+        method: "POST",
+        body: JSON.stringify(form),
+      });
+      // tải lại hồ sơ mới nhất từ cộng đồng
+      const p = await api<{ profile: Profile | null }>("/auth/wowonder/me");
+      setProfile(p.profile);
+      setEditing(false);
+      setSaved(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Lưu hồ sơ thất bại");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   useEffect(() => {
     if (!getToken()) {
@@ -83,8 +125,8 @@ export default function AccountPage() {
         <CardHeader>
           <CardTitle className="text-base">Hồ sơ SoloCEO Community</CardTitle>
           <p className="text-xs text-[#A0A0B8]">
-            Thông tin cá nhân được đồng bộ từ mạng xã hội my.soloceo.vn — chỉnh
-            sửa tại đó, cập nhật khắp nền tảng.
+            Chỉnh sửa ngay tại đây — thay đổi được lưu thẳng vào tài khoản cộng
+            đồng my.soloceo.vn và áp dụng khắp nền tảng.
           </p>
         </CardHeader>
         <CardContent>
@@ -115,41 +157,100 @@ export default function AccountPage() {
                   <p className="text-sm text-[#A0A0B8]">@{profile.username}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                <div>
-                  <p className="text-[#A0A0B8]">Email</p>
-                  <p>{profile.email ?? "—"}</p>
+              {editing ? (
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <label className="text-sm">
+                      <span className="text-[#A0A0B8]">Tên</span>
+                      <input
+                        value={form.first_name}
+                        onChange={(e) =>
+                          setForm({ ...form, first_name: e.target.value })
+                        }
+                        className="mt-1 h-10 w-full rounded-xl border border-surface-border bg-transparent px-3 text-sm outline-none focus:border-accent"
+                      />
+                    </label>
+                    <label className="text-sm">
+                      <span className="text-[#A0A0B8]">Họ</span>
+                      <input
+                        value={form.last_name}
+                        onChange={(e) =>
+                          setForm({ ...form, last_name: e.target.value })
+                        }
+                        className="mt-1 h-10 w-full rounded-xl border border-surface-border bg-transparent px-3 text-sm outline-none focus:border-accent"
+                      />
+                    </label>
+                  </div>
+                  <label className="text-sm">
+                    <span className="text-[#A0A0B8]">Giới thiệu</span>
+                    <textarea
+                      rows={3}
+                      value={form.about}
+                      onChange={(e) =>
+                        setForm({ ...form, about: e.target.value })
+                      }
+                      className="mt-1 w-full rounded-xl border border-surface-border bg-transparent px-3 py-2 text-sm outline-none focus:border-accent"
+                    />
+                  </label>
+                  <div className="flex gap-2">
+                    <Button size="sm" disabled={saving} onClick={saveProfile}>
+                      {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditing(false)}
+                    >
+                      Hủy
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[#A0A0B8]">Trang cộng đồng</p>
-                  <a
-                    href={profile.communityUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-accent-soft hover:underline"
-                  >
-                    {profile.communityUrl.replace("https://", "")}
-                  </a>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <a
-                  href={`${forumBase(profile.communityUrl)}/setting/${profile.username}/general-setting`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Button size="sm">Chỉnh sửa hồ sơ ↗</Button>
-                </a>
-                <a
-                  href={forumBase(profile.communityUrl)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Button size="sm" variant="outline">
-                    Mở cộng đồng
-                  </Button>
-                </a>
-              </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                    <div>
+                      <p className="text-[#A0A0B8]">Email</p>
+                      <p>{profile.email ?? "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#A0A0B8]">Trang cộng đồng</p>
+                      <a
+                        href={profile.communityUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-accent-soft hover:underline"
+                      >
+                        {profile.communityUrl.replace("https://", "")}
+                      </a>
+                    </div>
+                    {profile.about && (
+                      <div className="sm:col-span-2">
+                        <p className="text-[#A0A0B8]">Giới thiệu</p>
+                        <p className="whitespace-pre-wrap">{profile.about}</p>
+                      </div>
+                    )}
+                  </div>
+                  {saved && (
+                    <p className="text-sm text-emerald-400">
+                      ✓ Đã lưu và đồng bộ với cộng đồng
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={startEdit}>
+                      Chỉnh sửa hồ sơ
+                    </Button>
+                    <a
+                      href={forumBase(profile.communityUrl)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Button size="sm" variant="outline">
+                        Mở cộng đồng
+                      </Button>
+                    </a>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="flex flex-col gap-3">
