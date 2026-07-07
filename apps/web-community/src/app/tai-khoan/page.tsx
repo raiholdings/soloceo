@@ -6,8 +6,15 @@ import Link from "next/link";
 import { api, getToken } from "@/lib/api";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@soloceo/ui";
 
-const COMMUNITY_URL =
-  process.env.NEXT_PUBLIC_COMMUNITY_URL ?? "https://my.soloceo.vn";
+// Base của mạng xã hội cộng đồng (my.soloceo.vn) — lấy từ communityUrl của
+// hồ sơ để luôn đúng, không phụ thuộc biến build.
+function forumBase(communityUrl: string): string {
+  try {
+    return new URL(communityUrl).origin;
+  } catch {
+    return "https://my.soloceo.vn";
+  }
+}
 
 interface Profile {
   username: string;
@@ -127,13 +134,17 @@ export default function AccountPage() {
               </div>
               <div className="flex gap-2">
                 <a
-                  href={`${COMMUNITY_URL}/setting/${profile.username}/general-setting`}
+                  href={`${forumBase(profile.communityUrl)}/setting/${profile.username}/general-setting`}
                   target="_blank"
                   rel="noreferrer"
                 >
                   <Button size="sm">Chỉnh sửa hồ sơ ↗</Button>
                 </a>
-                <a href={COMMUNITY_URL} target="_blank" rel="noreferrer">
+                <a
+                  href={forumBase(profile.communityUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   <Button size="sm" variant="outline">
                     Mở cộng đồng
                   </Button>

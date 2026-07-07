@@ -4,8 +4,15 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@soloceo/ui";
 
-const COMMUNITY_URL =
-  process.env.NEXT_PUBLIC_COMMUNITY_URL ?? "https://my.soloceo.vn";
+// Base cộng đồng (my.soloceo.vn) lấy từ communityUrl của hồ sơ — không phụ
+// thuộc biến build.
+function forumBase(communityUrl: string): string {
+  try {
+    return new URL(communityUrl).origin;
+  } catch {
+    return "https://my.soloceo.vn";
+  }
+}
 
 interface OrgMe {
   id: string;
@@ -72,7 +79,7 @@ export default function SettingsApp() {
                 </div>
               </div>
               <a
-                href={`${COMMUNITY_URL}/setting/${profile.username}/general-setting`}
+                href={`${forumBase(profile.communityUrl)}/setting/${profile.username}/general-setting`}
                 target="_blank"
                 rel="noreferrer"
               >
