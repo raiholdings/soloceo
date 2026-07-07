@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@soloceo/ui";
 
@@ -17,10 +18,14 @@ export default async function HomePage() {
         </h1>
         <p className="max-w-2xl text-lg text-[#A0A0B8]">{t("subtitle")}</p>
         <div className="flex gap-4">
-          <Button size="lg">{t("ctaPrimary")}</Button>
-          <Button size="lg" variant="outline">
-            {t("ctaSecondary")}
-          </Button>
+          <Link href="/dang-nhap">
+            <Button size="lg">{t("ctaPrimary")}</Button>
+          </Link>
+          <Link href="/danh-ba">
+            <Button size="lg" variant="outline">
+              {t("ctaSecondary")}
+            </Button>
+          </Link>
         </div>
       </section>
 
