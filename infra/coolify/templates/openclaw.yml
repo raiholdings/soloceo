@@ -1,24 +1,23 @@
-# Template: OpenClaw — trợ lý ra lệnh AI (ADR-005), lớp điều khiển mọi hoạt động.
-# Gateway của tenant; model đi qua LiteLLM (nguyên tắc bất biến — không gọi thẳng provider).
-# Biến mustache: DOMAIN, VENTURE_SLUG, APP_SECRET, LITELLM_BASE_URL,
-#                LITELLM_VIRTUAL_KEY, ERPNEXT_URL
+# Template: OpenClaw — trợ lý ra lệnh AI (ADR-005, approach B).
+# Image dựng sẵn soloceo/openclaw:patched (build từ openclaw/openclaw, Dockerfile
+# gốc build OK — không cần vá; chỉ cần config runtime).
+# LLM đi qua LiteLLM (nguyên tắc bất biến — OpenAI-compatible).
+# Biến mustache: DOMAIN, VENTURE_SLUG, APP_SECRET, LITELLM_BASE_URL, LITELLM_VIRTUAL_KEY
 services:
   openclaw:
-    build:
-      context: https://github.com/openclaw/openclaw.git
-      dockerfile: Dockerfile
+    image: soloceo/openclaw:patched
     restart: unless-stopped
+    # gateway headless: allow-unconfigured + token (bind public an toàn)
+    command: ["node", "openclaw.mjs", "gateway", "--allow-unconfigured"]
     environment:
-      - NODE_ENV=production
-      - PORT=8080
-      # LLM qua LiteLLM gateway (OpenAI-compatible)
+      - OPENCLAW_GATEWAY_TOKEN={{APP_SECRET}}
+      # Model qua LiteLLM gateway (Claude Haiku/Sonnet)
       - OPENAI_API_BASE={{LITELLM_BASE_URL}}
       - OPENAI_API_KEY={{LITELLM_VIRTUAL_KEY}}
-      - OPENCLAW_GATEWAY_SECRET={{APP_SECRET}}
-      # Kết nối tới ERPNext của tenant để ra lệnh nghiệp vụ
-      - ERPNEXT_URL={{ERPNEXT_URL}}
+      - OPENCLAW_DEFAULT_MODEL=soloceo-smart
+      - OPENCLAW_MODEL=soloceo-smart
     volumes:
-      - openclaw-data:/root/.openclaw
+      - openclaw-data:/tmp/openclaw
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{VENTURE_SLUG}}-openclaw.rule=Host(`{{DOMAIN}}`)
