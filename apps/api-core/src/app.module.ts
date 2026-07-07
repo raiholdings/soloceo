@@ -10,6 +10,9 @@ import { DirectoryModule } from "./directory/directory.module";
 import { StoreModule } from "./store/store.module";
 import { AiModule } from "./ai/ai.module";
 import { PaymentsModule } from "./payments/payments.module";
+import { CommunityModule } from "./community/community.module";
+import { MarketplaceModule } from "./marketplace/marketplace.module";
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { PaymentsModule } from "./payments/payments.module";
     StoreModule,
     AiModule,
     PaymentsModule,
+    CommunityModule,
+    MarketplaceModule,
+    AdminModule,
   ],
 })
 export class AppModule {}

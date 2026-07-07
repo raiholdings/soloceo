@@ -125,17 +125,62 @@ model Listing {
 }
 
 model Offer {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   listingId  String
   buyerOrgId String
-  amount     Decimal  @db.Decimal(18, 2)
+  amount     Decimal   @db.Decimal(18, 2)
   message    String?
-  status     String   @default("open") // open|accepted|rejected|withdrawn
-  createdAt  DateTime @default(now())
-  listing    Listing  @relation(fields: [listingId], references: [id])
-  buyerOrg   Org      @relation(fields: [buyerOrgId], references: [id])
+  status     String    @default("open") // open|accepted|rejected|withdrawn
+  createdAt  DateTime  @default(now())
+  listing    Listing   @relation(fields: [listingId], references: [id])
+  buyerOrg   Org       @relation(fields: [buyerOrgId], references: [id])
+  dealRoom   DealRoom?
 
   @@index([listingId])
+}
+
+// NDA click-wrap: buyer phải chấp nhận trước khi xem số chi tiết (Phần 6.5)
+model NdaAcceptance {
+  id         String   @id @default(uuid())
+  listingId  String
+  orgId      String
+  acceptedAt DateTime @default(now())
+
+  @@unique([listingId, orgId])
+}
+
+// Deal-room mở khi offer được chấp nhận: thread + checklist chuyển giao,
+// escrow THỦ CÔNG bởi admin (ADR-003) — mỗi bước cần admin phê duyệt.
+model DealRoom {
+  id        String        @id @default(uuid())
+  listingId String
+  offerId   String        @unique
+  status    String        @default("open") // open|transferred|closed
+  checklist Json // [{key, label, done, doneAt}]
+  createdAt DateTime      @default(now())
+  offer     Offer         @relation(fields: [offerId], references: [id])
+  messages  DealMessage[]
+}
+
+model DealMessage {
+  id         String   @id @default(uuid())
+  dealRoomId String
+  orgId      String
+  content    String
+  createdAt  DateTime @default(now())
+  dealRoom   DealRoom @relation(fields: [dealRoomId], references: [id])
+
+  @@index([dealRoomId])
+}
+
+// Audit log hành động quản trị (Giai đoạn 7 — tạo sớm để admin dùng ngay)
+model AdminAction {
+  id        String   @id @default(uuid())
+  adminUser String
+  action    String
+  targetId  String?
+  meta      Json?
+  createdAt DateTime @default(now())
 }
 
 // Feed cộng đồng MVP
