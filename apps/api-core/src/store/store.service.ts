@@ -12,11 +12,12 @@ import { PrismaService } from "../prisma/prisma.service";
 import type { RequestUser } from "../auth/auth.types";
 import { ProvisionQueueService } from "./provision-queue.service";
 
-// App mặc định cài khi "Khởi chạy doanh nghiệp" — ADR-005 (AI-native)
+// App mặc định cài khi "Khởi chạy doanh nghiệp" — ADR-005 (tạm thời: Claw3D + OpenClaw).
+// ERPNext vẫn cài được từ App Store nhưng không tự cài mặc định.
 const DEFAULT_APPS_BY_PLAN: Record<PlanKey, string[]> = {
-  STARTER: ["claw3d", "openclaw", "erpnext"],
-  GROWTH: ["claw3d", "openclaw", "erpnext"],
-  SCALE: ["claw3d", "openclaw", "erpnext"],
+  STARTER: ["claw3d", "openclaw"],
+  GROWTH: ["claw3d", "openclaw"],
+  SCALE: ["claw3d", "openclaw"],
 };
 
 @Injectable()

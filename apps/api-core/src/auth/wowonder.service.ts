@@ -140,6 +140,8 @@ export class WowonderService {
     await this.mintAndStoreV2Token(org.id, accessToken).catch((e) =>
       this.logger.warn(`Không lấy được API v2 token: ${e}`),
     );
+    // Đồng bộ trạng thái Pro cộng đồng theo gói hiện tại
+    await this.syncProForOrg(org.id).catch(() => {});
 
     const token = this.authService.issueSessionToken({
       userId: identity,
@@ -150,6 +152,45 @@ export class WowonderService {
 
   private get serverKey(): string {
     return this.config.get<string>("WOWONDER_SERVER_KEY") ?? "";
+  }
+
+  // Map gói SoloCEO → cấp Pro WoWonder (0=free, 1=growth, 2=scale)
+  private proTypeForPlan(plan: string): number {
+    if (plan === "SCALE") return 2;
+    if (plan === "GROWTH") return 1;
+    return 0;
+  }
+
+  /** Đồng bộ trạng thái Pro cộng đồng theo gói hiện tại của Org (Go-Pro WoWonder) */
+  async syncProForOrg(orgId: string): Promise<boolean> {
+    const org = await this.prisma.org.findUnique({ where: { id: orgId } });
+    if (!org) return false;
+    const oauthSecret = await this.prisma.secret.findUnique({
+      where: { orgId_key: { orgId, key: WOWONDER_TOKEN_SECRET } },
+    });
+    if (!oauthSecret) return false;
+    const { decryptSecret } = await import("../ai/crypto.util");
+    const proType = this.proTypeForPlan(org.plan);
+    try {
+      const res = await fetch(`${this.baseUrl}/soloceo_bridge.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          server_key: this.serverKey,
+          action: "set_pro",
+          oauth_token: decryptSecret(oauthSecret.valueEnc),
+          pro_type: String(proType),
+          days: "30",
+        }),
+      });
+      const json = (await res.json().catch(() => null)) as {
+        status?: string;
+      } | null;
+      return json?.status === "success";
+    } catch (e) {
+      this.logger.warn(`syncPro lỗi: ${e}`);
+      return false;
+    }
   }
 
   /** Đổi OAuth token → API v2 session token qua soloceo_bridge.php, lưu mã hoá */

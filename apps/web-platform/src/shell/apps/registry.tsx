@@ -5,6 +5,7 @@ import {
   Bot,
   LayoutDashboard,
   MessageSquare,
+  Puzzle,
   Settings,
   Store,
   TrendingUp,
@@ -44,6 +45,13 @@ export const APP_REGISTRY: Record<AppId, AppDefinition> = {
     component: lazy(() => import("./ai-studio")),
     defaultWidth: 720,
     defaultHeight: 500,
+  },
+  clawhub: {
+    title: "Chợ kỹ năng",
+    icon: Puzzle,
+    component: lazy(() => import("./clawhub")),
+    defaultWidth: 900,
+    defaultHeight: 600,
   },
   automation: {
     title: "Automation",

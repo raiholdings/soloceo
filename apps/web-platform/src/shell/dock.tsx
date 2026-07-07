@@ -8,6 +8,7 @@ const DOCK_ORDER: AppId[] = [
   "overview",
   "store",
   "ai",
+  "clawhub",
   "automation",
   "revenue",
   "community",

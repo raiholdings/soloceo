@@ -2,6 +2,7 @@ export type AppId =
   | "overview"
   | "store"
   | "ai"
+  | "clawhub"
   | "automation"
   | "revenue"
   | "community"

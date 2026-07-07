@@ -97,4 +97,13 @@ export class ForumController {
     }
     return this.wowonder.updateProfile(this.orgId(user), fields);
   }
+
+  @Post("sync-pro")
+  @ApiOperation({
+    summary: "Đồng bộ trạng thái Pro cộng đồng theo gói cước hiện tại",
+  })
+  async syncPro(@CurrentUser() user: RequestUser) {
+    const ok = await this.wowonder.syncProForOrg(this.orgId(user));
+    return { synced: ok };
+  }
 }
