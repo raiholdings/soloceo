@@ -16,4 +16,4 @@ RUN pnpm --filter @soloceo/db build && pnpm --filter @soloceo/shared build \
 
 ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy --schema packages/db/prisma/schema.prisma && node apps/api-core/dist/main.js"]
+CMD ["sh", "-c", "./packages/db/node_modules/.bin/prisma migrate deploy --schema packages/db/prisma/schema.prisma && node apps/api-core/dist/main.js"]
