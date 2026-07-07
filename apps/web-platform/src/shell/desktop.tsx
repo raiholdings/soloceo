@@ -10,12 +10,21 @@ const DEV_LOGIN = process.env.NODE_ENV !== "production";
 import { Dock } from "./dock";
 import { ShellWindow } from "./window";
 import { WindowManagerProvider, useWindowManager } from "./window-manager";
+import { OnboardingWizard } from "./onboarding";
 import type { WindowState } from "./types";
 
 interface OrgMe {
   id: string;
   name: string;
   plan: string;
+}
+
+interface VentureLite {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  installs?: Array<{ status: string; catalogApp?: { key: string } }>;
 }
 
 function MenuBar({ org, onLogout }: { org: OrgMe; onLogout: () => void }) {
@@ -136,6 +145,23 @@ function BootScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
 export function ShellRoot() {
   const [state, setState] = useState<"boot" | "login" | "desktop">("boot");
   const [org, setOrg] = useState<OrgMe | null>(null);
+  // null = chưa biết; true/false = cần onboarding hay không
+  const [needsOnboard, setNeedsOnboard] = useState<boolean | null>(null);
+  const [firstVenture, setFirstVenture] = useState<VentureLite | null>(null);
+
+  async function checkOnboarding() {
+    const vs = await api<VentureLite[]>("/ventures").catch(() => []);
+    const v = vs[0] ?? null;
+    setFirstVenture(v);
+    // Cần onboarding nếu: chưa có venture, HOẶC chưa cài đủ claw3d+openclaw
+    const keys = new Set(
+      (v?.installs ?? [])
+        .filter((i) => i.status !== "REMOVED")
+        .map((i) => i.catalogApp?.key),
+    );
+    const setup = keys.has("claw3d") && keys.has("openclaw");
+    setNeedsOnboard(!setup);
+  }
 
   useEffect(() => {
     // Nhận token từ callback OAuth WoWonder (?token=...)
@@ -152,8 +178,9 @@ export function ShellRoot() {
       return;
     }
     api<OrgMe>("/orgs/me")
-      .then((o) => {
+      .then(async (o) => {
         setOrg(o);
+        await checkOnboarding();
         setState("desktop");
       })
       .catch(() => {
@@ -206,6 +233,13 @@ export function ShellRoot() {
           <WindowLayer />
         </div>
         <Dock />
+        {/* Wizard khởi động lần đầu: cài mặc định OpenClaw + Claw3D */}
+        {needsOnboard && (
+          <OnboardingWizard
+            venture={firstVenture}
+            onDone={() => setNeedsOnboard(false)}
+          />
+        )}
       </div>
     </WindowManagerProvider>
   );

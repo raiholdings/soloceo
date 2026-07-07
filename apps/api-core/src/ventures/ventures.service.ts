@@ -64,7 +64,12 @@ export class VenturesService {
     return this.prisma.venture.findMany({
       where: { orgId },
       orderBy: { createdAt: "asc" },
-      include: { installs: { where: { status: { not: "REMOVED" } } } },
+      include: {
+        installs: {
+          where: { status: { not: "REMOVED" } },
+          include: { catalogApp: { select: { key: true } } },
+        },
+      },
     });
   }
 
@@ -72,7 +77,12 @@ export class VenturesService {
     const orgId = this.requireOrgId(user);
     const venture = await this.prisma.venture.findFirst({
       where: { id, orgId },
-      include: { installs: { where: { status: { not: "REMOVED" } } } },
+      include: {
+        installs: {
+          where: { status: { not: "REMOVED" } },
+          include: { catalogApp: { select: { key: true } } },
+        },
+      },
     });
     if (!venture) {
       throw new NotFoundException("Không tìm thấy venture");
