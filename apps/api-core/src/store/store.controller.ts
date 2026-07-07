@@ -57,6 +57,15 @@ export class StoreController {
     return this.storeService.listInstalls(user, ventureId);
   }
 
+  @Get("ventures/:id/openclaw-access")
+  @ApiOperation({ summary: "URL + token Control UI OpenClaw (nhúng OS Shell)" })
+  openclawAccess(
+    @CurrentUser() user: RequestUser,
+    @Param("id", ParseUUIDPipe) ventureId: string,
+  ) {
+    return this.storeService.getOpenclawAccess(user, ventureId);
+  }
+
   @Post("ventures/:id/launch")
   @ApiOperation({
     summary: "Khởi chạy doanh nghiệp: DRAFT → PROVISIONING, cài app mặc định",

@@ -5,7 +5,8 @@
 # Biến mustache: DOMAIN, VENTURE_SLUG, APP_SECRET, LITELLM_BASE_URL, LITELLM_VIRTUAL_KEY
 services:
   openclaw:
-    image: soloceo/openclaw:patched
+    # soloceo2 = vá header Control UI (frame-ancestors + bỏ X-Frame-Options) cho nhúng iframe
+    image: soloceo/openclaw:soloceo2
     restart: unless-stopped
     # gateway headless: allow-unconfigured + token (bind public an toàn)
     command: ["node", "openclaw.mjs", "gateway", "--allow-unconfigured"]
@@ -24,7 +25,7 @@ services:
       - traefik.http.routers.{{VENTURE_SLUG}}-openclaw.entrypoints=https
       - traefik.http.routers.{{VENTURE_SLUG}}-openclaw.tls=true
       - traefik.http.routers.{{VENTURE_SLUG}}-openclaw.tls.certresolver=letsencrypt
-      - traefik.http.services.{{VENTURE_SLUG}}-openclaw.loadbalancer.server.port=8080
+      - traefik.http.services.{{VENTURE_SLUG}}-openclaw.loadbalancer.server.port=18789
 
 volumes:
   openclaw-data:

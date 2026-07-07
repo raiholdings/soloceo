@@ -6,11 +6,12 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from "@soloceo/ui";
 
 interface Venture {
   id: string;
-  installs: Array<{
-    status: string;
-    url?: string | null;
-    catalogApp?: { key: string };
-  }>;
+}
+
+interface OpenclawAccess {
+  ready: boolean;
+  url: string | null;
+  token: string | null;
 }
 
 interface UsageSummary {
@@ -20,8 +21,14 @@ interface UsageSummary {
   budgetUsedPct: number;
 }
 
+/** Ghép token vào fragment (#token=) — Control UI đọc client-side, không gửi lên server */
+function controlUiSrc(url: string, token: string | null): string {
+  const base = url.replace(/\/$/, "");
+  return token ? `${base}/#token=${encodeURIComponent(token)}` : `${base}/`;
+}
+
 export default function AiStudioApp() {
-  const [difyUrl, setDifyUrl] = useState<string | null>(null);
+  const [access, setAccess] = useState<OpenclawAccess | null>(null);
   const [summary, setSummary] = useState<UsageSummary | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -31,13 +38,9 @@ export default function AiStudioApp() {
       const ventures = await api<Venture[]>("/ventures");
       const first = ventures[0];
       if (first) {
-        const installs = await api<
-          Array<{ status: string; url?: string | null; catalogApp: { key: string } }>
-        >(`/ventures/${first.id}/installs`);
-        const dify = installs.find(
-          (i) => i.catalogApp.key === "dify" && i.status === "RUNNING",
+        setAccess(
+          await api<OpenclawAccess>(`/ventures/${first.id}/openclaw-access`),
         );
-        setDifyUrl(dify?.url ?? null);
       }
       setSummary(await api<UsageSummary>("/ai/usage/summary"));
     } catch {
@@ -71,30 +74,40 @@ export default function AiStudioApp() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Dify của bạn</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-between">
-          {difyUrl ? (
-            <>
-              <p className="text-sm text-[#A0A0B8]">
-                Trợ lý AI đang chạy trên hạ tầng riêng của bạn.
-              </p>
-              <a href={difyUrl} target="_blank" rel="noreferrer">
-                <Button size="sm">Mở AI Studio ↗</Button>
-              </a>
-            </>
-          ) : (
+    <div className="flex h-full flex-col gap-4">
+      {access?.ready && access.url ? (
+        <div className="flex min-h-[420px] flex-1 flex-col overflow-hidden rounded-lg border border-white/10">
+          <div className="flex items-center justify-between border-b border-white/10 bg-surface px-3 py-2">
+            <span className="text-sm font-medium text-white">
+              Trợ lý AI OpenClaw — ra lệnh cho doanh nghiệp của bạn
+            </span>
+            <a href={controlUiSrc(access.url, access.token)} target="_blank" rel="noreferrer">
+              <Button size="sm" variant="outline">
+                Mở tab mới ↗
+              </Button>
+            </a>
+          </div>
+          <iframe
+            src={controlUiSrc(access.url, access.token)}
+            title="OpenClaw Control UI"
+            className="h-full w-full flex-1 border-0"
+            allow="clipboard-read; clipboard-write; microphone"
+          />
+        </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Trợ lý AI OpenClaw</CardTitle>
+          </CardHeader>
+          <CardContent>
             <p className="text-sm text-[#A0A0B8]">
-              Chưa cài AI Studio — vào App Store cài Dify (cần gói Tăng trưởng
-              trở lên). Sau khi cài, 2 trợ lý mẫu tiếng Việt (Trợ lý bán hàng,
-              Trợ lý nội dung) được seed sẵn.
+              OpenClaw đang được khởi tạo trên hạ tầng riêng của bạn. Nếu vừa tạo
+              doanh nghiệp, quá trình cài đặt mất vài phút — cửa sổ sẽ tự hiện khi
+              sẵn sàng.
             </p>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

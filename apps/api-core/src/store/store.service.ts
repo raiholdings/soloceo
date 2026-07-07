@@ -11,6 +11,7 @@ import { canInstallApp, PLANS, type PlanKey } from "@soloceo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { RequestUser } from "../auth/auth.types";
 import { ProvisionQueueService } from "./provision-queue.service";
+import { decryptSecret } from "../ai/crypto.util";
 
 // App mặc định cài khi "Khởi chạy doanh nghiệp" — ADR-005 (tạm thời: Claw3D + OpenClaw).
 // ERPNext vẫn cài được từ App Store nhưng không tự cài mặc định.
@@ -149,6 +150,42 @@ export class StoreService {
       include: { catalogApp: { select: { key: true, name: true } } },
       orderBy: { createdAt: "asc" },
     });
+  }
+
+  /**
+   * GET /v1/ventures/:id/openclaw-access — URL Control UI + token gateway để
+   * OS Shell nhúng OpenClaw (auth qua fragment #token=, không lộ ra server log).
+   * Chỉ chủ Org của venture mới lấy được.
+   */
+  async getOpenclawAccess(user: RequestUser, ventureId: string) {
+    const venture = await this.getOwnedVenture(user, ventureId);
+    const install = await this.prisma.appInstall.findFirst({
+      where: {
+        ventureId,
+        status: "RUNNING",
+        catalogApp: { key: "openclaw" },
+      },
+    });
+    if (!install?.url) {
+      return { ready: false as const, url: null, token: null };
+    }
+    const secret = await this.prisma.secret.findUnique({
+      where: {
+        orgId_key: {
+          orgId: venture.orgId,
+          key: `openclaw_token:${ventureId}`,
+        },
+      },
+    });
+    let token: string | null = null;
+    if (secret) {
+      try {
+        token = decryptSecret(secret.valueEnc);
+      } catch {
+        token = null;
+      }
+    }
+    return { ready: true as const, url: install.url, token };
   }
 
   /** DELETE /v1/installs/:installId?confirm=true — checkpoint 2 bước */

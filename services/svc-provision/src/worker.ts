@@ -6,7 +6,7 @@
 import { Worker, type Job } from "bullmq";
 import { prisma } from "@soloceo/db";
 import { readFileSync } from "node:fs";
-import { randomBytes, createDecipheriv } from "node:crypto";
+import { randomBytes, createDecipheriv, createCipheriv } from "node:crypto";
 import path from "node:path";
 import Mustache from "mustache";
 import { createCoolifyClient, type ICoolifyClient } from "./coolify-client";
@@ -23,6 +23,30 @@ function decryptSecret(stored: string): string {
   return Buffer.concat([decipher.update(data), decipher.final()]).toString(
     "utf8",
   );
+}
+
+/** Mã hoá Secret (AES-256-GCM, MASTER_KEY) — cùng định dạng api-core crypto.util */
+function encryptSecret(plaintext: string): string {
+  const key = Buffer.from(process.env.MASTER_KEY ?? "", "hex");
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", key, iv);
+  const enc = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), enc]).toString("base64");
+}
+
+/** Lưu token gateway OpenClaw (để OS Shell mở Control UI với #token=) */
+async function saveOpenclawToken(
+  orgId: string,
+  ventureId: string,
+  token: string,
+): Promise<void> {
+  if (!process.env.MASTER_KEY) return;
+  const key = `openclaw_token:${ventureId}`;
+  await prisma.secret.upsert({
+    where: { orgId_key: { orgId, key } },
+    create: { orgId, key, valueEnc: encryptSecret(token) },
+    update: { valueEnc: encryptSecret(token) },
+  });
 }
 
 /** LiteLLM virtual key của org (cho OpenClaw dùng model qua gateway) */
@@ -77,8 +101,10 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
   },
   openclaw: {
     image: `${REGISTRY}/soloceo/openclaw`,
-    tag: "soloceo",
-    port: "8080",
+    // soloceo2 = vá header Control UI (frame-ancestors + bỏ X-Frame-Options) để nhúng iframe
+    tag: "soloceo2",
+    // OpenClaw gateway + Control UI phục vụ trên 18789 (KHÔNG phải 8080 — đó là lý do trước đây 502)
+    port: "18789",
     subdomain: "-ai",
     buildEnvs: ({ secret, litellmBase, litellmKey }) => ({
       OPENCLAW_GATEWAY_TOKEN: secret,
@@ -171,6 +197,10 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
           domain,
           envs: cfg.buildEnvs({ secret, litellmBase, litellmKey }),
         });
+        // OpenClaw: lưu token gateway để OS Shell mở Control UI (#token=)
+        if (appKey === "openclaw") {
+          await saveOpenclawToken(venture.orgId, ventureId, secret);
+        }
       } else {
         // App khác (erpnext...) vẫn dùng compose template
         const view: Record<string, string> = {
