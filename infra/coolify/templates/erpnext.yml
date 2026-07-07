@@ -1,0 +1,49 @@
+# Template: ERPNext (frappe/erpnext) — quản trị doanh nghiệp (ADR-005).
+# LƯU Ý: ERPNext cần bước khởi tạo site sau khi container chạy (bench new-site
+# + install-app erpnext). svc-provision chạy job hậu-deploy tạo site tự động.
+# Biến mustache: DOMAIN, VENTURE_SLUG, DB_PASSWORD, APP_SECRET
+services:
+  erpnext-db:
+    image: mariadb:10.6
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      - MYSQL_ROOT_PASSWORD={{DB_PASSWORD}}
+    volumes:
+      - erpnext-db:/var/lib/mysql
+
+  erpnext-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  erpnext:
+    image: frappe/erpnext:v15
+    restart: unless-stopped
+    depends_on:
+      - erpnext-db
+      - erpnext-redis
+    environment:
+      - DB_HOST=erpnext-db
+      - DB_PORT=3306
+      - REDIS_CACHE=erpnext-redis:6379
+      - REDIS_QUEUE=erpnext-redis:6379
+      - REDIS_SOCKETIO=erpnext-redis:6379
+      - SITE_NAME={{DOMAIN}}
+      - ADMIN_PASSWORD={{APP_SECRET}}
+      - DB_ROOT_PASSWORD={{DB_PASSWORD}}
+    volumes:
+      - erpnext-sites:/home/frappe/frappe-bench/sites
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-erp.rule=Host(`{{DOMAIN}}`)
+      - traefik.http.routers.{{VENTURE_SLUG}}-erp.entrypoints=https
+      - traefik.http.routers.{{VENTURE_SLUG}}-erp.tls=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-erp.tls.certresolver=letsencrypt
+      - traefik.http.services.{{VENTURE_SLUG}}-erp.loadbalancer.server.port=8000
+
+volumes:
+  erpnext-db:
+  erpnext-sites:

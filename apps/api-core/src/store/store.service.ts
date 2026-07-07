@@ -12,11 +12,11 @@ import { PrismaService } from "../prisma/prisma.service";
 import type { RequestUser } from "../auth/auth.types";
 import { ProvisionQueueService } from "./provision-queue.service";
 
-// App mặc định cài khi "Khởi chạy doanh nghiệp" (Phần 7 + Phần 5)
+// App mặc định cài khi "Khởi chạy doanh nghiệp" — ADR-005 (AI-native)
 const DEFAULT_APPS_BY_PLAN: Record<PlanKey, string[]> = {
-  STARTER: ["site-nextjs", "crm-twenty"],
-  GROWTH: ["site-nextjs", "crm-twenty", "dify", "activepieces"],
-  SCALE: ["site-nextjs", "crm-twenty", "dify", "activepieces"],
+  STARTER: ["claw3d", "openclaw", "erpnext"],
+  GROWTH: ["claw3d", "openclaw", "erpnext"],
+  SCALE: ["claw3d", "openclaw", "erpnext"],
 };
 
 @Injectable()

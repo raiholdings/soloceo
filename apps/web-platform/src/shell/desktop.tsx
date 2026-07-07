@@ -193,8 +193,8 @@ export function ShellRoot() {
   return (
     <WindowManagerProvider>
       <div className="relative h-screen w-screen overflow-hidden">
-        {/* wallpaper */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_70%_20%,rgba(124,92,255,0.25),transparent),radial-gradient(ellipse_50%_40%_at_20%_80%,rgba(56,189,248,0.12),transparent)]" />
+        {/* Nền desktop = văn phòng ảo 3D Claw3D của tenant (ADR-005) */}
+        <Claw3DBackground />
         <MenuBar
           org={org}
           onLogout={() => {
@@ -202,11 +202,71 @@ export function ShellRoot() {
             window.location.reload();
           }}
         />
-        <div className="absolute inset-0 top-8 bottom-0">
+        <div className="pointer-events-none absolute inset-0 top-8 bottom-0">
           <WindowLayer />
         </div>
         <Dock />
       </div>
     </WindowManagerProvider>
+  );
+}
+
+interface InstallLite {
+  status: string;
+  url?: string | null;
+  catalogApp?: { key: string };
+}
+
+// Nền desktop: iframe Claw3D khi đã RUNNING; vùng đen (như ảnh) khi chưa provisioning.
+function Claw3DBackground() {
+  const [claw, setClaw] = useState<{ status: string; url?: string | null } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let stop = false;
+    const load = () =>
+      api<Array<{ id: string }>>("/ventures")
+        .then(async (vs) => {
+          const v = vs[0];
+          if (!v) return;
+          const installs = await api<InstallLite[]>(
+            `/ventures/${(v as { id: string }).id}/installs`,
+          );
+          const c = installs.find((i) => i.catalogApp?.key === "claw3d");
+          if (!stop) setClaw(c ? { status: c.status, url: c.url } : null);
+        })
+        .catch(() => {});
+    load();
+    // poll đến khi Claw3D chạy (đang provisioning)
+    const t = setInterval(() => {
+      if (claw?.status !== "RUNNING") load();
+    }, 8000);
+    return () => {
+      stop = true;
+      clearInterval(t);
+    };
+  }, [claw?.status]);
+
+  if (claw?.status === "RUNNING" && claw.url) {
+    return (
+      <iframe
+        src={claw.url}
+        title="Văn phòng ảo 3D"
+        className="absolute inset-0 h-full w-full border-0"
+        allow="fullscreen; xr-spatial-tracking"
+      />
+    );
+  }
+
+  // Vùng đen + gradient nhẹ khi chưa có Claw3D (giống ảnh anh gửi)
+  return (
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_70%_20%,rgba(124,92,255,0.18),transparent),radial-gradient(ellipse_50%_40%_at_20%_85%,rgba(56,189,248,0.10),transparent),#0a0a12]">
+      {claw?.status && claw.status !== "RUNNING" && (
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-sm text-[#8a8aa0]">
+          <p className="animate-pulse">Đang dựng văn phòng ảo 3D...</p>
+        </div>
+      )}
+    </div>
   );
 }

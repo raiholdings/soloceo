@@ -1,0 +1,31 @@
+# Template: OpenClaw — trợ lý ra lệnh AI (ADR-005), lớp điều khiển mọi hoạt động.
+# Gateway của tenant; model đi qua LiteLLM (nguyên tắc bất biến — không gọi thẳng provider).
+# Biến mustache: DOMAIN, VENTURE_SLUG, APP_SECRET, LITELLM_BASE_URL,
+#                LITELLM_VIRTUAL_KEY, ERPNEXT_URL
+services:
+  openclaw:
+    build:
+      context: https://github.com/openclaw/openclaw.git
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      # LLM qua LiteLLM gateway (OpenAI-compatible)
+      - OPENAI_API_BASE={{LITELLM_BASE_URL}}
+      - OPENAI_API_KEY={{LITELLM_VIRTUAL_KEY}}
+      - OPENCLAW_GATEWAY_SECRET={{APP_SECRET}}
+      # Kết nối tới ERPNext của tenant để ra lệnh nghiệp vụ
+      - ERPNEXT_URL={{ERPNEXT_URL}}
+    volumes:
+      - openclaw-data:/root/.openclaw
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-openclaw.rule=Host(`{{DOMAIN}}`)
+      - traefik.http.routers.{{VENTURE_SLUG}}-openclaw.entrypoints=https
+      - traefik.http.routers.{{VENTURE_SLUG}}-openclaw.tls=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-openclaw.tls.certresolver=letsencrypt
+      - traefik.http.services.{{VENTURE_SLUG}}-openclaw.loadbalancer.server.port=8080
+
+volumes:
+  openclaw-data:

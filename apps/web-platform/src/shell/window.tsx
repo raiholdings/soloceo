@@ -41,7 +41,7 @@ export function ShellWindow({ win }: { win: WindowState }) {
       }
     >
       <div
-        className="flex h-full w-full flex-col overflow-hidden rounded-glass border border-surface-border bg-[#14141f]/80 shadow-2xl shadow-black/50 backdrop-blur-glass"
+        className="pointer-events-auto flex h-full w-full flex-col overflow-hidden rounded-glass border border-surface-border bg-[#14141f]/80 shadow-2xl shadow-black/50 backdrop-blur-glass"
         onMouseDown={() => focusApp(win.appId)}
       >
         <div className="shell-window-titlebar flex h-9 shrink-0 cursor-move items-center gap-2 border-b border-surface-border px-3">

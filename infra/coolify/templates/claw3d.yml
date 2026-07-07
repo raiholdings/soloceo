@@ -1,0 +1,26 @@
+# Template: Claw3D — văn phòng ảo 3D (ADR-005), nền desktop OS Shell của tenant.
+# Build từ repo iamlukethedev/Claw3D. Nối OpenClaw Gateway của cùng tenant.
+# Biến mustache: DOMAIN, VENTURE_SLUG, APP_SECRET, OPENCLAW_GATEWAY_URL
+services:
+  claw3d:
+    build:
+      context: https://github.com/iamlukethedev/Claw3D.git
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      # Runtime backend: OpenClaw Gateway của tenant
+      - OPENCLAW_GATEWAY_URL={{OPENCLAW_GATEWAY_URL}}
+      - NEXT_PUBLIC_GATEWAY_URL={{OPENCLAW_GATEWAY_URL}}
+      - APP_SECRET={{APP_SECRET}}
+      # Cho phép nhúng iframe từ platform.soloceo.vn (nền desktop)
+      - FRAME_ANCESTORS=https://platform.soloceo.vn
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-claw3d.rule=Host(`{{DOMAIN}}`)
+      - traefik.http.routers.{{VENTURE_SLUG}}-claw3d.entrypoints=https
+      - traefik.http.routers.{{VENTURE_SLUG}}-claw3d.tls=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-claw3d.tls.certresolver=letsencrypt
+      - traefik.http.services.{{VENTURE_SLUG}}-claw3d.loadbalancer.server.port=3000

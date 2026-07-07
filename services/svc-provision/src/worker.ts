@@ -25,14 +25,14 @@ const DEPLOY_TIMEOUT_MS = 10 * 60 * 1000; // 10 phút (Phần 7)
 const POLL_INTERVAL_MS = Number(process.env.PROVISION_POLL_MS ?? 5000);
 
 function subdomainFor(slug: string, appKey: string): string {
-  // site chính: {slug}; dify: {slug}-ai; activepieces: {slug}-flow (Phần 7)
+  // ADR-005: claw3d = domain chính (nền desktop); openclaw/erpnext có subdomain riêng
   const suffix =
-    appKey === "site-nextjs"
+    appKey === "claw3d"
       ? ""
-      : appKey === "dify"
+      : appKey === "openclaw"
         ? "-ai"
-        : appKey === "activepieces"
-          ? "-flow"
+        : appKey === "erpnext"
+          ? "-erp"
           : `-${appKey.split("-")[0]}`;
   return `${slug}${suffix}.${APP_DOMAIN}`;
 }
