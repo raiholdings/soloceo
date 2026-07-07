@@ -29,7 +29,10 @@ export class AuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const header: string | undefined = request.headers["authorization"];
-    const token = header?.startsWith("Bearer ") ? header.slice(7) : undefined;
+    // access_token query param: dành cho SSE (EventSource không set được header)
+    const token = header?.startsWith("Bearer ")
+      ? header.slice(7)
+      : (request.query?.access_token as string | undefined);
     if (!token) {
       throw new UnauthorizedException("Thiếu Bearer token");
     }

@@ -1,0 +1,36 @@
+# Template: Twenty CRM (open source) — CRM gọn cho solo CEO
+# Biến mustache: DOMAIN, VENTURE_SLUG, APP_SECRET, DB_PASSWORD
+services:
+  twenty-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=twenty
+      - POSTGRES_PASSWORD={{DB_PASSWORD}}
+      - POSTGRES_DB=twenty
+    volumes:
+      - twenty-db-data:/var/lib/postgresql/data
+
+  twenty-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  twenty:
+    image: twentycrm/twenty:latest
+    restart: unless-stopped
+    depends_on:
+      - twenty-db
+      - twenty-redis
+    environment:
+      - SERVER_URL=https://{{DOMAIN}}
+      - PG_DATABASE_URL=postgres://twenty:{{DB_PASSWORD}}@twenty-db:5432/twenty
+      - REDIS_URL=redis://twenty-redis:6379
+      - APP_SECRET={{APP_SECRET}}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-crm.rule=Host(`{{DOMAIN}}`)
+      - traefik.http.routers.{{VENTURE_SLUG}}-crm.entrypoints=https
+      - traefik.http.routers.{{VENTURE_SLUG}}-crm.tls.certresolver=letsencrypt
+
+volumes:
+  twenty-db-data:

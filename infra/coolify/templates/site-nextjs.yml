@@ -1,0 +1,16 @@
+# Template: Website bán hàng của venture (Next.js landing + blog + form lead)
+# Biến mustache: DOMAIN, VENTURE_SLUG, APP_SECRET
+services:
+  site:
+    image: ghcr.io/raiholdings/soloceo-site-nextjs:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - SITE_DOMAIN={{DOMAIN}}
+      - VENTURE_SLUG={{VENTURE_SLUG}}
+      - REVALIDATE_SECRET={{APP_SECRET}}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-site.rule=Host(`{{DOMAIN}}`)
+      - traefik.http.routers.{{VENTURE_SLUG}}-site.entrypoints=https
+      - traefik.http.routers.{{VENTURE_SLUG}}-site.tls.certresolver=letsencrypt

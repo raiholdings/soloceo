@@ -1,0 +1,73 @@
+# Template: Dify (1 instance riêng PER-TENANT — ADR-001)
+# Model provider trỏ về LiteLLM gateway (Phần 8) — mọi chi phí quy về org.
+# Biến mustache: DOMAIN, VENTURE_SLUG, APP_SECRET, DB_PASSWORD,
+#                LITELLM_BASE_URL, LITELLM_VIRTUAL_KEY
+services:
+  dify-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=dify
+      - POSTGRES_PASSWORD={{DB_PASSWORD}}
+      - POSTGRES_DB=dify
+    volumes:
+      - dify-db-data:/var/lib/postgresql/data
+
+  dify-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  dify-api:
+    image: langgenius/dify-api:latest
+    restart: unless-stopped
+    depends_on:
+      - dify-db
+      - dify-redis
+    environment:
+      - MODE=api
+      - SECRET_KEY={{APP_SECRET}}
+      - CONSOLE_WEB_URL=https://{{DOMAIN}}
+      - APP_WEB_URL=https://{{DOMAIN}}
+      - DB_USERNAME=dify
+      - DB_PASSWORD={{DB_PASSWORD}}
+      - DB_HOST=dify-db
+      - DB_DATABASE=dify
+      - REDIS_HOST=dify-redis
+      # Model provider mặc định: OpenAI-compatible → LiteLLM (cấu hình seed GĐ4)
+      - OPENAI_API_BASE={{LITELLM_BASE_URL}}
+      - OPENAI_API_KEY={{LITELLM_VIRTUAL_KEY}}
+    volumes:
+      - dify-storage:/app/api/storage
+
+  dify-worker:
+    image: langgenius/dify-api:latest
+    restart: unless-stopped
+    depends_on:
+      - dify-db
+      - dify-redis
+    environment:
+      - MODE=worker
+      - SECRET_KEY={{APP_SECRET}}
+      - DB_USERNAME=dify
+      - DB_PASSWORD={{DB_PASSWORD}}
+      - DB_HOST=dify-db
+      - DB_DATABASE=dify
+      - REDIS_HOST=dify-redis
+    volumes:
+      - dify-storage:/app/api/storage
+
+  dify-web:
+    image: langgenius/dify-web:latest
+    restart: unless-stopped
+    environment:
+      - CONSOLE_API_URL=https://{{DOMAIN}}
+      - APP_API_URL=https://{{DOMAIN}}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-ai.rule=Host(`{{DOMAIN}}`)
+      - traefik.http.routers.{{VENTURE_SLUG}}-ai.entrypoints=https
+      - traefik.http.routers.{{VENTURE_SLUG}}-ai.tls.certresolver=letsencrypt
+
+volumes:
+  dify-db-data:
+  dify-storage:

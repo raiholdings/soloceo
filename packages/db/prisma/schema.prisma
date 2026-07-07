@@ -175,6 +175,19 @@ model Like {
   @@unique([postId, orgId])
 }
 
+// Vault đơn giản (CLAUDE.md Phần 7): giá trị mã hóa AES-256-GCM bằng
+// MASTER_KEY (env api-core). KHÔNG bao giờ log giá trị giải mã.
+model Secret {
+  id        String   @id @default(uuid())
+  orgId     String
+  key       String // vd: "litellm_virtual_key", "app:dify:secret_key"
+  valueEnc  String // base64(iv || ciphertext || authTag)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orgId, key])
+}
+
 // Đồng bộ từ LiteLLM/Langfuse mỗi giờ
 model AiUsage {
   id           String   @id @default(uuid())
