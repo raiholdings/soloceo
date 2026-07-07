@@ -112,7 +112,10 @@ export class CoolifyClient implements ICoolifyClient {
         docker_registry_image_name: input.image,
         docker_registry_image_tag: input.tag,
         ports_exposes: input.port,
-        domains: input.domain,
+        // Coolify yêu cầu URL đầy đủ có scheme
+        domains: input.domain.startsWith("http")
+          ? input.domain
+          : `https://${input.domain}`,
         instant_deploy: false,
       },
     );
