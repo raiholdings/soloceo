@@ -3,13 +3,17 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { AiService } from "../ai/ai.service";
 import { PrismaService } from "../prisma/prisma.service";
 import type { RequestUser } from "../auth/auth.types";
 import { CreateOrgDto, UpdateOrgDto } from "./orgs.dto";
 
 @Injectable()
 export class OrgsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly aiService: AiService,
+  ) {}
 
   async create(user: RequestUser, dto: CreateOrgDto) {
     const existing = await this.prisma.org.findFirst({
@@ -18,13 +22,17 @@ export class OrgsService {
     if (existing) {
       throw new ConflictException("Bạn đã có Org — mỗi Solo CEO một Org");
     }
-    return this.prisma.org.create({
+    const org = await this.prisma.org.create({
       data: {
         name: dto.name,
         ownerUserId: user.userId,
         plan: "STARTER",
       },
     });
+    // Kích hoạt Org → tạo LiteLLM virtual key với budget theo gói (Phần 8.2).
+    // Lỗi gateway không chặn việc tạo Org — key sẽ được tạo lại khi cần.
+    await this.aiService.ensureVirtualKey(org.id).catch(() => {});
+    return org;
   }
 
   async me(user: RequestUser) {
