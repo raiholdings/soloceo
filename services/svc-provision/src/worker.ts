@@ -109,15 +109,16 @@ async function waitUntilRunning(
   appUuid: string,
 ): Promise<void> {
   const deadline = Date.now() + DEPLOY_TIMEOUT_MS;
+  // App vừa tạo có status "exited:unhealthy" (chưa deploy) — KHÔNG fail sớm.
+  // Chỉ coi là chạy khi "running"; hết giờ thì báo timeout.
+  let lastStatus = "";
   while (Date.now() < deadline) {
     const status = await coolify.getAppStatus(appUuid);
+    lastStatus = status;
     if (status.includes("running")) return;
-    if (status.includes("exited") || status.includes("failed")) {
-      throw new Error(`Deploy thất bại — trạng thái Coolify: ${status}`);
-    }
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
   }
-  throw new Error("Deploy quá 10 phút — timeout");
+  throw new Error(`Deploy quá 10 phút — trạng thái cuối: ${lastStatus}`);
 }
 
 export async function processProvisionJob(job: Job<ProvisionJobData>) {
@@ -213,9 +214,9 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
         where: { id: install.id },
         data: { status: "FAILED" },
       });
-      await job.log(
-        `[${appKey}] FAILED: ${err instanceof Error ? err.message : err}`,
-      );
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[provision][${venture.slug}][${appKey}] FAILED: ${msg}`);
+      await job.log(`[${appKey}] FAILED: ${msg}`);
     }
   }
 
