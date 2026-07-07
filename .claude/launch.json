@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web-platform",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@soloceo/web-platform", "start"],
+      "port": 3001
+    },
+    {
+      "name": "web-community",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@soloceo/web-community", "start"],
+      "port": 3000
+    }
+  ]
+}

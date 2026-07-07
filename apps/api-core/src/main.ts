@@ -1,13 +1,20 @@
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import helmet from "helmet";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix("v1");
-  app.enableCors();
+  app.use(helmet());
+  // CORS whitelist (GĐ7): dev mở localhost; prod chỉ soloceo.vn
+  const origins =
+    process.env.NODE_ENV === "production"
+      ? ["https://soloceo.vn", "https://platform.soloceo.vn"]
+      : true;
+  app.enableCors({ origin: origins });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true }),
   );
