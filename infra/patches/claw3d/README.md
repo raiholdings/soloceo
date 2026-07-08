@@ -26,10 +26,16 @@ KHÔNG set STUDIO_ACCESS_TOKEN → mở, redirect / → /office (trang 3D). Sau 
    mọi upstream nếu thiếu env `UPSTREAM_ALLOWLIST` → lỗi "Gateway closed (1011)".
    svc-provision truyền `UPSTREAM_ALLOWLIST={slug}-ai.app.soloceo.vn`.
 
-## Vá #6 — proxy tiêm token server-side (08/07, mắt xích CUỐI)
-Trình duyệt KHÔNG bao giờ nhận token thật (API /api/studio chỉ trả
-`tokenConfigured: true`) → frame connect từ client luôn `auth=none` →
-gateway từ chối "token_missing" dù settings.json server có token.
-Vá `server/gateway-proxy.js`: khi frame connect thiếu token, proxy tự tiêm
-`process.env.CLAW3D_GATEWAY_TOKEN` vào `params.auth.token` trước khi forward.
-Token không bao giờ lộ ra browser — đúng thiết kế bảo mật gốc.
+## Vá #6 (ĐÃ GỠ) → Vá #7 — trả token thật qua /api/studio (mắt xích CUỐI)
+Trình duyệt không bao giờ nhận token thật (API /api/studio chỉ trả
+`tokenConfigured: true`) → frame connect luôn `auth=none` → "token_missing".
+Thử #6: proxy tiêm token vào frame → THẤT BẠI với lỗi "device signature
+invalid" vì device auth của client KÝ cả token trong payload
+(buildDeviceAuthPayload gồm `token`) — proxy sửa payload là phá chữ ký. ĐÃ GỠ.
+Vá #7 (đúng): `sanitizeStudioGatewaySettings` (src/lib/studio/settings.ts)
+trả `token` thật kèm tokenConfigured (types Public thêm `token?`). Client
+GatewayClient.ts VỐN chấp nhận cả 2 dạng ({url,token} và {url,tokenConfigured})
+→ tự dùng token, ký đúng, kết nối. Chấp nhận được vì instance per-tenant.
+⚠️ TODO bảo mật trước pilot thật: trang Claw3D của tenant đang public —
+ai mở URL cũng đọc được token → cần bật access-gate (STUDIO_ACCESS_TOKEN)
+hoặc auth SSO cho claw3d.
