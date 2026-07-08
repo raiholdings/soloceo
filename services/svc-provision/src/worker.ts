@@ -138,9 +138,10 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
       // Origins được phép mở WS tới gateway (Control UI trong OS Shell + Claw3D)
       OPENCLAW_ALLOWED_ORIGINS: allowedOrigins,
       OPENCLAW_TRUSTED_PROXIES: "172.16.0.0/12",
-      // Chợ kỹ năng RIÊNG của SoloCEO (self-host) thay clawhub.ai công cộng —
-      // mọi CEO tìm/cài Skills/Plugins từ registry của mình.
-      CLAWHUB_URL: process.env.SOLOCEO_CLAWHUB_URL ?? "https://hub.soloceo.vn",
+      // Chợ kỹ năng RIÊNG của SoloCEO (self-host) thay clawhub.ai công cộng.
+      // API /api/v1 phục vụ ở convex-site (HTTP actions); web duyệt ở hub.
+      CLAWHUB_URL:
+        process.env.SOLOCEO_CLAWHUB_URL ?? "https://convex-site.soloceo.vn",
     }),
   },
 };
