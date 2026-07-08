@@ -17,3 +17,11 @@ Repo gốc iamlukethedev/Claw3D build được nhưng image KHÔNG chạy produc
 Image: `soloceo/claw3d:patched` (build trên tenant-01). Chạy: HOST=0.0.0.0 PORT=3000,
 KHÔNG set STUDIO_ACCESS_TOKEN → mở, redirect / → /office (trang 3D). Sau vá #3,
 `/office` trả CSP cho phép platform.soloceo.vn nhúng làm nền desktop OS Shell.
+
+## Vá #4 — floor mặc định + UPSTREAM_ALLOWLIST (08/07)
+4. `src/lib/office/floors.ts`: `DEFAULT_ACTIVE_FLOOR_ID` "lobby" → "openclaw-ground"
+   (lobby = demo không nối gateway thật; CEO mở lên là floor OpenClaw thật luôn).
+5. QUAN TRỌNG: browser KHÔNG nối gateway trực tiếp — Claw3D proxy WS server-side
+   qua `/api/gateway/ws` (server/gateway-proxy.js). Trong production proxy TỪ CHỐI
+   mọi upstream nếu thiếu env `UPSTREAM_ALLOWLIST` → lỗi "Gateway closed (1011)".
+   svc-provision truyền `UPSTREAM_ALLOWLIST={slug}-ai.app.soloceo.vn`.
