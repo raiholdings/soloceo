@@ -49,12 +49,14 @@ export class DomainsService {
         const r = await this.nhanhoa.pricing(type);
         const data = r.data;
         if (Array.isArray(data)) {
+          // Đã verify với API thật: [{name:".com", price_register:229000,
+          // price_renew:"355000" (string!), price_transfer:"..."}]
           for (const item of data as Array<Record<string, unknown>>) {
-            const ext = String(item.ext ?? item.domain_ext ?? "");
+            const ext = String(item.name ?? item.ext ?? item.domain_ext ?? "");
             const register = Number(
-              item.register ?? item.price_register ?? item.setup ?? 0,
+              item.price_register ?? item.register ?? item.setup ?? 0,
             );
-            const renew = Number(item.renew ?? item.price_renew ?? register);
+            const renew = Number(item.price_renew ?? item.renew ?? register);
             if (ext && register > 0) rows.push({ ext, register, renew });
           }
         }

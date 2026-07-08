@@ -77,8 +77,11 @@ export class NhanHoaClient {
       ext,
       type: "0",
     });
+    // Đã verify với API thật: domain_status 0 = chưa đăng ký (còn trống)
+    if (typeof r.domain_status === "number") {
+      return { available: r.domain_status === 0, raw: r.msg ?? r.status };
+    }
     const msg = (r.msg ?? "").toLowerCase();
-    // "chưa đăng ký" = còn trống; "đã đăng ký" = mất rồi
     const available =
       msg.includes("chưa đăng ký") ||
       msg.includes("chua dang ky") ||
