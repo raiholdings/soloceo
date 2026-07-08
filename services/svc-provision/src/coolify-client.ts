@@ -185,13 +185,29 @@ export class CoolifyClient implements ICoolifyClient {
 
   async pickServerUuid(): Promise<string> {
     const servers = await this.request<
-      Array<{ uuid: string; high_disk_usage?: boolean }>
+      Array<{ uuid: string; name?: string; high_disk_usage?: boolean }>
     >("GET", "/servers");
     if (!servers.length) {
       throw new Error("Không có server Coolify nào — thêm VPS-TENANT trước");
     }
-    // MVP: chọn server đầu tiên chưa cảnh báo tài nguyên; metrics chi tiết bổ sung sau
-    const ok = servers.find((s) => !s.high_disk_usage) ?? servers[0]!;
+    // GHIM server tenant theo env (mặc định tenant-01): wildcard *.app.soloceo.vn
+    // chỉ trỏ 1 IP → mọi tenant phải nằm cùng node đó, nếu không subdomain không
+    // phân giải. Khi có DNS/LB đa node mới bỏ ghim.
+    const pinned = process.env.SOLOCEO_TENANT_SERVER_UUID;
+    if (pinned) {
+      const s = servers.find((x) => x.uuid === pinned);
+      if (s) return s.uuid;
+    }
+    const pinnedName = process.env.SOLOCEO_TENANT_SERVER_NAME ?? "tenant-01";
+    const byName = servers.find((s) => s.name === pinnedName);
+    if (byName) return byName.uuid;
+    // Fallback: server đầu chưa cảnh báo tài nguyên (bỏ qua localhost nếu có)
+    const ok =
+      servers.find(
+        (s) => !s.high_disk_usage && s.name !== "localhost",
+      ) ??
+      servers.find((s) => s.name !== "localhost") ??
+      servers[0]!;
     return ok.uuid;
   }
 }
