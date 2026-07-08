@@ -142,6 +142,12 @@ export default function HomePage() {
           <HeroChat />
 
           <div className="flex flex-wrap justify-center gap-4">
+            <a href="https://ai.soloceo.vn" target="_blank" rel="noreferrer">
+              <Button size="lg" className="gap-2">
+                <Bot className="h-4 w-4" /> Mở SoloCEO AI — trợ lý siêu năng lực
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </a>
             <Link href="/danh-ba">
               <Button size="lg" variant="outline">
                 Xem doanh nghiệp đang chạy
