@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 node /soloceo/gen-config.mjs
-node /soloceo/write-bootstrap.mjs
+# Nạp sẵn bộ nhân sự AI (đầy đủ phòng ban) — không được chặn gateway nếu lỗi
+node /soloceo/seed-staff.mjs || echo "[soloceo] seed-staff lỗi, bỏ qua"
 # Vòng auto-approve pairing (xem auto-approve.mjs — token là biên bảo mật)
 (
   sleep 20

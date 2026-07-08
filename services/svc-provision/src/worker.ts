@@ -118,9 +118,9 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
   },
   openclaw: {
     image: `${REGISTRY}/soloceo/openclaw`,
+    // soloceo4 = soloceo3 + seed-staff.mjs (nạp sẵn bộ nhân sự AI đầy đủ phòng ban)
     // soloceo3 = soloceo2 (vá header iframe) + entrypoint sinh openclaw.json từ env
-    // (allowedOrigins, trustedProxies, provider litellm, model mặc định)
-    tag: "soloceo3",
+    tag: "soloceo4",
     // OpenClaw gateway + Control UI phục vụ trên 18789 (KHÔNG phải 8080 — đó là lý do trước đây 502)
     port: "18789",
     subdomain: "-ai",
@@ -130,10 +130,13 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
       litellmKey,
       allowedOrigins,
       claw3dUrl,
+      ventureName,
     }) => ({
       OPENCLAW_GATEWAY_TOKEN: secret,
       OPENAI_API_BASE: litellmBase,
       OPENAI_API_KEY: litellmKey,
+      // Tên doanh nghiệp → seed-staff dùng đặt bối cảnh cho bộ nhân sự AI
+      VENTURE_NAME: ventureName,
       // Cho agent "biết" văn phòng 3D của mình (viết vào BOOTSTRAP.md lúc khởi động)
       CLAW3D_URL: claw3dUrl,
       OPENCLAW_DEFAULT_MODEL: "soloceo-smart",

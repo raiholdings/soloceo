@@ -1,0 +1,8 @@
+FROM localhost:5000/soloceo/openclaw:soloceo3
+COPY seed-staff.mjs /soloceo/seed-staff.mjs
+COPY entrypoint.sh /soloceo/entrypoint.sh
+USER root
+RUN chmod +x /soloceo/entrypoint.sh && chown -R node:node /soloceo
+USER node
+ENTRYPOINT []
+CMD ["/soloceo/entrypoint.sh"]
