@@ -89,6 +89,7 @@ interface AppDeployConfig {
     litellmBase: string;
     litellmKey: string;
     gatewayUrl: string; // wss:// của OpenClaw gateway per-venture
+    allowedOrigins: string; // CSV origins được mở WS tới gateway
   }) => Record<string, string>;
 }
 
@@ -110,17 +111,21 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
   },
   openclaw: {
     image: `${REGISTRY}/soloceo/openclaw`,
-    // soloceo2 = vá header Control UI (frame-ancestors + bỏ X-Frame-Options) để nhúng iframe
-    tag: "soloceo2",
+    // soloceo3 = soloceo2 (vá header iframe) + entrypoint sinh openclaw.json từ env
+    // (allowedOrigins, trustedProxies, provider litellm, model mặc định)
+    tag: "soloceo3",
     // OpenClaw gateway + Control UI phục vụ trên 18789 (KHÔNG phải 8080 — đó là lý do trước đây 502)
     port: "18789",
     subdomain: "-ai",
-    buildEnvs: ({ secret, litellmBase, litellmKey }) => ({
+    buildEnvs: ({ secret, litellmBase, litellmKey, allowedOrigins }) => ({
       OPENCLAW_GATEWAY_TOKEN: secret,
       OPENAI_API_BASE: litellmBase,
       OPENAI_API_KEY: litellmKey,
       OPENCLAW_DEFAULT_MODEL: "soloceo-smart",
       OPENCLAW_MODEL: "soloceo-smart",
+      // Origins được phép mở WS tới gateway (Control UI trong OS Shell + Claw3D)
+      OPENCLAW_ALLOWED_ORIGINS: allowedOrigins,
+      OPENCLAW_TRUSTED_PROXIES: "172.16.0.0/12",
     }),
   },
 };
@@ -182,7 +187,16 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
   // 1 token gateway DÙNG CHUNG per-venture: OpenClaw nhận nó, Claw3D + OS Shell
   // dùng nó để kết nối — CEO không phải nhập tay bất kỳ URL/token nào.
   const gatewaySecret = randomBytes(32).toString("hex");
-  const gatewayUrl = `wss://${subdomainFor(venture.slug, "openclaw")}`;
+  const openclawDomain = subdomainFor(venture.slug, "openclaw");
+  const gatewayUrl = `wss://${openclawDomain}`;
+  // Origins được phép mở WS: chính Control UI, OS Shell, và Claw3D của venture
+  const platformOrigin =
+    process.env.PLATFORM_ORIGIN ?? "https://platform.soloceo.vn";
+  const allowedOrigins = [
+    `https://${openclawDomain}`,
+    platformOrigin,
+    `https://${subdomainFor(venture.slug, "claw3d")}`,
+  ].join(",");
   await saveOpenclawToken(venture.orgId, ventureId, gatewaySecret);
 
   let anyFailed = false;
@@ -214,6 +228,7 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
             litellmBase,
             litellmKey,
             gatewayUrl,
+            allowedOrigins,
           }),
         });
       } else {

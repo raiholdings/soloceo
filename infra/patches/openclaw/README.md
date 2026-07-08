@@ -32,6 +32,29 @@ RUN node /tmp/patch-headers.mjs   # replaceAll trên các file /app/dist/*.js
 Image cuối: `soloceo/openclaw:soloceo2` (push `localhost:5000`). Base
 `:soloceo` build trên tenant-01 (cần ~8GB heap); lớp vá chỉ vài giây.
 
+## Lớp 3 — `soloceo3`: entrypoint sinh config từ env (BẢN DÙNG PRODUCTION)
+Gateway từ chối WS từ browser nếu origin không nằm trong
+`gateway.controlUi.allowedOrigins` (mặc định chỉ localhost → lỗi
+"origin not allowed", Claw3D báo "Gateway closed 1011"). Đồng thời env
+`OPENAI_API_*` KHÔNG được OpenClaw đọc cho model — phải khai
+`models.providers` trong `~/.openclaw/openclaw.json`.
+
+`soloceo3` = `soloceo2` + `/soloceo/gen-config.mjs` (chạy trước gateway,
+file nguồn tại tenant-01 `/opt/openclaw-patch/`): sinh `openclaw.json` từ env
+nếu chưa tồn tại:
+- `OPENCLAW_ALLOWED_ORIGINS` (CSV) → `gateway.controlUi.allowedOrigins`
+- `OPENCLAW_TRUSTED_PROXIES` (CSV, mặc định `172.16.0.0/12`) → `gateway.trustedProxies`
+  (bắt buộc sau Traefik — không có sẽ cảnh báo proxy headers untrusted)
+- `OPENAI_API_BASE` + `OPENAI_API_KEY` → provider `litellm`
+  (api `openai-completions`, baseUrl tự thêm `/v1`)
+- `OPENCLAW_DEFAULT_MODEL` → `agents.defaults.model.primary = litellm/<model>`,
+  fallback `litellm/soloceo-fast`
+
+Đã kiểm chứng: gateway log `agent model: litellm/soloceo-smart`,
+`openclaw agent --agent main -m "2+2?"` trả lời qua LiteLLM/Claude.
+LƯU Ý Coolify: env dockerimage app phải `is_buildtime=false` (PATCH
+/applications/{uuid}/envs) — buildtime env không chắc inject runtime.
+
 ## Token gateway
 `svc-provision` sinh `OPENCLAW_GATEWAY_TOKEN` ngẫu nhiên mỗi lần deploy và lưu
 vào bảng `Secret` (mã hoá AES-256-GCM) key `openclaw_token:<ventureId>`.

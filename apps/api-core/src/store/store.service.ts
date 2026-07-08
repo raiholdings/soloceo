@@ -11,6 +11,7 @@ import { canInstallApp, PLANS, type PlanKey } from "@soloceo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { RequestUser } from "../auth/auth.types";
 import { ProvisionQueueService } from "./provision-queue.service";
+import { AiService } from "../ai/ai.service";
 import { decryptSecret } from "../ai/crypto.util";
 
 // App mặc định cài khi "Khởi chạy doanh nghiệp" — ADR-005 (tạm thời: Claw3D + OpenClaw).
@@ -26,6 +27,7 @@ export class StoreService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly queue: ProvisionQueueService,
+    private readonly ai: AiService,
   ) {}
 
   private async getOwnedVenture(user: RequestUser, ventureId: string) {
@@ -109,6 +111,13 @@ export class StoreService {
         `Không thể khởi chạy từ trạng thái ${venture.status}`,
       );
     }
+
+    // Đảm bảo org có LiteLLM virtual key TRƯỚC khi provision — OpenClaw của
+    // tenant cần key này để gọi model qua gateway (không có → agent lỗi auth).
+    await this.ai.ensureVirtualKey(venture.orgId).catch(() => {
+      // LiteLLM tạm lỗi không chặn provisioning; worker đọc key rỗng và
+      // admin có thể rotate key sau qua Admin Console.
+    });
 
     const defaultKeys = DEFAULT_APPS_BY_PLAN[venture.org.plan as PlanKey];
     const apps = await this.prisma.catalogApp.findMany({
