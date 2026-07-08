@@ -66,3 +66,15 @@ OpenClaw thiết kế quanh chat/channels + Control UI. Inline script theme củ
 Control UI bị `script-src 'self'` chặn (chỉ cosmetic — app chính load qua module
 `./assets/index-*.js` được 'self' cho phép). Onboarding CEO (nhập kênh
 Telegram/Discord, skills) để dùng đầy đủ — bước sau.
+
+## Device pairing — ĐÃ TẮT cho Control UI (08/07)
+Gateway mặc định yêu cầu "ghép đôi thiết bị": mỗi trình duyệt mới phải được
+approve bằng `openclaw devices approve <id>` TRÊN SERVER — không chấp nhận được
+cho SaaS (CEO không có SSH). gen-config đặt
+`gateway.controlUi.dangerouslyDisableDeviceAuth: true` — an toàn trong mô hình
+per-tenant vì: (1) token 32-byte ngẫu nhiên là auth chính, (2) origin whitelist,
+(3) gateway cô lập per-venture. Node-role pairing (thiết bị chạy lệnh) vẫn bật.
+
+File trong thư mục này = bản sao 1:1 của /opt/openclaw-patch trên tenant-01:
+- `patch-headers.mjs` + `Dockerfile.v2` → image `soloceo2` (vá iframe headers)
+- `gen-config.mjs` + `entrypoint.sh` + `Dockerfile.v3` → image `soloceo3` (config từ env)
