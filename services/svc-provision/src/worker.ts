@@ -91,6 +91,9 @@ interface AppDeployConfig {
     gatewayUrl: string; // wss:// của OpenClaw gateway per-venture
     allowedOrigins: string; // CSV origins được mở WS tới gateway
     claw3dUrl: string; // URL văn phòng 3D của venture
+    ventureId: string;
+    ventureName: string;
+    apiBase: string; // https://api.soloceo.vn/v1
   }) => Record<string, string>;
 }
 
@@ -142,6 +145,21 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
       // API /api/v1 phục vụ ở convex-site (HTTP actions); web duyệt ở hub.
       CLAWHUB_URL:
         process.env.SOLOCEO_CLAWHUB_URL ?? "https://convex-site.soloceo.vn",
+    }),
+  },
+  // Mẫu dự án App Store: Web bán hàng (Next.js tự chứa). CEO chọn → instance riêng.
+  "commerce-starter": {
+    image: `${REGISTRY}/soloceo/commerce-starter`,
+    tag: "latest",
+    port: "3000",
+    subdomain: "-shop",
+    buildEnvs: ({ ventureId, ventureName, apiBase }) => ({
+      NODE_ENV: "production",
+      HOSTNAME: "0.0.0.0",
+      PORT: "3000",
+      STORE_NAME: ventureName,
+      VENTURE_ID: ventureId,
+      SOLOCEO_API_BASE: apiBase,
     }),
   },
 };
@@ -248,6 +266,9 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
             gatewayUrl,
             allowedOrigins,
             claw3dUrl,
+            ventureId,
+            ventureName: venture.name,
+            apiBase: process.env.SOLOCEO_API_BASE ?? "https://api.soloceo.vn/v1",
           }),
         });
       } else {
