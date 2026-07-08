@@ -1,14 +1,34 @@
 # LiteLLM Proxy — CLAUDE.md Phần 8.1
 # Mọi lời gọi LLM của mọi tenant đi qua gateway này (nguyên tắc bất biến).
+#
+# 08/07/2026: model mặc định chuyển sang DeepSeek V4 (BytePlus ModelArk,
+# region Singapore — cùng region VPS) — rẻ ~15-25 lần Claude. Claude giữ làm
+# fallback tự động + gói cao cấp. Khai input/output cost thủ công vì model
+# custom api_base không có trong bảng giá LiteLLM (budget per-org cần số này).
 
 model_list:
   # Tác vụ rẻ: phân loại, tóm tắt
   - model_name: soloceo-fast
     litellm_params:
-      model: "anthropic/claude-haiku-4-5"
-      api_key: "os.environ/ANTHROPIC_API_KEY"
+      model: "openai/deepseek-v4-flash-260425"
+      api_base: "https://ark.ap-southeast.bytepluses.com/api/v3"
+      api_key: "os.environ/BYTEPLUS_ARK_API_KEY"
+      input_cost_per_token: 0.00000014
+      output_cost_per_token: 0.00000028
   # Tác vụ chính: agent, viết nội dung
   - model_name: soloceo-smart
+    litellm_params:
+      model: "openai/deepseek-v4-pro-260425"
+      api_base: "https://ark.ap-southeast.bytepluses.com/api/v3"
+      api_key: "os.environ/BYTEPLUS_ARK_API_KEY"
+      input_cost_per_token: 0.000000435
+      output_cost_per_token: 0.00000087
+  # Fallback + gói cao cấp: Claude (Anthropic)
+  - model_name: soloceo-claude-fast
+    litellm_params:
+      model: "anthropic/claude-haiku-4-5"
+      api_key: "os.environ/ANTHROPIC_API_KEY"
+  - model_name: soloceo-claude-smart
     litellm_params:
       model: "anthropic/claude-sonnet-4-6"
       api_key: "os.environ/ANTHROPIC_API_KEY"
@@ -21,3 +41,10 @@ general_settings:
 litellm_settings:
   # Trace + cost về Langfuse
   success_callback: ["langfuse"]
+  drop_params: true
+
+router_settings:
+  # BytePlus lỗi → tự chuyển Claude, tenant không thấy gián đoạn
+  fallbacks:
+    - soloceo-fast: ["soloceo-claude-fast"]
+    - soloceo-smart: ["soloceo-claude-smart"]
