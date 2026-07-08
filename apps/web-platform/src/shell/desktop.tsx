@@ -251,9 +251,9 @@ interface InstallLite {
   catalogApp?: { key: string };
 }
 
-// Nền desktop CHIA ĐÔI: trái = OpenClaw Control UI (ra lệnh cho AI),
-// phải = Claw3D văn phòng 3D (nhìn agent làm việc). Cùng 1 gateway nên
-// lệnh bên trái hiện hoạt động agent bên phải theo thời gian thực.
+// Nền desktop: TRÁI = Claw3D văn phòng 3D (sân khấu chính — nhìn agent làm
+// việc), PHẢI = panel trợ lý OpenClaw (ra lệnh, thu gọn được như Copilot).
+// Cùng 1 gateway nên lệnh bên phải phản chiếu hoạt động agent bên trái.
 function SplitWorkspace() {
   const [claw, setClaw] = useState<{ status: string; url?: string | null } | null>(
     null,
@@ -263,6 +263,8 @@ function SplitWorkspace() {
     url: string | null;
     token: string | null;
   } | null>(null);
+  // Panel trợ lý mở mặc định; CEO thu gọn để xem văn phòng 3D toàn màn hình
+  const [panelOpen, setPanelOpen] = useState(true);
 
   useEffect(() => {
     let stop = false;
@@ -301,21 +303,8 @@ function SplitWorkspace() {
 
   return (
     <div className="absolute inset-0 top-8 flex">
-      {/* TRÁI: OpenClaw — ra lệnh, chat với trợ lý AI */}
-      <div className="relative h-full w-1/2 border-r border-surface-border">
-        {ocSrc ? (
-          <iframe
-            src={ocSrc}
-            title="Trợ lý AI OpenClaw"
-            className="h-full w-full border-0"
-            allow="clipboard-read; clipboard-write; microphone"
-          />
-        ) : (
-          <Placeholder label="Đang khởi tạo trợ lý AI OpenClaw..." />
-        )}
-      </div>
-      {/* PHẢI: Claw3D — văn phòng 3D, nhìn agent làm việc */}
-      <div className="relative h-full w-1/2">
+      {/* TRÁI (sân khấu chính): Claw3D — văn phòng 3D, nhìn agent làm việc */}
+      <div className="relative h-full min-w-0 flex-1">
         {claw?.status === "RUNNING" && claw.url ? (
           <iframe
             src={claw.url}
@@ -332,6 +321,48 @@ function SplitWorkspace() {
             }
           />
         )}
+        {/* Nút mở lại panel trợ lý khi đã thu gọn */}
+        {!panelOpen && (
+          <button
+            onClick={() => setPanelOpen(true)}
+            className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-full border border-surface-border bg-surface px-4 py-2 text-sm text-white shadow-lg backdrop-blur-glass hover:bg-accent/30"
+            title="Mở trợ lý AI"
+          >
+            🤖 Trợ lý AI
+          </button>
+        )}
+      </div>
+
+      {/* PHẢI (panel trợ lý): OpenClaw — ra lệnh, chat; thu gọn được */}
+      <div
+        className={`relative h-full shrink-0 border-l border-surface-border transition-all duration-300 ${
+          panelOpen ? "w-[30rem] max-w-[45vw]" : "w-0 overflow-hidden border-l-0"
+        }`}
+      >
+        <div className="flex h-9 items-center justify-between border-b border-surface-border bg-surface px-3">
+          <span className="text-xs font-medium text-white">
+            🤖 Trợ lý AI — ra lệnh tại đây, xem agent làm việc bên trái
+          </span>
+          <button
+            onClick={() => setPanelOpen(false)}
+            className="rounded px-2 py-0.5 text-xs text-[#A0A0B8] hover:bg-white/10 hover:text-white"
+            title="Thu gọn panel"
+          >
+            Thu gọn »
+          </button>
+        </div>
+        <div className="h-[calc(100%-2.25rem)]">
+          {ocSrc ? (
+            <iframe
+              src={ocSrc}
+              title="Trợ lý AI OpenClaw"
+              className="h-full w-full border-0"
+              allow="clipboard-read; clipboard-write; microphone"
+            />
+          ) : (
+            <Placeholder label="Đang khởi tạo trợ lý AI OpenClaw..." />
+          )}
+        </div>
       </div>
     </div>
   );

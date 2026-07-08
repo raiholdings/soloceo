@@ -107,6 +107,9 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
       CLAW3D_GATEWAY_URL: gatewayUrl,
       CLAW3D_GATEWAY_TOKEN: secret,
       CLAW3D_GATEWAY_ADAPTER_TYPE: "openclaw",
+      // Proxy WS server-side của Claw3D TỪ CHỐI mọi upstream trong production
+      // nếu thiếu allowlist (server/gateway-proxy.js) → lỗi "Gateway closed 1011"
+      UPSTREAM_ALLOWLIST: gatewayUrl.replace(/^wss?:\/\//, ""),
     }),
   },
   openclaw: {
