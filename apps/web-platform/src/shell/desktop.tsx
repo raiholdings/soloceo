@@ -220,8 +220,8 @@ export function ShellRoot() {
   return (
     <WindowManagerProvider>
       <div className="relative h-screen w-screen overflow-hidden">
-        {/* Nền desktop = văn phòng ảo 3D Claw3D của tenant (ADR-005) */}
-        <Claw3DBackground />
+        {/* Nền desktop chia đôi: trái = OpenClaw (ra lệnh), phải = Claw3D (xem agent làm việc) */}
+        <SplitWorkspace />
         <MenuBar
           org={org}
           onLogout={() => {
@@ -251,11 +251,18 @@ interface InstallLite {
   catalogApp?: { key: string };
 }
 
-// Nền desktop: iframe Claw3D khi đã RUNNING; vùng đen (như ảnh) khi chưa provisioning.
-function Claw3DBackground() {
+// Nền desktop CHIA ĐÔI: trái = OpenClaw Control UI (ra lệnh cho AI),
+// phải = Claw3D văn phòng 3D (nhìn agent làm việc). Cùng 1 gateway nên
+// lệnh bên trái hiện hoạt động agent bên phải theo thời gian thực.
+function SplitWorkspace() {
   const [claw, setClaw] = useState<{ status: string; url?: string | null } | null>(
     null,
   );
+  const [oc, setOc] = useState<{
+    ready: boolean;
+    url: string | null;
+    token: string | null;
+  } | null>(null);
 
   useEffect(() => {
     let stop = false;
@@ -264,43 +271,76 @@ function Claw3DBackground() {
         .then(async (vs) => {
           const v = vs[0];
           if (!v) return;
-          const installs = await api<InstallLite[]>(
-            `/ventures/${(v as { id: string }).id}/installs`,
-          );
+          const [installs, access] = await Promise.all([
+            api<InstallLite[]>(`/ventures/${v.id}/installs`),
+            api<{ ready: boolean; url: string | null; token: string | null }>(
+              `/ventures/${v.id}/openclaw-access`,
+            ).catch(() => null),
+          ]);
+          if (stop) return;
           const c = installs.find((i) => i.catalogApp?.key === "claw3d");
-          if (!stop) setClaw(c ? { status: c.status, url: c.url } : null);
+          setClaw(c ? { status: c.status, url: c.url } : null);
+          if (access) setOc(access);
         })
         .catch(() => {});
     load();
-    // poll đến khi Claw3D chạy (đang provisioning)
+    // poll đến khi cả 2 app chạy (đang provisioning)
     const t = setInterval(() => {
-      if (claw?.status !== "RUNNING") load();
+      if (claw?.status !== "RUNNING" || !oc?.ready) load();
     }, 8000);
     return () => {
       stop = true;
       clearInterval(t);
     };
-  }, [claw?.status]);
+  }, [claw?.status, oc?.ready]);
 
-  if (claw?.status === "RUNNING" && claw.url) {
-    return (
-      <iframe
-        src={claw.url}
-        title="Văn phòng ảo 3D"
-        className="absolute inset-0 h-full w-full border-0"
-        allow="fullscreen; xr-spatial-tracking"
-      />
-    );
-  }
+  const ocSrc =
+    oc?.ready && oc.url
+      ? `${oc.url.replace(/\/$/, "")}/${oc.token ? `#token=${encodeURIComponent(oc.token)}` : ""}`
+      : null;
 
-  // Vùng đen + gradient nhẹ khi chưa có Claw3D (giống ảnh anh gửi)
   return (
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_70%_20%,rgba(124,92,255,0.18),transparent),radial-gradient(ellipse_50%_40%_at_20%_85%,rgba(56,189,248,0.10),transparent),#0a0a12]">
-      {claw?.status && claw.status !== "RUNNING" && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-sm text-[#8a8aa0]">
-          <p className="animate-pulse">Đang dựng văn phòng ảo 3D...</p>
-        </div>
-      )}
+    <div className="absolute inset-0 top-8 flex">
+      {/* TRÁI: OpenClaw — ra lệnh, chat với trợ lý AI */}
+      <div className="relative h-full w-1/2 border-r border-surface-border">
+        {ocSrc ? (
+          <iframe
+            src={ocSrc}
+            title="Trợ lý AI OpenClaw"
+            className="h-full w-full border-0"
+            allow="clipboard-read; clipboard-write; microphone"
+          />
+        ) : (
+          <Placeholder label="Đang khởi tạo trợ lý AI OpenClaw..." />
+        )}
+      </div>
+      {/* PHẢI: Claw3D — văn phòng 3D, nhìn agent làm việc */}
+      <div className="relative h-full w-1/2">
+        {claw?.status === "RUNNING" && claw.url ? (
+          <iframe
+            src={claw.url}
+            title="Văn phòng ảo 3D"
+            className="h-full w-full border-0"
+            allow="fullscreen; xr-spatial-tracking"
+          />
+        ) : (
+          <Placeholder
+            label={
+              claw?.status
+                ? "Đang dựng văn phòng ảo 3D..."
+                : "Văn phòng ảo 3D sẽ hiện tại đây"
+            }
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Placeholder({ label }: { label: string }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_60%_50%_at_70%_20%,rgba(124,92,255,0.18),transparent),radial-gradient(ellipse_50%_40%_at_20%_85%,rgba(56,189,248,0.10),transparent),#0a0a12]">
+      <p className="animate-pulse text-sm text-[#8a8aa0]">{label}</p>
     </div>
   );
 }
