@@ -1,0 +1,57 @@
+services:
+  convex-backend:
+    image: ghcr.io/get-convex/convex-backend:latest
+    restart: unless-stopped
+    volumes:
+      - /opt/clawhub-selfhost/convex-data:/convex/data
+    environment:
+      - INSTANCE_NAME=clawhub-soloceo
+      - INSTANCE_SECRET=${INSTANCE_SECRET}
+      - CONVEX_CLOUD_ORIGIN=https://convex-api.soloceo.vn
+      - CONVEX_SITE_ORIGIN=https://convex-site.soloceo.vn
+      - DISABLE_BEACON=true
+      - ISOLATE_ANALYZE_USER_TIMEOUT_SECONDS=120
+      - ISOLATE_MAX_HEAP_FOR_ANALYZE=2147483648
+    networks: [coolify]
+    labels:
+      - traefik.enable=true
+      # API (3210) → convex-api.soloceo.vn
+      - traefik.http.routers.chapi.rule=Host(`convex-api.soloceo.vn`)
+      - traefik.http.routers.chapi.entrypoints=https
+      - traefik.http.routers.chapi.tls=true
+      - traefik.http.routers.chapi.tls.certresolver=letsencrypt
+      - traefik.http.routers.chapi.service=chapi
+      - traefik.http.services.chapi.loadbalancer.server.port=3210
+      # SITE (3211) → convex-site.soloceo.vn
+      - traefik.http.routers.chsite.rule=Host(`convex-site.soloceo.vn`)
+      - traefik.http.routers.chsite.entrypoints=https
+      - traefik.http.routers.chsite.tls=true
+      - traefik.http.routers.chsite.tls.certresolver=letsencrypt
+      - traefik.http.routers.chsite.service=chsite
+      - traefik.http.services.chsite.loadbalancer.server.port=3211
+
+  clawhub-frontend:
+    image: soloceo/clawhub-frontend:latest
+    restart: unless-stopped
+    extra_hosts:
+      - "convex-api.soloceo.vn:172.18.0.2"
+      - "convex-site.soloceo.vn:172.18.0.2"
+    environment:
+      - PORT=3000
+      - VITE_CONVEX_URL=https://convex-api.soloceo.vn
+      - VITE_CONVEX_SITE_URL=https://convex-site.soloceo.vn
+      - CONVEX_SITE_URL=https://convex-site.soloceo.vn
+      - SITE_URL=https://hub.soloceo.vn
+    networks: [coolify]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.chweb.rule=Host(`hub.soloceo.vn`)
+      - traefik.http.routers.chweb.entrypoints=https
+      - traefik.http.routers.chweb.tls=true
+      - traefik.http.routers.chweb.tls.certresolver=letsencrypt
+      - traefik.http.routers.chweb.service=chweb
+      - traefik.http.services.chweb.loadbalancer.server.port=3000
+
+networks:
+  coolify:
+    external: true
