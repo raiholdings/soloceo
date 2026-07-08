@@ -265,6 +265,8 @@ function SplitWorkspace() {
   } | null>(null);
   // Panel trợ lý mở mặc định; CEO thu gọn để xem văn phòng 3D toàn màn hình
   const [panelOpen, setPanelOpen] = useState(true);
+  // Đổi key để nạp lại iframe (SSL/deploy vừa xong có thể làm lần tải đầu lỗi)
+  const [ocReload, setOcReload] = useState(0);
 
   useEffect(() => {
     let stop = false;
@@ -343,17 +345,27 @@ function SplitWorkspace() {
           <span className="text-xs font-medium text-white">
             🤖 Trợ lý AI — ra lệnh tại đây, xem agent làm việc bên trái
           </span>
-          <button
-            onClick={() => setPanelOpen(false)}
-            className="rounded px-2 py-0.5 text-xs text-[#A0A0B8] hover:bg-white/10 hover:text-white"
-            title="Thu gọn panel"
-          >
-            Thu gọn »
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setOcReload((n) => n + 1)}
+              className="rounded px-2 py-0.5 text-xs text-[#A0A0B8] hover:bg-white/10 hover:text-white"
+              title="Tải lại trợ lý (nếu chưa hiện)"
+            >
+              ⟳ Tải lại
+            </button>
+            <button
+              onClick={() => setPanelOpen(false)}
+              className="rounded px-2 py-0.5 text-xs text-[#A0A0B8] hover:bg-white/10 hover:text-white"
+              title="Thu gọn panel"
+            >
+              Thu gọn »
+            </button>
+          </div>
         </div>
         <div className="h-[calc(100%-2.25rem)]">
           {ocSrc ? (
             <iframe
+              key={ocReload}
               src={ocSrc}
               title="Trợ lý AI OpenClaw"
               className="h-full w-full border-0"
