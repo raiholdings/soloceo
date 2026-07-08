@@ -79,6 +79,12 @@ export class WowonderService {
     return json.access_token;
   }
 
+  /** OIDC bridge: code WoWonder → thông tin user (public để OidcService dùng) */
+  async getUserFromCode(code: string): Promise<WowonderUser> {
+    const token = await this.exchangeCode(code);
+    return this.fetchUser(token);
+  }
+
   /** Lấy thông tin user từ access_token */
   private async fetchUser(accessToken: string): Promise<WowonderUser> {
     const url = `${this.baseUrl}/app_api?access_token=${encodeURIComponent(

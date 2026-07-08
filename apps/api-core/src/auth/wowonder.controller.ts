@@ -1,9 +1,11 @@
 import {
   Controller,
   Get,
+  Inject,
   Query,
   Req,
   Res,
+  forwardRef,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
@@ -11,6 +13,7 @@ import type { Request, Response } from "express";
 import { CurrentUser, Public } from "./decorators";
 import type { RequestUser } from "./auth.types";
 import { WowonderService } from "./wowonder.service";
+import { OidcService } from "../oidc/oidc.service";
 
 // Chỉ cho phép trả token về các frontend của SoloCEO (chống open-redirect)
 const ALLOWED_RETURN_HOSTS = [
@@ -27,7 +30,18 @@ export class WowonderController {
   constructor(
     private readonly wowonder: WowonderService,
     private readonly config: ConfigService,
+    @Inject(forwardRef(() => OidcService))
+    private readonly oidc: OidcService,
   ) {}
+
+  private readCookie(req: Request, name: string): string | null {
+    const raw = req.headers.cookie ?? "";
+    const match = raw
+      .split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith(`${name}=`));
+    return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
+  }
 
   private defaultFrontend(): string {
     return (
@@ -91,6 +105,20 @@ export class WowonderController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
+    // Luồng OIDC (DeerFlow...): cookie oidc_k → sinh code OIDC, về app OIDC
+    const oidcKey = this.readCookie(req, "oidc_k");
+    if (oidcKey) {
+      res.clearCookie("oidc_k", { domain: ".soloceo.vn" });
+      if (!code) return res.status(400).send("missing_code");
+      try {
+        const redirect = await this.oidc.handleWowonderCallback(oidcKey, code);
+        return res.redirect(redirect);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "oidc_failed";
+        return res.status(400).send(msg);
+      }
+    }
+
     const frontend = this.readReturnCookie(req) ?? this.defaultFrontend();
     res.clearCookie(RETURN_COOKIE, { domain: ".soloceo.vn" });
     if (!code) {
