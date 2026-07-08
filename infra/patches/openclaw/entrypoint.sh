@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 node /soloceo/gen-config.mjs
+node /soloceo/write-bootstrap.mjs
 # Vòng auto-approve pairing (xem auto-approve.mjs — token là biên bảo mật)
 (
   sleep 20

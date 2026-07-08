@@ -90,6 +90,7 @@ interface AppDeployConfig {
     litellmKey: string;
     gatewayUrl: string; // wss:// của OpenClaw gateway per-venture
     allowedOrigins: string; // CSV origins được mở WS tới gateway
+    claw3dUrl: string; // URL văn phòng 3D của venture
   }) => Record<string, string>;
 }
 
@@ -120,10 +121,18 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
     // OpenClaw gateway + Control UI phục vụ trên 18789 (KHÔNG phải 8080 — đó là lý do trước đây 502)
     port: "18789",
     subdomain: "-ai",
-    buildEnvs: ({ secret, litellmBase, litellmKey, allowedOrigins }) => ({
+    buildEnvs: ({
+      secret,
+      litellmBase,
+      litellmKey,
+      allowedOrigins,
+      claw3dUrl,
+    }) => ({
       OPENCLAW_GATEWAY_TOKEN: secret,
       OPENAI_API_BASE: litellmBase,
       OPENAI_API_KEY: litellmKey,
+      // Cho agent "biết" văn phòng 3D của mình (viết vào BOOTSTRAP.md lúc khởi động)
+      CLAW3D_URL: claw3dUrl,
       OPENCLAW_DEFAULT_MODEL: "soloceo-smart",
       OPENCLAW_MODEL: "soloceo-smart",
       // Origins được phép mở WS tới gateway (Control UI trong OS Shell + Claw3D)
@@ -195,6 +204,8 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
   const gatewaySecret = randomBytes(32).toString("hex");
   const openclawDomain = subdomainFor(venture.slug, "openclaw");
   const gatewayUrl = `wss://${openclawDomain}`;
+  // URL văn phòng 3D Claw3D của venture (để agent OpenClaw "biết" mình ở đâu)
+  const claw3dUrl = `https://${subdomainFor(venture.slug, "claw3d")}`;
   // Origins được phép mở WS: chính Control UI, OS Shell, và Claw3D của venture
   const platformOrigin =
     process.env.PLATFORM_ORIGIN ?? "https://platform.soloceo.vn";
@@ -235,6 +246,7 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
             litellmKey,
             gatewayUrl,
             allowedOrigins,
+            claw3dUrl,
           }),
         });
       } else {
