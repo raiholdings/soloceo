@@ -9,6 +9,7 @@ import { AuthModule } from "./auth/auth.module";
 import { OrgsModule } from "./orgs/orgs.module";
 import { VenturesModule } from "./ventures/ventures.module";
 import { DirectoryModule } from "./directory/directory.module";
+import { ConciergeModule } from "./concierge/concierge.module";
 import { DomainsModule } from "./domains/domains.module";
 import { StoreModule } from "./store/store.module";
 import { AiModule } from "./ai/ai.module";
@@ -34,6 +35,7 @@ import { AdminModule } from "./admin/admin.module";
     DirectoryModule,
     StoreModule,
     DomainsModule,
+    ConciergeModule,
     AiModule,
     PaymentsModule,
     CommunityModule,

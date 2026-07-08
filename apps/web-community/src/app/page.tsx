@@ -16,6 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import { PLANS } from "@soloceo/shared";
+import { HeroChat } from "@/components/hero-chat";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@soloceo/ui";
 
 function formatVnd(n: number): string {
@@ -132,16 +133,15 @@ export default function HomePage() {
             </span>
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-[#A0A0B8]">
-            Một mình bạn — cộng với website, CRM, trợ lý AI, automation và cổng
-            thanh toán — là đủ để vận hành như cả một công ty. Và khi đến lúc,
-            bán lại doanh nghiệp đó với giá xứng đáng.
+            Kể ý tưởng của bạn — Lễ tân AI tư vấn và khởi tạo cả không gian
+            doanh nghiệp (văn phòng 3D + trợ lý AI + web bán hàng) trong vài
+            phút. Khi đến lúc, bán lại doanh nghiệp đó với giá xứng đáng.
           </p>
+
+          {/* Lễ tân AI — chat khởi tạo doanh nghiệp (kiểu manus.im) */}
+          <HeroChat />
+
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/dang-nhap">
-              <Button size="lg" className="gap-2">
-                Khởi tạo doanh nghiệp <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
             <Link href="/danh-ba">
               <Button size="lg" variant="outline">
                 Xem doanh nghiệp đang chạy
