@@ -2,6 +2,9 @@ services:
   convex-backend:
     image: ghcr.io/get-convex/convex-backend:latest
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3210:3210"
+      - "127.0.0.1:3211:3211"
     volumes:
       - /opt/clawhub-selfhost/convex-data:/convex/data
     environment:
@@ -10,6 +13,8 @@ services:
       - CONVEX_CLOUD_ORIGIN=https://convex-api.soloceo.vn
       - CONVEX_SITE_ORIGIN=https://convex-site.soloceo.vn
       - DISABLE_BEACON=true
+      - DATABASE_UDF_USER_TIMEOUT_SECONDS=30
+      - V8_ACTION_USER_TIMEOUT_SECS=120
       - ISOLATE_ANALYZE_USER_TIMEOUT_SECONDS=120
       - ISOLATE_MAX_HEAP_FOR_ANALYZE=2147483648
     networks: [coolify]
