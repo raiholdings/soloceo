@@ -25,3 +25,11 @@ KHÔNG set STUDIO_ACCESS_TOKEN → mở, redirect / → /office (trang 3D). Sau 
    qua `/api/gateway/ws` (server/gateway-proxy.js). Trong production proxy TỪ CHỐI
    mọi upstream nếu thiếu env `UPSTREAM_ALLOWLIST` → lỗi "Gateway closed (1011)".
    svc-provision truyền `UPSTREAM_ALLOWLIST={slug}-ai.app.soloceo.vn`.
+
+## Vá #6 — proxy tiêm token server-side (08/07, mắt xích CUỐI)
+Trình duyệt KHÔNG bao giờ nhận token thật (API /api/studio chỉ trả
+`tokenConfigured: true`) → frame connect từ client luôn `auth=none` →
+gateway từ chối "token_missing" dù settings.json server có token.
+Vá `server/gateway-proxy.js`: khi frame connect thiếu token, proxy tự tiêm
+`process.env.CLAW3D_GATEWAY_TOKEN` vào `params.auth.token` trước khi forward.
+Token không bao giờ lộ ra browser — đúng thiết kế bảo mật gốc.
