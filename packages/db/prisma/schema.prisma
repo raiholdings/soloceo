@@ -291,3 +291,30 @@ enum ListingStatus {
   SOLD
   WITHDRAWN
 }
+
+// Đơn mua tên miền qua đại lý Nhân Hòa (CEO mua ngay trên OS)
+model DomainOrder {
+  id          String            @id @default(uuid())
+  orgId       String
+  ventureId   String?
+  domain      String // "cuahangcuatoi"
+  ext         String // ".com" | ".vn" | ...
+  years       Int               @default(1)
+  priceVnd    Decimal           @db.Decimal(18, 2)
+  status      DomainOrderStatus @default(PENDING_APPROVAL)
+  contact     Json // {realname, phone, email, address?, company?, city, country}
+  providerMsg String? // msg trả về từ Nhân Hòa
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([orgId, createdAt])
+}
+
+enum DomainOrderStatus {
+  PENDING_PAYMENT // chờ CEO thanh toán
+  PENDING_APPROVAL // chờ admin duyệt (human-in-the-loop — chi tiền số dư đại lý)
+  REGISTERING // đã gửi Nhân Hòa
+  ACTIVE // đăng ký thành công
+  FAILED
+  CANCELED
+}

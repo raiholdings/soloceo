@@ -7,6 +7,7 @@ export type AppId =
   | "revenue"
   | "community"
   | "marketplace"
+  | "domains"
   | "settings";
 
 export interface WindowState {

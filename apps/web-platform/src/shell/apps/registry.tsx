@@ -3,6 +3,7 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import {
   Bot,
+  Globe,
   LayoutDashboard,
   MessageSquare,
   Puzzle,
@@ -79,6 +80,13 @@ export const APP_REGISTRY: Record<AppId, AppDefinition> = {
     icon: TrendingUp,
     component: lazy(() => import("./marketplace")),
     defaultWidth: 820,
+    defaultHeight: 560,
+  },
+  domains: {
+    title: "Tên miền",
+    icon: Globe,
+    component: lazy(() => import("./domains")),
+    defaultWidth: 760,
     defaultHeight: 560,
   },
   settings: {

@@ -14,6 +14,7 @@ const DOCK_ORDER: AppId[] = [
   "revenue",
   "community",
   "marketplace",
+  "domains",
   "settings",
 ];
 
