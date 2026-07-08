@@ -20,6 +20,7 @@ const ALLOWED_RETURN_HOSTS = [
   "soloceo.vn",
   "www.soloceo.vn",
   "platform.soloceo.vn",
+  "app.soloceo.vn",
   "localhost",
 ];
 const RETURN_COOKIE = "wo_return";

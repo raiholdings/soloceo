@@ -110,7 +110,7 @@ export function HeroChat() {
             )}
             {needLogin && !getToken() && (
               <a
-                href={`${process.env.NEXT_PUBLIC_API_URL ?? "https://api.soloceo.vn"}/v1/auth/wowonder/login?return_url=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin + "/" : "https://community.soloceo.vn/")}`}
+                href={`${process.env.NEXT_PUBLIC_API_URL ?? "https://api.soloceo.vn"}/v1/auth/wowonder/login?return_url=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin + "/" : "https://app.soloceo.vn/")}`}
                 className="self-start rounded-xl bg-[#7C5CFF] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#8d70ff]"
               >
                 Đăng nhập Cộng đồng để khởi tạo →
