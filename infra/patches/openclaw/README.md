@@ -78,3 +78,11 @@ per-tenant vì: (1) token 32-byte ngẫu nhiên là auth chính, (2) origin whit
 File trong thư mục này = bản sao 1:1 của /opt/openclaw-patch trên tenant-01:
 - `patch-headers.mjs` + `Dockerfile.v2` → image `soloceo2` (vá iframe headers)
 - `gen-config.mjs` + `entrypoint.sh` + `Dockerfile.v3` → image `soloceo3` (config từ env)
+
+## Auto-approve device pairing (08/07 — bản cuối)
+`dangerouslyDisableDeviceAuth` CHỈ áp cho client "openclaw-control-ui"; Claw3D
+kết nối với client id "webchat-ui" → vẫn bị "pairing required" (lỗi 1012 phía
+Claw3D). Không có config tắt pairing cho webchat → entrypoint chạy vòng nền
+`auto-approve.mjs` mỗi 15s: `devices list --json` → approve mọi request pending.
+An toàn vì gateway CHỈ tạo pairing request sau khi client vượt kiểm tra token
+(client sai token bị chặn từ trước — "token_missing"), token vẫn là biên bảo mật.

@@ -1,5 +1,6 @@
 FROM localhost:5000/soloceo/openclaw:soloceo2
 COPY gen-config.mjs /soloceo/gen-config.mjs
+COPY auto-approve.mjs /soloceo/auto-approve.mjs
 COPY entrypoint.sh /soloceo/entrypoint.sh
 USER root
 RUN chmod +x /soloceo/entrypoint.sh && chown -R node:node /soloceo
