@@ -66,7 +66,10 @@ export class OidcService {
   private privateKey(): string {
     const k = this.config.get<string>("OIDC_PRIVATE_KEY");
     if (!k) throw new Error("OIDC_PRIVATE_KEY chưa cấu hình");
-    return k;
+    // Khoá lưu dạng base64 (1 dòng — PEM nhiều dòng làm hỏng .env của Coolify).
+    // Chấp nhận cả PEM thô (dev) lẫn base64 (prod).
+    if (k.includes("BEGIN")) return k.replace(/\\n/g, "\n");
+    return Buffer.from(k, "base64").toString("utf8");
   }
 
   private cleanup() {
