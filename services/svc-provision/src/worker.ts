@@ -34,19 +34,37 @@ function encryptSecret(plaintext: string): string {
   return Buffer.concat([iv, cipher.getAuthTag(), enc]).toString("base64");
 }
 
-/** Lưu token gateway OpenClaw (để OS Shell mở Control UI với #token=) */
-async function saveOpenclawToken(
+/**
+ * Token gateway OpenClaw per-venture: TÁI DÙNG nếu Secret đã có.
+ * Container đang chạy giữ token trong env — sinh token mới khi launch lại sẽ
+ * làm DB lệch container → panel Control UI "Không thể kết nối" (sự cố 09/07).
+ */
+async function getOrCreateOpenclawToken(
   orgId: string,
   ventureId: string,
-  token: string,
-): Promise<void> {
-  if (!process.env.MASTER_KEY) return;
+): Promise<string> {
   const key = `openclaw_token:${ventureId}`;
-  await prisma.secret.upsert({
-    where: { orgId_key: { orgId, key } },
-    create: { orgId, key, valueEnc: encryptSecret(token) },
-    update: { valueEnc: encryptSecret(token) },
-  });
+  if (process.env.MASTER_KEY) {
+    const existing = await prisma.secret.findUnique({
+      where: { orgId_key: { orgId, key } },
+    });
+    if (existing) {
+      try {
+        return decryptSecret(existing.valueEnc);
+      } catch {
+        // MASTER_KEY đổi / bản ghi hỏng → rơi xuống sinh mới
+      }
+    }
+  }
+  const token = randomBytes(32).toString("hex");
+  if (process.env.MASTER_KEY) {
+    await prisma.secret.upsert({
+      where: { orgId_key: { orgId, key } },
+      create: { orgId, key, valueEnc: encryptSecret(token) },
+      update: { valueEnc: encryptSecret(token) },
+    });
+  }
+  return token;
 }
 
 /** LiteLLM virtual key của org (cho OpenClaw dùng model qua gateway) */
@@ -223,7 +241,8 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
 
   // 1 token gateway DÙNG CHUNG per-venture: OpenClaw nhận nó, Claw3D + OS Shell
   // dùng nó để kết nối — CEO không phải nhập tay bất kỳ URL/token nào.
-  const gatewaySecret = randomBytes(32).toString("hex");
+  // Tái dùng token cũ nếu venture đã từng launch (đồng bộ với container đang chạy).
+  const gatewaySecret = await getOrCreateOpenclawToken(venture.orgId, ventureId);
   const openclawDomain = subdomainFor(venture.slug, "openclaw");
   const gatewayUrl = `wss://${openclawDomain}`;
   // URL văn phòng 3D Claw3D của venture (để agent OpenClaw "biết" mình ở đâu)
@@ -236,7 +255,6 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
     platformOrigin,
     `https://${subdomainFor(venture.slug, "claw3d")}`,
   ].join(",");
-  await saveOpenclawToken(venture.orgId, ventureId, gatewaySecret);
 
   let anyFailed = false;
 
