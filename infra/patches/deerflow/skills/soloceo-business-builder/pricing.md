@@ -19,4 +19,4 @@ Doanh nghiệp đủ điều kiện bán lại khi: **≥ 90 ngày tuổi**, **�
 ## Lưu ý khi trả lời khách
 - Nêu giá gọn, đúng bảng trên; không tự bịa khuyến mãi.
 - Nếu khách chưa chắc, gợi ý bắt đầu với **STARTER** rồi nâng gói khi có doanh thu.
-- Việc thanh toán/đăng ký gói thực hiện sau khi đăng nhập vào nền tảng.
+- **Trang đăng ký gói: https://app.soloceo.vn/goi** (đăng nhập bằng tài khoản Cộng đồng SoloCEO). Khởi tạo doanh nghiệp trước tại https://app.soloceo.vn/bat-dau nếu chưa có.
