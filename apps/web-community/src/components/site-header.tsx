@@ -25,6 +25,9 @@ export function SiteHeader() {
           <Link href="/cong-dong" className="text-[#A0A0B8] hover:text-white">
             Cộng đồng
           </Link>
+          <Link href="/goi" className="text-[#A0A0B8] hover:text-white">
+            Gói
+          </Link>
           {loggedIn ? (
             <>
               <Link href="/bat-dau" className="text-[#A0A0B8] hover:text-white">

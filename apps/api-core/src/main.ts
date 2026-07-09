@@ -9,10 +9,15 @@ async function bootstrap() {
 
   app.setGlobalPrefix("v1");
   app.use(helmet());
-  // CORS whitelist (GĐ7): dev mở localhost; prod chỉ soloceo.vn
+  // CORS whitelist (GĐ7): dev mở localhost; prod chỉ các frontend SoloCEO
   const origins =
     process.env.NODE_ENV === "production"
-      ? ["https://soloceo.vn", "https://platform.soloceo.vn"]
+      ? [
+          "https://soloceo.vn",
+          "https://www.soloceo.vn",
+          "https://app.soloceo.vn", // landing + onboarding (web-community)
+          "https://platform.soloceo.vn",
+        ]
       : true;
   app.enableCors({ origin: origins });
   app.useGlobalPipes(

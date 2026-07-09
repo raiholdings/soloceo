@@ -44,9 +44,9 @@ function slugify(name: string): string {
 export default function OnboardingPage() {
   const router = useRouter();
   const [org, setOrg] = useState<OrgMe | null>(null);
-  const [phase, setPhase] = useState<"loading" | "create-org" | "wizard" | "done">(
-    "loading",
-  );
+  const [phase, setPhase] = useState<
+    "loading" | "create-org" | "wizard" | "done" | "error"
+  >("loading");
   const [error, setError] = useState<string | null>(null);
 
   const [orgName, setOrgName] = useState("");
@@ -59,7 +59,7 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (!getToken()) {
-      router.replace("/dang-nhap");
+      router.replace("/dang-nhap?return_url=/bat-dau");
       return;
     }
     api<OrgMe>("/orgs/me")
@@ -70,8 +70,12 @@ export default function OnboardingPage() {
       .catch((err) => {
         if (err instanceof ApiRequestError && err.status === 404) {
           setPhase("create-org");
+        } else if (err instanceof ApiRequestError && err.status === 401) {
+          // token hết hạn → đăng nhập lại (trước đây kẹt "Đang tải..." vĩnh viễn)
+          router.replace("/dang-nhap?return_url=/bat-dau");
         } else {
-          setError(err.message);
+          setError(err instanceof Error ? err.message : "Không kết nối được máy chủ");
+          setPhase("error");
         }
       });
   }, [router]);
@@ -114,10 +118,28 @@ export default function OnboardingPage() {
     return <main className="p-24 text-center text-[#A0A0B8]">Đang tải...</main>;
   }
 
+  if (phase === "error") {
+    return (
+      <main className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
+        <p className="text-[#A0A0B8]">
+          Không tải được dữ liệu: {error ?? "lỗi không xác định"}
+        </p>
+        <Button onClick={() => window.location.reload()}>Thử lại</Button>
+      </main>
+    );
+  }
+
   if (phase === "done" && org) {
     return (
       <main className="mx-auto max-w-2xl px-6 py-16">
-        <h1 className="mb-6 text-2xl font-bold">Doanh nghiệp của tôi</h1>
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Doanh nghiệp của tôi</h1>
+          <Link href="/goi">
+            <Button size="sm" variant="outline">
+              Gói: {org.plan} — nâng cấp
+            </Button>
+          </Link>
+        </div>
         <div className="flex flex-col gap-4">
           {org.ventures.map((v) => (
             <Card key={v.id}>
