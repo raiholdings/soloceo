@@ -112,15 +112,14 @@ class DlpGuardrail(CustomLogger):
             meta["dlp_masked"] = True
 
         # Audit trail (docker logs) — chỉ loại + số lượng, KHÔNG có giá trị PII.
-        # Đây là nguồn dữ liệu để tổng hợp findings sau 24h shadow.
+        # Dùng print(flush) vì LITELLM_LOG=ERROR che mọi log mức INFO/WARNING.
+        # Đây là nguồn dữ liệu tổng hợp findings sau 24h shadow.
         if total or mode == "enforce":
             model = data.get("model", "?")
-            _log.info(
-                "[DLP-%s] model=%s findings=%s masked=%s",
-                mode.upper(),
-                model,
-                json.dumps(total, ensure_ascii=True),
-                changed,
+            print(
+                f"[DLP-{mode.upper()}] model={model} "
+                f"findings={json.dumps(total, ensure_ascii=True)} masked={changed}",
+                flush=True,
             )
 
     def _mask(self, text: str) -> dict:
