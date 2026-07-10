@@ -1,59 +1,60 @@
 """
-ArishemGuardrailProvider — HITL gate tầng 1 cho DeerFlow (research/R1 §6, R6 §A).
-Chặn MỌI tool-call nhạy cảm TRƯỚC khi thực thi: gọi svc-rules-engine.evaluate();
-ALLOW → cho chạy; DENY/REQUIRE_APPROVAL → chặn (allow=False). Với REQUIRE_APPROVAL,
-đăng ký ApprovalRequest ở api-core (best-effort) để CEO duyệt → resume (interrupt-resume).
+ArishemGuardrailProvider — HITL gate tầng AGENT cho DeerFlow (P1/B2).
 
-Đặt trong backend DeerFlow, trỏ config:
+Khớp contract THẬT của DeerFlow (đã đọc source 11/07/2026):
+  deerflow.guardrails.provider:
+    GuardrailProvider  = Protocol (không cần kế thừa), yêu cầu thuộc tính `name`
+    GuardrailRequest   = tool_name, tool_input, agent_id, thread_id, is_subagent,
+                         timestamp, user_id, user_role, oauth_*, run_id, tool_call_id
+                         (KHÔNG có `metadata`)
+    GuardrailDecision  = allow, reasons: list[GuardrailReason(code,message)],
+                         policy_id, metadata
+  config.yaml:
     guardrails:
-      use: soloceo.guardrails.arishem:ArishemGuardrailProvider
+      enabled: true
+      fail_closed: true            # DeerFlow tự chặn khi provider lỗi
+      provider:
+        use: "soloceo_guardrail.arishem:ArishemGuardrailProvider"
+        config: { gate_url: "...", timeout: 3.0 }   # → kwargs của __init__
 
-[CẦN KIỂM CHỨNG] Đường import + chữ ký GuardrailProvider/GuardrailRequest/
-GuardrailDecision đối chiếu backend/.../guardrails/provider.py của bytedance/deer-flow.
+THIẾT KẾ AN TOÀN:
+- **Short-circuit cục bộ**: tool KHÔNG nằm trong TOOL_TO_ACTION → allow ngay,
+  KHÔNG gọi mạng. Vậy tool thường (bash/browser/file…) không thêm độ trễ và
+  không phụ thuộc api-core. Chỉ tool nhạy cảm mới đi qua gate.
+- **Fail-closed** cho tool nhạy cảm: gate lỗi/timeout → raise → DeerFlow chặn
+  (theo `fail_closed: true`). Tiền/pháp lý thà chặn nhầm còn hơn lọt.
+- DeerFlow (tenant-02) KHÔNG tới được svc-rules-engine (network core-01) nên gọi
+  api-core qua HTTPS: POST /v1/rules/evaluate-internal (header X-Internal-Token).
+  api-core mới nói chuyện với engine → dùng lại audit log + ApprovalRequest.
+- Chỉ dùng thư viện chuẩn (urllib) — không thêm dependency vào image DeerFlow.
 """
 from __future__ import annotations
 
+import asyncio
+import json
 import os
-import httpx
+import urllib.error
+import urllib.request
 
-try:
-    from deerflow.guardrails.provider import (  # type: ignore
-        GuardrailProvider,
-        GuardrailRequest,
-        GuardrailDecision,
-    )
-except Exception:  # pragma: no cover - seam khi lint ngoài DeerFlow
-    class GuardrailProvider:  # type: ignore
-        ...
+from deerflow.guardrails.provider import (  # type: ignore[import-not-found]
+    GuardrailDecision,
+    GuardrailReason,
+    GuardrailRequest,
+)
 
-    class GuardrailRequest:  # type: ignore
-        tool_name: str
-        tool_input: dict
-        agent_id: str | None
-        thread_id: str | None
-        metadata: dict
-
-    class GuardrailDecision:  # type: ignore
-        def __init__(self, allow: bool, reasons=None, policy_id: str | None = None):
-            self.allow = allow
-            self.reasons = reasons or []
-            self.policy_id = policy_id
-
-
-RULES_ENGINE_URL = os.environ.get("RULES_ENGINE_URL", "http://svc-rules-engine:8080")
-APPROVAL_SINK_URL = os.environ.get("APPROVAL_SINK_URL", "")  # api-core, best-effort
-
-# Ánh xạ tên tool DeerFlow → actionType nhạy cảm (SENSITIVE_ACTIONS).
-# Mở rộng theo tool thực tế của agent. Tool không có trong map = không nhạy cảm.
+# Tên tool DeerFlow/MCP → actionType nhạy cảm (packages/shared SENSITIVE_ACTIONS).
+# Tool KHÔNG có trong bảng này = không nhạy cảm → allow, không gọi mạng.
 TOOL_TO_ACTION: dict[str, str] = {
     "create_payment": "spend_money",
     "buy_ai_credit": "spend_money",
+    "checkout": "spend_money",
     "send_bulk_email": "send_bulk_email",
     "send_bulk_message": "send_bulk_email",
     "submit_application": "submit_application",
     "sign_document": "sign_document",
     "publish_post": "publish_public",
     "create_listing": "publish_public",
+    "publish_website": "publish_public",
     "delete_venture": "delete_data",
     "delete_records": "delete_data",
     "deploy_app": "deploy_infra",
@@ -61,87 +62,101 @@ TOOL_TO_ACTION: dict[str, str] = {
     "export_data": "export_pii",
 }
 
+DEFAULT_GATE_URL = "https://api.soloceo.vn/v1/rules/evaluate-internal"
 
-class ArishemGuardrailProvider(GuardrailProvider):  # type: ignore[misc]
-    def evaluate(self, request: "GuardrailRequest") -> "GuardrailDecision":
-        action = TOOL_TO_ACTION.get(getattr(request, "tool_name", ""))
+
+class ArishemGuardrailProvider:
+    """Gate mọi tool-call nhạy cảm của agent trước khi thực thi."""
+
+    name = "arishem"
+
+    def __init__(
+        self,
+        gate_url: str | None = None,
+        timeout: float = 3.0,
+        **_: object,
+    ) -> None:
+        self.gate_url = gate_url or os.environ.get("RULES_GATE_URL", DEFAULT_GATE_URL)
+        self.timeout = float(timeout)
+        self.token = os.environ.get("INTERNAL_API_TOKEN", "")
+
+    # --- Protocol ---
+    def evaluate(self, request: GuardrailRequest) -> GuardrailDecision:
+        action = TOOL_TO_ACTION.get(request.tool_name)
+        if not action:
+            return GuardrailDecision(allow=True)  # short-circuit, không gọi mạng
+        data = self._call_gate(action, request)
+        return self._to_decision(data)
+
+    async def aevaluate(self, request: GuardrailRequest) -> GuardrailDecision:
+        action = TOOL_TO_ACTION.get(request.tool_name)
         if not action:
             return GuardrailDecision(allow=True)
-        decision, rule_id, tier = self._call(action, request)
-        return self._to_decision(action, decision, rule_id, tier, request)
+        data = await asyncio.to_thread(self._call_gate, action, request)
+        return self._to_decision(data)
 
-    async def aevaluate(self, request: "GuardrailRequest") -> "GuardrailDecision":
-        action = TOOL_TO_ACTION.get(getattr(request, "tool_name", ""))
-        if not action:
-            return GuardrailDecision(allow=True)
-        decision, rule_id, tier = await self._acall(action, request)
-        return self._to_decision(action, decision, rule_id, tier, request)
-
-    # --- gọi svc-rules-engine ---
-    def _payload(self, action: str, request: "GuardrailRequest") -> dict:
-        meta = getattr(request, "metadata", {}) or {}
-        return {
-            "action": action,
-            "context": {
-                "orgId": meta.get("org_id"),
-                "ventureId": meta.get("venture_id"),
-                **(getattr(request, "tool_input", {}) or {}),
+    # --- nội bộ ---
+    def _call_gate(self, action: str, request: GuardrailRequest) -> dict:
+        """Gọi api-core. Lỗi/timeout → raise → DeerFlow fail_closed chặn."""
+        if not self.token:
+            raise RuntimeError("INTERNAL_API_TOKEN chưa cấu hình — không thể gate")
+        payload = json.dumps(
+            {
+                "action": action,
+                "userId": request.user_id,
+                "threadId": request.thread_id,
+                "runId": request.run_id,
+                "context": request.tool_input or {},
+            }
+        ).encode("utf-8")
+        req = urllib.request.Request(
+            self.gate_url,
+            data=payload,
+            method="POST",
+            headers={
+                "Content-Type": "application/json",
+                "X-Internal-Token": self.token,
             },
+        )
+        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+
+    @staticmethod
+    def _to_decision(data: dict) -> GuardrailDecision:
+        decision = str(data.get("decision", "")).upper()
+        policy_id = data.get("ruleId")
+        meta = {
+            k: v
+            for k, v in (
+                ("approvalId", data.get("approvalId")),
+                ("tier", data.get("tier")),
+                ("fallback", data.get("fallback")),
+            )
+            if v is not None
         }
-
-    def _call(self, action, request):
-        try:
-            r = httpx.post(f"{RULES_ENGINE_URL}/evaluate", json=self._payload(action, request), timeout=2.5)
-            d = r.json()
-            return d.get("decision", "REQUIRE_APPROVAL"), d.get("ruleId"), d.get("tier")
-        except Exception:
-            return "REQUIRE_APPROVAL", None, 2  # fail-closed
-
-    async def _acall(self, action, request):
-        try:
-            async with httpx.AsyncClient(timeout=2.5) as c:
-                r = await c.post(f"{RULES_ENGINE_URL}/evaluate", json=self._payload(action, request))
-                d = r.json()
-            return d.get("decision", "REQUIRE_APPROVAL"), d.get("ruleId"), d.get("tier")
-        except Exception:
-            return "REQUIRE_APPROVAL", None, 2
-
-    def _to_decision(self, action, decision, rule_id, tier, request):
         if decision == "ALLOW":
-            return GuardrailDecision(allow=True, policy_id=rule_id)
+            return GuardrailDecision(allow=True, policy_id=policy_id, metadata=meta)
         if decision == "REQUIRE_APPROVAL":
-            self._register_approval(action, tier, rule_id, request)
             return GuardrailDecision(
                 allow=False,
-                reasons=[{"code": "require_approval", "message": "Chờ CEO phê duyệt"}],
-                policy_id=rule_id,
+                reasons=[
+                    GuardrailReason(
+                        code="require_approval",
+                        message="Hành động cần CEO phê duyệt — xem mục Phê duyệt trong workspace.",
+                    )
+                ],
+                policy_id=policy_id,
+                metadata=meta,
             )
-        # DENY
+        # DENY hoặc phản hồi lạ → chặn (fail-closed)
         return GuardrailDecision(
             allow=False,
-            reasons=[{"code": "deny", "message": "Hành động bị chặn bởi chính sách"}],
-            policy_id=rule_id,
+            reasons=[
+                GuardrailReason(
+                    code="deny",
+                    message="Hành động bị chặn bởi chính sách an toàn.",
+                )
+            ],
+            policy_id=policy_id,
+            metadata=meta,
         )
-
-    def _register_approval(self, action, tier, rule_id, request):
-        """Best-effort: báo api-core tạo ApprovalRequest gắn thread/run → CEO duyệt
-        → resume (POST /api/threads/{id}/state). Không chặn nếu api-core lỗi."""
-        if not APPROVAL_SINK_URL:
-            return
-        meta = getattr(request, "metadata", {}) or {}
-        try:
-            httpx.post(
-                APPROVAL_SINK_URL,
-                json={
-                    "orgId": meta.get("org_id"),
-                    "ventureId": meta.get("venture_id"),
-                    "actionType": action,
-                    "tier": tier or 2,
-                    "matchedRuleId": rule_id,
-                    "threadId": getattr(request, "thread_id", None),
-                    "payloadJson": getattr(request, "tool_input", {}) or {},
-                },
-                timeout=2.0,
-            )
-        except Exception:
-            pass
