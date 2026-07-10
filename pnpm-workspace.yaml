@@ -1,5 +1,9 @@
 packages:
   - "apps/*"
+  # C5 (chuan-bi-v2 / v2 cleanup): OS Shell 3D (web-platform) đã chuyển sang
+  # openclawos.vn. Gỡ khỏi workspace/build v2 nhưng GIỮ NGUYÊN file (không xoá).
+  # Sẽ dựng lại Admin/HITL dashboard trong apps/web ở v2 (spec §4-A).
+  - "!apps/web-platform"
   - "services/*"
   - "packages/*"
   - "infra/devstack"
