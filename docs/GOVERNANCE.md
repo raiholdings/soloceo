@@ -127,11 +127,48 @@ CAPTCHA · ký số / USB token · VNeID · OTP · sinh trắc học · bấm n�
 
 ---
 
+## 5b. ⚡ CHẾ ĐỘ TỰ ĐỘNG CÓ KIỂM SOÁT (đợt hoàn thiện v2) — ĐANG HIỆU LỰC
+
+**Văn bản nới quyền:** `SOLOCEO-V2-CHE-DO-TU-DONG-CO-KIEM-SOAT.md` (v1.0, 11/07/2026, chủ dự án ban hành).
+**Hiệu lực:** **GHI ĐÈ** giới hạn "dừng mọi mức C" của §2 hiến chương này, **chỉ trong đợt hoàn thiện v2**.
+Sau khi v2 nghiệm thu → **tự động quay lại §2 nguyên bản** (dừng mọi mức C) cho vận hành thường ngày, vì lúc đó có khách thật.
+
+### Nguyên tắc thay thế tạm thời
+- **Mặc định: TỰ LÀM** mọi việc kỹ thuật (code, UI, sidebar, agent, sandbox, dịch vụ, **deploy production có thể đảo ngược**, **migration thuận nghịch có backup**). Chạy một mạch P1→P4, **không dừng giữa pha**.
+- **Chỉ dừng ở 2 loại việc** dưới đây. Ngoài ra không dừng.
+
+### DANH SÁCH DỪNG (đóng)
+**§2.A — Việc tay chủ dự án** (Claude Code không có credential): rotate/dán **secret**; **DNS Cloudflare**; **mua sắm** (domain, GPU, RAM).
+→ Claude Code soạn sẵn lệnh, chủ dự án tự chạy, Claude Code **làm tiếp việc khác không bị chặn**.
+
+**§2.B — 4 việc phá huỷ khó lùi** (chờ chuẩn thuận 1 lần rồi tự làm):
+| # | Việc | Chủ dự án quyết gì |
+|---|---|---|
+| **C1** | **godlp hook vào LiteLLM** (pre-call) | Chọn **fail-open** vs **fail-closed**, timeout, canary |
+| **C2** | Migration đụng bảng **đường tiền** (`Transaction`, payments, plans) | Xác nhận migration + backup + reversible |
+| **C3** | **Số giá / cấu trúc gói** trong `plans.ts` | Chốt giá (Claude Code chỉ sửa **mô tả năng lực**, không đổi số) |
+| **C4** | **Go-live thương mại** (nhận tiền thật từ khách ngoài) | Quyết định phát hành |
+
+> Ngoài C1–C4 và §2.A, **không việc nào phải dừng**: guardrail DeerFlow, merge `soloceo-mvp`, deploy prod, tắt/khởi động container, migration không đụng tiền, sidebar, sub-agents, sandbox, FlowGram, Midscene, Dolphin, Zalo, Langfuse, dời LiteLLM → **tự làm**.
+
+### Ràng buộc đổi lại cho quyền rộng (§3 văn bản nới quyền)
+1. Nhánh `hoan-thien-v2`; `pnpm build` **xanh** trước deploy.
+2. **Backup trước** mọi migration; migration **REVERSIBLE**; **không xoá cứng**.
+3. **Rollback sẵn sàng**: trước mỗi deploy production phải **biết lệnh lùi** và **ghi vào commit/log**.
+4. Chỉ tự làm việc **CÓ THỂ ĐẢO NGƯỢC**. Nếu phát hiện một việc hoá ra **khó lùi ngoài dự tính** → **coi như §2.B, dừng hỏi**.
+5. **Báo cáo trung thực** — không nói "xong" khi chưa verify bằng **test/health-check thật**.
+6. **Ngoại lệ khẩn cấp** (production đang mất dịch vụ): được rollback/khởi động lại ngay để cứu dịch vụ, báo cáo ngay sau. Không mở rộng quyền ngoài việc cứu dịch vụ. *(Điều này thay thế §2.2 "đề xuất" — nay ĐÃ có hiệu lực.)*
+
+**Chủ dự án giữ quyền phủ quyết tức thời** bất cứ hành động nào, kể cả đang chạy, kể cả sau khi đã làm (yêu cầu rollback).
+
+---
+
 ## 6. THAM CHIẾU
 
 | Tài liệu | Vai trò |
 |---|---|
 | `docs/BAO-CAO-HE-THONG-V2.md` | **Nguồn hiện trạng** hệ thống |
 | `SOLOCEO-V2-HIEN-CHUONG-VA-HOAN-THIEN.md` | Hiến chương gốc + chuẩn UX (§II) + kế hoạch P1–P4 (§III) |
+| `SOLOCEO-V2-CHE-DO-TU-DONG-CO-KIEM-SOAT.md` | **Nới quyền — chế độ tự động có kiểm soát (đang hiệu lực, xem §5b)** |
 | `research/R0…R7` | Nghiên cứu 8 nền tảng |
 | `docs/ADR/` | Quyết định kiến trúc (ADR-006 license, ADR-007 HITL 2 tầng) |
