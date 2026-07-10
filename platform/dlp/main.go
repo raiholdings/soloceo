@@ -20,11 +20,17 @@ type detector struct {
 }
 
 // Ruleset PII VN — đồng bộ platform/dlp/rules-vn.yaml (research/R6 §6).
+// Thứ tự QUAN TRỌNG: detector chạy trước thay match trước. Xếp theo độ dài/độ
+// đặc thù giảm dần để dãy dài (thẻ 16, CCCD 12) không bị dãy ngắn ăn mất.
 var detectors = []detector{
 	{"bank_card", regexp.MustCompile(`\b(?:\d[ -]?){16}\b`), 4},
 	{"cccd_12", regexp.MustCompile(`\b0\d{11}\b`), 4},
 	{"phone_vn", regexp.MustCompile(`(?:\+84|0)(?:3|5|7|8|9)\d{8}`), 3},
+	// Số tài khoản NH: CHỈ khớp khi có keyword neo (STK/tài khoản) để KHÔNG
+	// mask nhầm mọi dãy số. Chỉ phần chữ số bị che (giữ nhãn) — xem maskValue.
+	{"bank_account", regexp.MustCompile(`(?i)(?:số tài khoản|tài khoản|stk)\s*[:.]?\s*\d{8,16}`), 4},
 	{"mst", regexp.MustCompile(`\b\d{10}(?:-\d{3})?\b`), 3},
+	{"cmnd_9", regexp.MustCompile(`\b\d{9}\b`), 3},
 	{"email", regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`), 0},
 	{"bien_so_xe", regexp.MustCompile(`\b\d{2}[A-Z]{1,2}[- ]?\d{3,5}\b`), 0},
 }
