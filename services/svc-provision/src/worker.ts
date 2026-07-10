@@ -35,6 +35,11 @@ function encryptSecret(plaintext: string): string {
 }
 
 /**
+ * @deprecated v2 cleanup (R0 §C4) — cụm OpenClaw đã sang openclawos.vn.
+ * KHÔNG còn được gọi trong luồng provision core (default app = commerce-starter).
+ * Giữ lại (không xoá) để tham chiếu lịch sử; Secret `openclaw_token:*` sẽ được
+ * ARCHIVE bằng lệnh thủ công (xem báo cáo PHA 1).
+ *
  * Token gateway OpenClaw per-venture: TÁI DÙNG nếu Secret đã có.
  * Container đang chạy giữ token trong env — sinh token mới khi launch lại sẽ
  * làm DB lệch container → panel Control UI "Không thể kết nối" (sự cố 09/07).
@@ -239,22 +244,15 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
   const litellmBase = process.env.LITELLM_BASE_URL ?? "https://llm.soloceo.vn";
   const litellmKey = await getOrgLitellmKey(venture.orgId).catch(() => "");
 
-  // 1 token gateway DÙNG CHUNG per-venture: OpenClaw nhận nó, Claw3D + OS Shell
-  // dùng nó để kết nối — CEO không phải nhập tay bất kỳ URL/token nào.
-  // Tái dùng token cũ nếu venture đã từng launch (đồng bộ với container đang chạy).
-  const gatewaySecret = await getOrCreateOpenclawToken(venture.orgId, ventureId);
-  const openclawDomain = subdomainFor(venture.slug, "openclaw");
-  const gatewayUrl = `wss://${openclawDomain}`;
-  // URL văn phòng 3D Claw3D của venture (để agent OpenClaw "biết" mình ở đâu)
-  const claw3dUrl = `https://${subdomainFor(venture.slug, "claw3d")}`;
-  // Origins được phép mở WS: chính Control UI, OS Shell, và Claw3D của venture
-  const platformOrigin =
-    process.env.PLATFORM_ORIGIN ?? "https://platform.soloceo.vn";
-  const allowedOrigins = [
-    `https://${openclawDomain}`,
-    platformOrigin,
-    `https://${subdomainFor(venture.slug, "claw3d")}`,
-  ].join(",");
+  // C4 (v2 cleanup — R0 §C4): token gateway OpenClaw + các biến của cụm
+  // Claw3D/OS Shell đã NGỪNG dùng ở core (cụm sang openclawos.vn).
+  // getOrCreateOpenclawToken @deprecated, không còn gọi. Giữ biến rỗng để thoả
+  // ctx buildEnvs — chỉ commerce-starter còn active và không dùng các trường này.
+  // PHA 3: thay bằng cấp AIO Sandbox per-tenant (spec §6 bước 2).
+  const gatewaySecret = "";
+  const gatewayUrl = "";
+  const claw3dUrl = "";
+  const allowedOrigins = "";
 
   let anyFailed = false;
 
