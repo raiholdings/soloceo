@@ -121,6 +121,11 @@ interface AppDeployConfig {
 }
 
 const APP_CONFIGS: Record<string, AppDeployConfig> = {
+  // C2 (v2 cleanup — R0 §C2): claw3d + openclaw đã moved to openclawos.vn.
+  // Comment (KHÔNG xoá) để giữ tham chiếu lịch sử. Không còn là app mặc định
+  // (C1) và CatalogApp sẽ đặt active=false (C9) → không được cấp phát nữa.
+  // PHA 3: thay bằng AIO Sandbox (#1) + DeerFlow sub-agents.
+  /* MOVED TO openclawos.vn — claw3d:
   claw3d: {
     image: `${REGISTRY}/soloceo/claw3d`,
     tag: "patched",
@@ -173,6 +178,7 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
         process.env.SOLOCEO_CLAWHUB_URL ?? "https://convex-site.soloceo.vn",
     }),
   },
+  END MOVED TO openclawos.vn */
   // Mẫu dự án App Store: Web bán hàng (Next.js tự chứa). CEO chọn → instance riêng.
   "commerce-starter": {
     image: `${REGISTRY}/soloceo/commerce-starter`,
