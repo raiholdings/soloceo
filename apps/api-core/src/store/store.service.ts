@@ -14,12 +14,15 @@ import { ProvisionQueueService } from "./provision-queue.service";
 import { AiService } from "../ai/ai.service";
 import { decryptSecret } from "../ai/crypto.util";
 
-// App mặc định cài khi "Khởi chạy doanh nghiệp" — ADR-005 (tạm thời: Claw3D + OpenClaw).
-// ERPNext vẫn cài được từ App Store nhưng không tự cài mặc định.
+// App mặc định cài khi "Khởi chạy doanh nghiệp".
+// C1 (v2 cleanup — R0 §C1): TẠM cấp "commerce-starter" (web bán hàng mẫu) cho
+// khách mới trong lúc build v2 — khách vẫn có sản phẩm ngay, chưa có AI.
+// Cụm claw3d+openclaw đã sang openclawos.vn (bỏ khỏi mặc định).
+// PHA 3 xong: đổi sang trỏ venture mới vào DeerFlow thread + AIO Sandbox.
 const DEFAULT_APPS_BY_PLAN: Record<PlanKey, string[]> = {
-  STARTER: ["claw3d", "openclaw"],
-  GROWTH: ["claw3d", "openclaw"],
-  SCALE: ["claw3d", "openclaw"],
+  STARTER: ["commerce-starter"],
+  GROWTH: ["commerce-starter"],
+  SCALE: ["commerce-starter"],
 };
 
 @Injectable()

@@ -28,6 +28,17 @@ const CATALOG_APPS = [
     defaultEnv: {},
     planMin: Plan.STARTER,
   },
+  // C1 (v2 cleanup): web bán hàng mẫu — app mặc định TẠM cho khách mới trong lúc
+  // build v2. Deploy qua APP_CONFIGS (image registry), composeTemplate không được
+  // đọc (chỉ để thoả field bắt buộc). GIỮ (không đụng) theo ràng buộc v2.
+  {
+    key: "commerce-starter",
+    name: "Web bán hàng mẫu (Commerce Starter)",
+    category: "web",
+    composeTemplate: "infra/coolify/templates/commerce-starter.yml",
+    defaultEnv: {},
+    planMin: Plan.STARTER,
+  },
 ];
 
 async function main() {
