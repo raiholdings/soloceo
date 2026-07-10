@@ -65,12 +65,14 @@ CEO upload ảnh CCCD → POST /parse_document {doc_type:cccd}
 | Bước | Mượt ✅ | Gợn 🟡 |
 |---|---|---|
 | Đăng nhập | Supabase email/mật khẩu; dev-login đã tắt | Cần SMTP xác nhận email hoạt động |
-| Tạo DN | Org+Venture, org_id đúng | Trang "Tạo doanh nghiệp" đang là **iframe app.soloceo.vn** trong workspace |
-| **Auth workspace ↔ app** | — | 🔴 **Gợn lớn:** workspace (DeerFlow BetterAuth) và app.soloceo.vn (Supabase) là **2 hệ đăng nhập tách biệt** → CEO đăng nhập workspace vẫn có thể bị app.soloceo.vn hỏi đăng nhập lại. SSO cookie `.soloceo.vn` chỉ dùng chung *trong* các trang app, chưa nối DeerFlow↔app. |
+| Tạo DN | ✅ **Native trong shell DeerFlow** (hết iframe), gọi thẳng api-core, org_id đúng | — |
+| **Auth workspace ↔ app** | ✅ **ĐÃ ĐÓNG:** 3 trang (Tạo DN/Gói cước/Danh bạ) là **native trong shell DeerFlow**, dùng **cầu 1-đăng-nhập** (`/v1/auth/exchange` + server route `/workspace/api/soloceo-token`). Hết 2 hệ đăng nhập, hết iframe nền tối. | Cần bấm-thử-browser để xác nhận trải nghiệm visual (công cụ chặn browse prod) |
 | Chat AI | agent chạy, spawn sandbox, trace Langfuse | sub-agent chưa bật; trace chưa tag org_id; text answer khó lấy qua API |
 | **HITL** | khép kín, trang Phê duyệt có sẵn | — |
 | Dolphin | đọc CCCD ra JSON tiếng Việt | engine fallback (chưa Dolphin-v2 GPU) |
 
-**Kết luận:** luồng lõi (đăng nhập → tạo DN → chat có sandbox → **HITL khép kín** → đọc giấy tờ) **chạy được đầu-đến-cuối**. 3 gợn cần xử lý trước khi mời CEO thật: (1) **SSO workspace↔app**, (2) **bật sub-agent + tag org_id lên trace**, (3) **enforce godlp** (chờ 24h).
+> **CẬP NHẬT 11/07 (đợt manus-direction override):** Gỡ 3 trang iframe web-community khỏi workspace, thay bằng **native React trong shell DeerFlow** (cùng theme, 1 đăng nhập). Cầu SSO: `POST /v1/auth/exchange` (api-core, X-Internal-Token) + Next.js route `/workspace/api/soloceo-token` (giữ INTERNAL_API_TOKEN server-side, đổi phiên DeerFlow→JWT api-core). **Verify hạ tầng:** exchange thiếu token→403, token đúng→JWT; token route 401 (cần session); 3 page compiled NATIVE (hết EmbeddedSite). Trải nghiệm visual chủ dự án tự bấm thử.
+
+**Kết luận:** luồng lõi (đăng nhập → **tạo DN native** → chat có sandbox → **HITL khép kín** → đọc giấy tờ) **chạy được đầu-đến-cuối trên shell thống nhất**. Gợn 🔴 SSO **đã đóng**. Còn: (1) bật sub-agent + tag org_id lên trace, (2) enforce godlp (chờ 24h), (3) FlowGram node-render/exec + Midscene + dời LiteLLM (đợt sau).
 
 > Chủ dự án tự bấm: `soloceo.vn` → đăng ký → workspace → sidebar (Tạo doanh nghiệp / Phê duyệt / Quy trình / Cộng đồng...) → chat. Đối chiếu với bằng chứng backend ở trên.

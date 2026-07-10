@@ -28,6 +28,13 @@
 
 **Kết luận cập nhật:** **6/8 LIVE+verify** (N0/N1/N4/N6/N7/godlp-shadow) + **nợ chính N1+N7 ĐÓNG** + N8 chữ ký + N9 license verified. Còn: N2 node-render/exec, N3 Midscene tool-wiring, N5 enforce (chờ 24h), dời LiteLLM (cần DNS §a).
 
+> **CẬP NHẬT LẦN 3 (11/07, đợt manus-direction override — chỉ gỡ web-community cũ, GIỮ đủ 8 nền tảng):**
+> **Gợn 🔴 SSO đã ĐÓNG.** Gỡ 3 trang iframe web-community (Tạo DN/Gói cước/Danh bạ) khỏi workspace, thay bằng **native React trong shell DeerFlow** → **1 đăng nhập, cùng theme, hết iframe nền tối**.
+> - Cầu SSO: `POST /v1/auth/exchange` (api-core, header `X-Internal-Token`, fail-closed nếu thiếu `INTERNAL_API_TOKEN`) + Next.js server route `/workspace/api/soloceo-token` (giữ token nội bộ server-side, đổi phiên DeerFlow BetterAuth → JWT api-core cùng user).
+> - **Verify hạ tầng:** exchange thiếu token→403, token đúng→JWT (243 ký tự); token route public→401 (cần session DeerFlow=đúng); 3 page compiled **NATIVE** (route `soloceo-token/route.js` ROUTE-OK, hết `EmbeddedSite`); frontend rebuild `DOCKER_BUILDKIT=0` (classic builder tag đúng image).
+> - **Chưa verify:** trải nghiệm visual bấm-thử-browser (công cụ chặn browse prod) — chủ dự án tự bấm.
+> - **Hướng manus (chat-centric, sidebar tối giản, tạo-DN-chat-driven): ĐỂ DÀNH v3** theo chỉ đạo — đợt này chỉ gỡ frontend cũ, giữ đủ 8 nền tảng gồm FlowGram.
+
 ---
 
 ## CHECKLIST §6 — 12 MỤC (bằng chứng thật)
