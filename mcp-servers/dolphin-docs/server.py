@@ -8,6 +8,7 @@ schema tiếng Việt (R5 §4.2) bằng regex → trả {fields, confidence, ...
 `confidence` thấp / có warnings → agent đẩy người duyệt (HITL), không tự ghi DB.
 """
 import base64
+import json
 import os
 import re
 from typing import Any, Optional
