@@ -10,19 +10,23 @@
 
 ## TÓM TẮT TRẠNG THÁI 8 NỀN TẢNG
 
+> **CẬP NHẬT LẦN 2** (sau khi đóng nợ chính): 6/8 LIVE+verify. Bảng dưới là bản mới nhất.
+
 | # | Nền tảng | Trạng thái | Bằng chứng |
 |---|---|---|---|
-| N0 | **DeerFlow** (lõi) | 🟢 LIVE | soloceo.vn/workspace 200; gateway `Application startup complete` |
-| N5 | **godlp** (DLP) | 🟢 LIVE **shadow** (chờ 24h→enforce) | `[DLP-SHADOW] findings={cccd_12,phone_vn,email} masked=False` |
+| N0 | **DeerFlow** (lõi) | 🟢 LIVE | soloceo.vn/workspace 200; gateway startup complete |
+| N5 | **godlp** (DLP) | 🟢 LIVE **shadow** (enforce ~16:30 CEST 11/07) | `[DLP-SHADOW] findings={cccd_12,phone_vn,email} masked=False`; dlp_bypass=0 |
 | N1 | **AIO Sandbox** | 🟢 LIVE + verify | shell `SANDBOX_OK` TZ+07; browser CDP; no-key→401 |
-| N7 | **g3proxy** (egress) | 🟡 Đang build (Rust) | build lần 3 qua c-ares+python, đang compile |
-| N4 | **sub-agents + skills** | 🟢 LIVE + verify | log DeerFlow `custom_agents=[6]`; 6 skill VN mount |
-| N2 | **FlowGram** (canvas) | 🟢 canvas render (React 19) · 🟡 node/exec dở | screenshot `gedit-playground-container` |
-| N3 | **Midscene** | 🟡 Thiết kế + contract (chưa deploy) | cần rebuild image AIO + model VLM |
+| N7 | **g3proxy** (egress) | 🟢 **LIVE + verify** | soloceo.vn qua g3→200; example.com→000 chặn |
+| **N1+N7** | **Egress sandbox ép qua g3** | 🟢 **KHÉP KÍN + verify (nợ chính ĐÓNG)** | sandbox DeerFlow spawn/internal net: direct→000, soloceo qua g3→200, example qua g3→000; gateway điều khiển OK |
+| N4 | **sub-agents + skills** | 🟢 LIVE + verify | `custom_agents=[6]`; 6 skill VN mount vào sandbox (log docker run) |
+| N2 | **FlowGram** (canvas) | 🟢 canvas render (React 19) · 🟡 node render/exec dở | `gedit-playground-container` |
+| N3 | **Midscene** | 🟡 Prereq sẵn (CDP+VLM), chưa wiring tool | AIO có browser CDP; Claude-vision trong LiteLLM |
 | N6 | **Dolphin** (đọc giấy tờ) | 🟢 LIVE engine-fallback + verify | parse CCCD giả → `so_cccd:001199012345` |
-| N8 | **Zalo OA** | 🟡 Code đủ · chờ credential OA (§a) | zalo.controller.js trong container; endpoint cần soi |
+| N8 | **Zalo OA** | 🟢 webhook+chữ ký verify · 🟡 vòng tin nhắn chờ credential OA (§a) | chữ ký đúng→201{ok:true}, sai→401 |
+| N9 | **License BOM** | 🟢 verify | g3=Apache-2.0, arishem=Apache-2.0, godlp=MIT |
 
-**Kết luận:** 5 nền tảng LIVE+verify (N0/N5-shadow/N1/N4/N6), 1 render được (N2), 3 còn dở/chặn (N7 building, N3 thiết kế, N8 credential). Chi tiết + đường đi tiếp ở §12.
+**Kết luận cập nhật:** **6/8 LIVE+verify** (N0/N1/N4/N6/N7/godlp-shadow) + **nợ chính N1+N7 ĐÓNG** + N8 chữ ký + N9 license verified. Còn: N2 node-render/exec, N3 Midscene tool-wiring, N5 enforce (chờ 24h), dời LiteLLM (cần DNS §a).
 
 ---
 
