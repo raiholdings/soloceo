@@ -1,0 +1,87 @@
+# DeerFlow 2.0 — cấu hình lõi SoloCEO OS v2 (research/R1-report.md).
+# Đặt tại backend của DeerFlow (mount) khi deploy. Mọi LLM qua LiteLLM
+# (llm.soloceo.vn); sandbox = AIO Sandbox; guardrail = arishem gate; trace Langfuse.
+#
+# [CẦN KIỂM CHỨNG] Tên khóa chính xác (sandbox.use, guardrails.use, custom_agents)
+# đối chiếu config.yaml mẫu của bytedance/deer-flow trước khi deploy.
+
+# ---- Model: trỏ 100% về LiteLLM gateway (nguyên tắc #2) ----
+models:
+  - name: soloceo-smart
+    use: langchain_openai:ChatOpenAI
+    model: soloceo-smart              # virtual model trong LiteLLM
+    base_url: https://llm.soloceo.vn
+    api_key: $LITELLM_MASTER_KEY
+    max_tokens: 4096
+    max_retries: 2
+  - name: soloceo-fast
+    use: langchain_openai:ChatOpenAI
+    model: soloceo-fast
+    base_url: https://llm.soloceo.vn
+    api_key: $LITELLM_MASTER_KEY
+    max_tokens: 2048
+
+# ---- Sandbox: thay sandbox-local → AIO Sandbox per-tenant (R2, R0 §C6) ----
+# Provider tùy biến map org_id→sandbox, warm pool, idle timeout. Xem platform/sandbox/.
+sandbox:
+  use: soloceo.sandbox.provider:SoloAioSandboxProvider
+  # egress của sandbox BẮT BUỘC qua g3 (R6 §9) — cấu hình ở tầng container.
+
+# ---- Observability: Langfuse, mọi trace tag org_id ----
+langfuse:
+  enabled: true
+  public_key: $LANGFUSE_PUBLIC_KEY
+  secret_key: $LANGFUSE_SECRET_KEY
+  host: https://trace.soloceo.vn
+
+# ---- HITL gate: arishem guardrail chặn tool-call nhạy cảm (R1 §6, R6 §A) ----
+guardrails:
+  use: soloceo.guardrails.arishem:ArishemGuardrailProvider
+  # provider gọi svc-rules-engine.evaluate(); deny → interrupt để HITL (api-core
+  # tạo ApprovalRequest, resume qua POST /api/threads/{id}/state).
+
+# ---- Skills: chợ kỹ năng VN (ClawHub → skills/vietnam-business, R0 §C-D) ----
+skills:
+  paths:
+    - /mnt/skills/public
+    - /mnt/skills/custom       # mount skills/vietnam-business vào đây
+
+# ---- Sub-agents: 6 nhân sự AI (port từ playbook, R0 §4-C) ----
+# lead_agent (Trợ lý Điều hành) là mặc định; 6 sub-agent chuyên môn bên dưới.
+# ≤3 sub-agent chạy song song mỗi turn (MAX_CONCURRENT_SUBAGENTS=3, R1 §3).
+custom_agents:
+  - name: kinh-doanh
+    description: "Chuyên viên Kinh doanh — tư vấn, báo giá, chốt đơn, chăm khách."
+    system_prompt_file: agents/kinh-doanh.md
+    model: soloceo-smart
+    max_turns: 12
+  - name: marketing
+    description: "Chuyên viên Marketing — kế hoạch quảng bá đa kênh (FB/TikTok/Zalo/SEO)."
+    system_prompt_file: agents/marketing.md
+    model: soloceo-smart
+    max_turns: 12
+  - name: noi-dung
+    description: "Biên tập Nội dung — bài bán hàng, social, email, kịch bản video."
+    system_prompt_file: agents/noi-dung.md
+    model: soloceo-smart
+    max_turns: 12
+  - name: van-hanh
+    description: "Trợ lý Vận hành & CSKH — xử lý đơn, hỗ trợ sau bán, quy trình."
+    system_prompt_file: agents/van-hanh.md
+    model: soloceo-fast
+    max_turns: 12
+  - name: ke-toan
+    description: "Kế toán AI — theo dõi doanh thu/chi phí/công nợ, báo cáo dòng tiền."
+    system_prompt_file: agents/ke-toan.md
+    model: soloceo-smart
+    max_turns: 12
+  - name: nghien-cuu
+    description: "Nghiên cứu thị trường — phân tích đối thủ, xu hướng, khách hàng."
+    system_prompt_file: agents/nghien-cuu.md
+    model: soloceo-smart
+    max_turns: 12
+
+# ---- Channel: Zalo OA + Telegram (R7). Adapter/verify ở api-core; DeerFlow nhận
+#      run qua Gateway. DEER_FLOW_CHANNELS_LANGGRAPH_URL trỏ gateway nội bộ. ----
+channels:
+  gateway_url: $DEER_FLOW_CHANNELS_LANGGRAPH_URL

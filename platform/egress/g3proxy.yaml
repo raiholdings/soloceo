@@ -1,0 +1,34 @@
+# g3proxy — egress proxy DUY NHẤT của AIO Sandbox (research/R6 §C).
+# Allowlist domain per-tenant (theo org_id) + audit log mọi truy cập ra ngoài.
+# Sinh động từ bảng EgressAllowlist (per-org) qua template — file này là KHUNG.
+#
+# [CẦN KIỂM CHỨNG] Toàn bộ cú pháp (server/escaper/acl/audit) phải đối chiếu
+# g3proxy config reference. Đây là mô tả khái niệm cấu hình đích.
+
+server:
+  - name: tenant_egress
+    type: http_proxy
+    listen: "0.0.0.0:3128"
+    # username = org_id để g3 biết áp allowlist nào (auth basic)
+    auth:
+      type: basic
+    escaper: route_by_tenant
+
+escaper:
+  - name: route_by_tenant
+    type: route_query
+    # Mỗi org chỉ ra được domain trong allowlist của mình; còn lại DENY.
+    # Ví dụ (sinh từ EgressAllowlist):
+    rules:
+      - user: "org_DEMO"
+        allow_domains:
+          - "api.stripe.com"
+          - "*.payos.vn"
+          - "api.anthropic.com"
+          - "llm.soloceo.vn"
+    default: deny
+
+audit:
+  - name: egress_audit
+    log:
+      type: journal            # ghi: org_id, domain đích, verdict (allow/deny), bytes

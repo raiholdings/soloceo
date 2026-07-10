@@ -32,6 +32,13 @@ model_list:
     litellm_params:
       model: "anthropic/claude-sonnet-4-6"
       api_key: "os.environ/ANTHROPIC_API_KEY"
+  # VLM cho Midscene (thao tác web) — research/R4 §A.4. Model đa phương thức
+  # (có thị giác) bắt buộc; Midscene trỏ MIDSCENE_MODEL_NAME=soloceo-vision.
+  # [CẦN CHỐT] chọn Qwen-VL (BytePlus) hoặc GPT-4o; canvas cần Qwen-VL/UI-TARS.
+  - model_name: soloceo-vision
+    litellm_params:
+      model: "anthropic/claude-sonnet-4-6" # tạm dùng Claude vision; đổi sang Qwen-VL khi chốt
+      api_key: "os.environ/ANTHROPIC_API_KEY"
 
 general_settings:
   master_key: "os.environ/LITELLM_MASTER_KEY"
@@ -42,6 +49,16 @@ litellm_settings:
   # Trace + cost về Langfuse
   success_callback: ["langfuse"]
   drop_params: true
+
+# godlp DLP guardrail (research/R6 §7) — mask PII trong PROMPT TRƯỚC khi rời hệ
+# thống (tuân Nghị định 13/2023). Hook pre_call gọi sidecar svc-dlp (Go+godlp).
+# Bật khi svc-dlp đã deploy. [CẦN KIỂM CHỨNG] tên hook theo version LiteLLM.
+guardrails:
+  - guardrail_name: "godlp-pii-mask"
+    litellm_params:
+      guardrail: guardrails.dlp_guardrail.GodlpGuardrail
+      mode: "pre_call"
+      default_on: true
 
 router_settings:
   # BytePlus lỗi → tự chuyển Claude, tenant không thấy gián đoạn

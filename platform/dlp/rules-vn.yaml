@@ -1,0 +1,57 @@
+# godlp ruleset PII Việt Nam — SoloCEO OS v2 (research/R6 §6).
+# godlp mặc định hướng thị trường TQ; đây là bổ sung pattern PII VN.
+# Ưu tiên GIẢM FALSE-NEGATIVE (thà mask nhầm còn hơn lọt PII — Nghị định 13).
+#
+# [CẦN KIỂM CHỨNG] Định dạng ruleset chính xác của godlp (tên khóa rules/regex/
+# mask) phải đối chiếu README godlp trước khi nạp. Đây là bản mô tả logic.
+
+rules:
+  - name: cccd_12
+    display: "CCCD 12 số"
+    regex: '\b0\d{11}\b'
+    # validate 3 số đầu = mã tỉnh để giảm nhầm với SĐT (hậu xử lý ở svc-dlp)
+    mask: keep_last_4        # 0xxxxxxxNNNN -> ********NNNN
+
+  - name: cmnd_9
+    display: "CMND 9 số (cũ)"
+    regex: '\b\d{9}\b'
+    require_context: ["CMND", "chứng minh", "số CMND"]
+    mask: keep_last_3
+
+  - name: phone_vn
+    display: "Số điện thoại VN"
+    regex: '(?:\+84|0)(?:3|5|7|8|9)\d{8}'
+    mask: keep_last_3        # 09xxxxxNNN
+
+  - name: bien_so_xe
+    display: "Biển số xe"
+    regex: '\b\d{2}[A-Z]{1,2}[- ]?\d{3,5}\b'
+    mask: full
+
+  - name: mst
+    display: "Mã số thuế"
+    regex: '\b\d{10}(?:-\d{3})?\b'
+    require_context: ["MST", "mã số thuế", "tax"]
+    mask: keep_last_3
+
+  - name: bank_account
+    display: "Số tài khoản ngân hàng"
+    regex: '\b\d{8,16}\b'
+    require_context: ["tài khoản", "STK", "số tk", "account"]
+    mask: keep_last_4
+
+  - name: bank_card
+    display: "Thẻ ngân hàng (16 số, Luhn)"
+    regex: '\b(?:\d[ -]?){16}\b'
+    algorithm: luhn
+    mask: keep_last_4
+
+  - name: email
+    display: "Email"
+    regex: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    mask: keep_domain        # a***@example.com
+
+# Địa chỉ VN: khó regex thuần → dùng dictionary "Phường/Quận/Xã/Huyện/TP" + số nhà
+# (triển khai ở svc-dlp bằng detector riêng, không chỉ regex).
+dictionaries:
+  address_markers: ["Phường", "Quận", "Xã", "Huyện", "Thành phố", "Tỉnh", "Số nhà"]
