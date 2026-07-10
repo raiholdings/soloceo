@@ -36,6 +36,31 @@ export class ApprovalsService {
     });
   }
 
+  /** Tạo ApprovalRequest từ DeerFlow guardrail (server-to-server, R6/R1). */
+  createInternal(data: {
+    orgId: string;
+    ventureId?: string | null;
+    actionType: string;
+    tier?: number;
+    matchedRuleId?: string | null;
+    threadId?: string | null;
+    runId?: string | null;
+    payloadJson?: Record<string, unknown>;
+  }) {
+    return this.prisma.approvalRequest.create({
+      data: {
+        orgId: data.orgId,
+        ventureId: data.ventureId ?? null,
+        actionType: data.actionType,
+        payloadJson: (data.payloadJson ?? {}) as object,
+        matchedRuleId: data.matchedRuleId ?? null,
+        tier: data.tier ?? 2,
+        threadId: data.threadId ?? null,
+        runId: data.runId ?? null,
+      },
+    });
+  }
+
   async decide(user: RequestUser, id: string, approve: boolean, note?: string) {
     const req = await this.prisma.approvalRequest.findUnique({ where: { id } });
     if (!req) throw new NotFoundException("Không tìm thấy yêu cầu phê duyệt");
