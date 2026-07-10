@@ -1,8 +1,18 @@
 # BÁO CÁO HỆ THỐNG SoloCEO.vn — SoloCEO OS v2
 
-**Ngày:** 10/07/2026 · **Nhánh production:** `soloceo-mvp` · **HEAD:** `ca804373`
-**Trạng thái:** Cut-over v2 lên production đã hoàn tất. Toàn hệ thống LIVE.
+**Ngày:** 10/07/2026 · **Nhánh production:** `soloceo-mvp` · **Nhánh làm việc:** `hoan-thien-v2`
+**Trạng thái:** Cut-over v2 xong. Đang chạy đợt HOÀN THIỆN (P1–P4) theo `docs/GOVERNANCE.md §5b`.
 **Mục đích tài liệu:** bàn giao hiện trạng đầy đủ (nền tảng + luồng + gap) để viết tiếp code/tài liệu.
+
+> ### Cập nhật đợt hoàn thiện (11/07/2026) — P1, P2(một phần), B9 XONG
+> - **P1·B2 guardrail DeerFlow**: LIVE. Gate tầng agent qua `POST /v1/rules/evaluate-internal`. Verify: `create_payment` 10tr→chặn tier 2, `bash`→allow không gọi mạng, token sai→403.
+> - **P2 SSO**: token → cookie `.soloceo.vn` (hết bắt đăng nhập lại trong iframe); header web-community chromeless khi nhúng; copy Gói cước bỏ "3D"/"chợ kỹ năng" (không đổi giá).
+> - **P2 Phê duyệt**: trang native `/workspace/phe-duyet` + mục sidebar. **HITL resume KHÉP KÍN** — vá CSRF gateway (internal token bypass); `POST /api/threads/{id}/state`→200 (trước luôn 401/403 nên tầng 2 chưa từng resume được).
+> - **B9 Langfuse**: LIVE `trace.soloceo.vn` (tenant-02, headless-init, không bấm UI). LiteLLM `success_callback: langfuse`. Verify: call thật→trace hiện trên Langfuse.
+> - **Rotate Coolify token**: XONG. Token lộ `4|hHoW…`→401 (vô hiệu). svc-provision dùng token mới id=6, verify gọi Coolify API OK.
+> - **Sự cố đã xử lý**: (1) đặt sai `DEER_FLOW_HOME`→"First boot" (dữ liệu 93MB không mất, đã phục hồi); (2) `BETTER_AUTH_SECRET="x"` do lần build trước→đã thay 64-hex, persist .env (user phải đăng nhập lại 1 lần); (3) LiteLLM cần ~2 phút boot (prisma+8 workers)→rollback từng kích hoạt oan.
+> - **C1 godlp hook**: DUYỆT (fail-open + canary). Chờ khởi động pha **shadow 24h** → DỪNG trình findings trước enforce. `DLP_HOOK_MODE=off|shadow|enforce` = đường tắt/rollback.
+> - Chi tiết đầy đủ: cuối tài liệu (§14).
 
 > Nguồn sự thật: quét trực tiếp 3 VPS + repo ngày 10/07/2026. Không suy đoán.
 > Nghiên cứu chi tiết từng nền tảng: `research/R0…R7`. Quyết định kiến trúc: `docs/ADR/`.
