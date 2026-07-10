@@ -51,18 +51,20 @@ docs-ocr.soloceo.vn  → (host GPU R730)  (dolphin-docs MCP)
    `curl https://vd-ngoai-allowlist.com` = **bị g3 chặn** (DENY, có audit log).
 
 ## Bước 3 — arishem (svc-rules-engine) + MCP rules-engine
-1. Mở `LICENSE` arishem (giả định Apache-2.0 — ADR-006). Viết wrapper Go `cmd/server`
-   (platform/rules/README.md), embed arishem, load bảng `Rule`, expose `POST /evaluate`.
-2. Build `$REG/soloceo/svc-rules-engine`, deploy (CORE, nội bộ). Đặt `RULES_ENGINE_URL`
-   cho api-core + DeerFlow guardrail.
+1. **Code đã có** `platform/rules/*.go` (evaluator native chạy ngay; arishem là seam).
+   Build: `cd platform/rules && docker build -t $REG/soloceo/svc-rules-engine:v1 .`
+2. Deploy (CORE, nội bộ) qua `platform/docker-compose.v2.yml`. Đặt `RULES_ENGINE_URL=
+   http://svc-rules-engine:8080` cho api-core + DeerFlow guardrail. Mở LICENSE arishem
+   (ADR-006) nếu muốn thay evaluator native bằng arishem thật.
 3. **Smoke test:** `curl rules/evaluate -d '{"action":"spend_money","context":{"amount":9e9}}'`
    → `require_approval`; tắt service → api-core vẫn fail-closed (require_approval). ✅
 4. 100% tool-call nhạy cảm bị gate: gọi thử agent chi tiền → tạo `ApprovalRequest`, luồng dừng.
 
 ## Bước 4 — godlp (svc-dlp) + pre-call hook LiteLLM
-1. Mở `LICENSE` godlp. Viết `svc-dlp` (Go) `POST /mask`, nạp `platform/dlp/rules-vn.yaml`.
-2. Build `$REG/soloceo/svc-dlp`, deploy. Copy `infra/litellm/guardrails/dlp_guardrail.py`
-   vào LiteLLM; đặt `SVC_DLP_URL`; bật `guardrails:` trong config (đã thêm).
+1. **Code đã có** `platform/dlp/*.go` (regex PII VN chạy ngay; godlp là seam).
+   Build: `cd platform/dlp && docker build -t $REG/soloceo/svc-dlp:v1 .`
+2. Deploy (compose v2). Copy `infra/litellm/guardrails/dlp_guardrail.py` vào LiteLLM;
+   đặt `SVC_DLP_URL=http://svc-dlp:8080`; bật `guardrails:` trong config (đã thêm).
 3. **Smoke test:** gửi prompt chứa "CCCD 012345678901, SĐT 0912345678" qua LiteLLM →
    Anthropic nhận bản **đã mask**; Langfuse log `dlp_findings` (loại+count, KHÔNG giá trị).
 
