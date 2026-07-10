@@ -1,11 +1,10 @@
-# svc-rules-engine — build tĩnh, image nhỏ. Build trên VPS: docker build -t localhost:5000/soloceo/svc-rules-engine .
+# svc-rules-engine — build: docker build -t soloceo/svc-rules-engine:v1 .
 FROM golang:1.22-alpine AS build
 WORKDIR /src
+RUN apk add --no-cache git
 COPY go.mod ./
-RUN go mod download || true
 COPY *.go ./
-RUN CGO_ENABLED=0 go build -o /svc-rules-engine .
-
+RUN go mod tidy && CGO_ENABLED=0 go build -o /svc-rules-engine .
 FROM gcr.io/distroless/static-debian12
 COPY --from=build /svc-rules-engine /svc-rules-engine
 EXPOSE 8080
