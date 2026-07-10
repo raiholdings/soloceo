@@ -1,0 +1,5 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+# Dolphin inference (thêm khi tích hợp model, GPU):
+# torch, transformers, vllm  — pin theo GPU R730

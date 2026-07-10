@@ -54,6 +54,40 @@ async function main() {
   console.log(
     `Đã vô hiệu ${OLD_KEYS.length} app cũ, seed ${CATALOG_APPS.length} app AI-native (ADR-005).`,
   );
+
+  // ---- Ruleset nền tảng HITL gate (v2 — ADR-007). orgId=null = áp mọi org.
+  // conditionJson theo schema evaluator (platform/rules/evaluator.go). {} = luôn khớp.
+  // Idempotent: xóa rule seed cũ (createdBy='seed') rồi tạo lại.
+  await prisma.rule.deleteMany({ where: { createdBy: "seed" } });
+  const BASELINE_RULES = [
+    // spend_money: > 5 triệu → người duyệt (tier 2); còn lại tier 1.
+    {
+      name: "Chi tiền > 5 triệu cần duyệt",
+      actionType: "spend_money",
+      priority: 10,
+      decision: "REQUIRE_APPROVAL" as const,
+      approvalTier: 2,
+      conditionJson: {
+        logic: "and",
+        sub_conditions: [
+          { lhs: { fact: "amount" }, op: "gt", rhs: { const: 5000000 } },
+        ],
+      },
+    },
+    { name: "Chi tiền (mọi mức)", actionType: "spend_money", priority: 100, decision: "REQUIRE_APPROVAL" as const, approvalTier: 1, conditionJson: {} },
+    { name: "Xóa dữ liệu", actionType: "delete_data", priority: 50, decision: "REQUIRE_APPROVAL" as const, approvalTier: 2, conditionJson: {} },
+    { name: "Chuyển sở hữu venture (M&A)", actionType: "transfer_ownership", priority: 50, decision: "REQUIRE_APPROVAL" as const, approvalTier: 2, conditionJson: {} },
+    { name: "Ký tài liệu", actionType: "sign_document", priority: 50, decision: "REQUIRE_APPROVAL" as const, approvalTier: 2, conditionJson: {} },
+    { name: "Nộp hồ sơ", actionType: "submit_application", priority: 50, decision: "REQUIRE_APPROVAL" as const, approvalTier: 2, conditionJson: {} },
+    { name: "Xuất dữ liệu PII", actionType: "export_pii", priority: 50, decision: "REQUIRE_APPROVAL" as const, approvalTier: 2, conditionJson: {} },
+    { name: "Gửi hàng loạt", actionType: "send_bulk_email", priority: 100, decision: "REQUIRE_APPROVAL" as const, approvalTier: 1, conditionJson: {} },
+    { name: "Đăng công khai", actionType: "publish_public", priority: 100, decision: "REQUIRE_APPROVAL" as const, approvalTier: 1, conditionJson: {} },
+    { name: "Provision hạ tầng", actionType: "deploy_infra", priority: 100, decision: "REQUIRE_APPROVAL" as const, approvalTier: 1, conditionJson: {} },
+  ];
+  for (const r of BASELINE_RULES) {
+    await prisma.rule.create({ data: { ...r, orgId: null, createdBy: "seed" } });
+  }
+  console.log(`Đã seed ${BASELINE_RULES.length} rule nền tảng HITL gate (ADR-007).`);
 }
 
 main()
