@@ -319,3 +319,106 @@ enum DomainOrderStatus {
   FAILED
   CANCELED
 }
+
+// ============================================================================
+// SoloCEO OS v2 (PHA 3) — HITL 2 tầng (arishem gate + interrupt), DLP, egress,
+// channel. Tham chiếu: research/R6-report.md (arishem/godlp/g3), R7 (Zalo),
+// R1/R3 (interrupt-resume ↔ ApprovalRequest). Nghị định 13/2023 (audit + mask).
+// ============================================================================
+
+/// Luật gác cổng HITL (arishem) — rule là DỮ LIỆU, sửa không deploy lại code.
+model Rule {
+  id            String       @id @default(uuid())
+  orgId         String? // null = rule toàn nền tảng (áp mọi org)
+  name          String
+  description   String?
+  actionType    String // khớp SENSITIVE_ACTIONS (packages/shared)
+  priority      Int          @default(100) // nhỏ = ưu tiên đánh giá trước
+  conditionJson Json // cây điều kiện arishem (JSON)
+  decision      RuleDecision
+  approvalTier  Int? // 1|2 (chỉ khi decision=REQUIRE_APPROVAL)
+  enabled       Boolean      @default(true)
+  version       Int          @default(1)
+  createdBy     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([orgId, actionType, enabled])
+}
+
+/// Audit mọi phán quyết của rules-engine (context ĐÃ mask PII trước khi lưu).
+model RuleDecisionLog {
+  id            String       @id @default(uuid())
+  orgId         String
+  ventureId     String?
+  actionType    String
+  contextJson   Json
+  decision      RuleDecision
+  matchedRuleId String?
+  actorUserId   String?
+  createdAt     DateTime     @default(now())
+
+  @@index([orgId, createdAt])
+}
+
+/// Hàng đợi HITL khi decision=REQUIRE_APPROVAL (dùng chung cho FlowGram human_approval).
+model ApprovalRequest {
+  id            String         @id @default(uuid())
+  orgId         String
+  ventureId     String?
+  actionType    String
+  payloadJson   Json // payload tool-call bị giữ (PII đã mask)
+  matchedRuleId String?
+  tier          Int // 1=auto-policy, 2=người duyệt
+  // Nối interrupt-resume DeerFlow (R1): thread/run để resume sau khi duyệt.
+  threadId      String?
+  runId         String?
+  status        ApprovalStatus @default(PENDING)
+  decidedBy     String?
+  decidedAt     DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime       @default(now())
+
+  @@index([orgId, status])
+}
+
+/// Allowlist domain egress per-org (g3proxy) — sinh config g3 từ đây.
+model EgressAllowlist {
+  id        String   @id @default(uuid())
+  orgId     String
+  domain    String // vd "api.stripe.com", "*.payos.vn"
+  enabled   Boolean  @default(true)
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@unique([orgId, domain])
+  @@index([orgId, enabled])
+}
+
+/// Liên kết kênh nhắn tin (Zalo OA/Telegram) → org/venture (R7). Token OA lưu ở Secret.
+model ChannelBinding {
+  id         String   @id @default(uuid())
+  orgId      String
+  ventureId  String?
+  channel    String // "zalo" | "telegram"
+  externalId String // Zalo oa_id / telegram bot id
+  secretRef  String // key trong bảng Secret chứa token (mã hóa AES-256-GCM)
+  status     String   @default("active")
+  createdAt  DateTime @default(now())
+
+  @@unique([channel, externalId]) // khóa route webhook
+  @@index([orgId, ventureId])
+}
+
+enum RuleDecision {
+  ALLOW
+  DENY
+  REQUIRE_APPROVAL
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
