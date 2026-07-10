@@ -44,7 +44,7 @@ Không còn `import`/URL **active** trỏ openclaw/claw3d/clawhub. ✅ (§F đ�
 > ```bash
 > CORE=194.233.72.150 ; TENANT1=62.146.235.177
 > SSHK="ssh -i ~/.ssh/soloceo_deploy -o IdentitiesOnly=yes"
-> COOLIFY=https://coolify.soloceo.vn ; TOKEN='4|hHoWfjiGVW98WLmXVT2HpyXo8gO8fEL3hlh2o7Mt'
+> COOLIFY=https://coolify.soloceo.vn ; TOKEN="$COOLIFY_API_TOKEN"   # lấy từ Coolify → Keys & Tokens
 > ```
 
 ### 4.1 — BACKUP DB core (BẮT BUỘC trước migrate)
