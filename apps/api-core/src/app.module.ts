@@ -18,6 +18,10 @@ import { PaymentsModule } from "./payments/payments.module";
 import { CommunityModule } from "./community/community.module";
 import { MarketplaceModule } from "./marketplace/marketplace.module";
 import { AdminModule } from "./admin/admin.module";
+// SoloCEO OS v2 (PHA 3) — HITL 2 tầng
+import { RulesModule } from "./rules/rules.module";
+import { ApprovalsModule } from "./approvals/approvals.module";
+import { ChannelsModule } from "./channels/channels.module";
 
 @Module({
   imports: [
@@ -43,6 +47,9 @@ import { AdminModule } from "./admin/admin.module";
     CommunityModule,
     MarketplaceModule,
     AdminModule,
+    RulesModule,
+    ApprovalsModule,
+    ChannelsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

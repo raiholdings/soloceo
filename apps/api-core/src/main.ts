@@ -5,7 +5,8 @@ import helmet from "helmet";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // rawBody: giữ body thô cho verify chữ ký webhook Zalo OA (channels/zalo — R7 §2).
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   app.setGlobalPrefix("v1");
   app.use(helmet());
