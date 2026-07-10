@@ -27,6 +27,14 @@ import urllib.request
 
 from litellm.integrations.custom_logger import CustomLogger
 
+try:
+    # Logger của LiteLLM proxy — dòng log đi vào docker logs (audit shadow 24h).
+    from litellm._logging import verbose_proxy_logger as _log
+except Exception:  # pragma: no cover
+    import logging
+
+    _log = logging.getLogger("litellm_dlp_hook")
+
 SVC_DLP_URL = os.environ.get("SVC_DLP_URL", "http://svc-dlp:8080")
 TIMEOUT = float(os.environ.get("DLP_HOOK_TIMEOUT", "0.8"))  # 800ms
 CB_THRESHOLD = int(os.environ.get("DLP_CB_THRESHOLD", "5"))
@@ -102,6 +110,18 @@ class DlpGuardrail(CustomLogger):
             meta["dlp_shadow"] = True  # ghi rõ: chưa thực sự mask
         if changed:
             meta["dlp_masked"] = True
+
+        # Audit trail (docker logs) — chỉ loại + số lượng, KHÔNG có giá trị PII.
+        # Đây là nguồn dữ liệu để tổng hợp findings sau 24h shadow.
+        if total or mode == "enforce":
+            model = data.get("model", "?")
+            _log.info(
+                "[DLP-%s] model=%s findings=%s masked=%s",
+                mode.upper(),
+                model,
+                json.dumps(total, ensure_ascii=True),
+                changed,
+            )
 
     def _mask(self, text: str) -> dict:
         try:
