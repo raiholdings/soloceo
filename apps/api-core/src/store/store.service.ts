@@ -162,9 +162,10 @@ export class StoreService {
   }
 
   /**
+   * @deprecated v2 cleanup (R0 §C3) — cụm OpenClaw đã sang openclawos.vn.
    * GET /v1/ventures/:id/openclaw-access — URL Control UI + token gateway để
    * OS Shell nhúng OpenClaw (auth qua fragment #token=, không lộ ra server log).
-   * Chỉ chủ Org của venture mới lấy được.
+   * Giữ lại để không gãy client cũ; luồng workspace v2 sẽ dùng DeerFlow (PHA 3).
    */
   async getOpenclawAccess(user: RequestUser, ventureId: string) {
     const venture = await this.getOwnedVenture(user, ventureId);

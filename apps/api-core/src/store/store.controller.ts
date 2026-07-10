@@ -57,8 +57,17 @@ export class StoreController {
     return this.storeService.listInstalls(user, ventureId);
   }
 
+  /**
+   * @deprecated v2 cleanup (R0 §C3) — cụm OpenClaw/OS Shell đã chuyển sang
+   * openclawos.vn. Endpoint giữ lại nhưng KHÔNG dùng trong luồng core v2
+   * (caller duy nhất là web-platform — đã gỡ khỏi build ở C5). Sẽ được thay
+   * bằng luồng DeerFlow workspace ở PHA 3. Không xoá để tránh gãy client cũ.
+   */
   @Get("ventures/:id/openclaw-access")
-  @ApiOperation({ summary: "URL + token Control UI OpenClaw (nhúng OS Shell)" })
+  @ApiOperation({
+    summary: "[DEPRECATED] URL + token Control UI OpenClaw (đã chuyển openclawos.vn)",
+    deprecated: true,
+  })
   openclawAccess(
     @CurrentUser() user: RequestUser,
     @Param("id", ParseUUIDPipe) ventureId: string,
