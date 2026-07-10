@@ -156,14 +156,9 @@ export default function OnboardingPage() {
                       Hồ sơ public
                     </Button>
                   </Link>
-                  <a
-                    href={
-                      process.env.NEXT_PUBLIC_PLATFORM_URL ??
-                      "https://platform.soloceo.vn"
-                    }
-                  >
-                    <Button size="sm">Mở SoloCEO OS</Button>
-                  </a>
+                  {/* C8 (v2 cleanup): nút "Mở SoloCEO OS" trỏ platform.soloceo.vn
+                      (OS Shell 3D) đã gỡ — cụm sang openclawos.vn. Không gian làm
+                      việc v2 (DeerFlow workspace) sẽ nối lại ở PHA 3. */}
                 </div>
               </CardContent>
             </Card>

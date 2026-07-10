@@ -29,8 +29,9 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
     label: "Khởi đầu",
     priceVndMonthly: 299_000,
     maxVentures: 1,
-    // ADR-005: bộ AI-native mặc định
-    allowedAppKeys: ["claw3d", "openclaw", "erpnext"],
+    // C8 (v2 cleanup): claw3d/openclaw đã sang openclawos.vn. App v2 tạm thời:
+    // web bán hàng mẫu + ERPNext. AI (DeerFlow/AIO) sẽ nối ở PHA 3.
+    allowedAppKeys: ["commerce-starter", "erpnext"],
     aiTokenCredit: 50_000,
     paymentFeePct: 3,
     maListingAllowed: false,
@@ -41,7 +42,8 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
     label: "Tăng trưởng",
     priceVndMonthly: 990_000,
     maxVentures: 1,
-    allowedAppKeys: ["claw3d", "openclaw", "erpnext"],
+    // C8 (v2 cleanup): claw3d/openclaw → openclawos.vn. Tạm: web + ERPNext.
+    allowedAppKeys: ["commerce-starter", "erpnext"],
     aiTokenCredit: 500_000,
     paymentFeePct: 2,
     maListingAllowed: true,

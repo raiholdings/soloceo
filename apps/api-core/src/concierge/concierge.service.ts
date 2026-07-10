@@ -34,12 +34,12 @@ const SYSTEM_PROMPT = `Bạn là Lễ tân AI của SoloCEO (soloceo.vn) — n�
 
 NHIỆM VỤ: tư vấn ngắn gọn, thực chiến và GIÚP KHÁCH KHỞI TẠO DOANH NGHIỆP THẬT trên platform. Luôn trả lời tiếng Việt, thân thiện, xưng "em".
 
-SoloCEO OS cung cấp cho mỗi CEO: văn phòng ảo 3D (Claw3D), trợ lý AI điều hành (OpenClaw), chợ kỹ năng, web bán hàng mẫu, mua tên miền, sổ doanh thu xác thực, cộng đồng và sàn M&A bán lại doanh nghiệp. Gói từ 299K/tháng.
+SoloCEO OS cung cấp cho mỗi CEO: trợ lý AI điều hành, web bán hàng mẫu, tự động hoá quy trình, mua tên miền, sổ doanh thu xác thực, cộng đồng và sàn M&A bán lại doanh nghiệp. Gói từ 299K/tháng.
 
 CÁCH LÀM VIỆC:
 - Khách kể ý tưởng → tư vấn tên doanh nghiệp + slug (không dấu, gạch ngang) → dùng check_slug kiểm tra.
 - Khách muốn bắt đầu/khởi tạo → gọi create_and_launch_venture. Nếu tool trả needLogin → nói khách bấm nút "Đăng nhập" ngay dưới khung chat rồi nhắn lại "tiếp tục".
-- Sau khi khởi tạo thành công → chúc mừng + bảo khách mở platform.soloceo.vn để xem văn phòng 3D + trợ lý AI đang được dựng (vài phút).
+- Sau khi khởi tạo thành công → chúc mừng + báo khách rằng không gian làm việc + trợ lý AI đang được dựng (vài phút), sẽ có thông báo khi sẵn sàng.
 - Có thể check_domains giúp khách chọn tên miền đẹp.
 - KHÔNG bịa tính năng. Câu trả lời ≤ 120 từ trừ khi khách hỏi sâu.`;
 
@@ -64,7 +64,7 @@ const TOOLS = [
     function: {
       name: "create_and_launch_venture",
       description:
-        "Tạo doanh nghiệp và khởi tạo không gian làm việc (văn phòng 3D + trợ lý AI) trên platform. Cần khách đã đăng nhập.",
+        "Tạo doanh nghiệp và khởi tạo không gian làm việc (trợ lý AI + web bán hàng). Cần khách đã đăng nhập.",
       parameters: {
         type: "object",
         properties: {
@@ -221,7 +221,7 @@ export class ConciergeService {
             slug: v.slug,
             status: v.status,
             apps: v.installs.map((i) => `${i.catalogApp.key}:${i.status}`),
-            platformUrl: "https://platform.soloceo.vn",
+            platformUrl: "https://soloceo.vn",
           })),
         };
       }
@@ -244,8 +244,8 @@ export class ConciergeService {
             ok: true,
             venture: { id: v.id, name: v.name, slug: v.slug },
             message:
-              "Đã khởi tạo! Không gian (văn phòng 3D + trợ lý AI) đang được dựng, vài phút là xong.",
-            platformUrl: "https://platform.soloceo.vn",
+              "Đã khởi tạo! Không gian làm việc (trợ lý AI + web bán hàng) đang được dựng, vài phút là xong.",
+            platformUrl: "https://soloceo.vn",
           };
         } catch (e) {
           const msg =
@@ -307,7 +307,7 @@ export class ConciergeService {
     }
     return {
       reply:
-        "Em đã xử lý xong các bước — anh/chị xem chi tiết trên platform.soloceo.vn nhé!",
+        "Em đã xử lý xong các bước — anh/chị xem chi tiết trên soloceo.vn nhé!",
       needLogin,
       launched,
       loggedIn: !!user?.orgId,
