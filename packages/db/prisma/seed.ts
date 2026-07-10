@@ -2,24 +2,10 @@ import { PrismaClient, Plan } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Catalog App Store — ADR-005: bộ AI-native (bỏ Dify/Activepieces/Twenty/Medusa/site-nextjs)
+// Catalog App Store v2 (C9 — R0): claw3d/openclaw đã sang openclawos.vn → vô
+// hiệu hoá (active=false) bên dưới, KHÔNG xoá bản ghi. Bộ v2 tạm: ERPNext + web
+// bán hàng mẫu; AI (DeerFlow/AIO) nối ở PHA 3.
 const CATALOG_APPS = [
-  {
-    key: "claw3d",
-    name: "Văn phòng ảo 3D (Claw3D)",
-    category: "workspace",
-    composeTemplate: "infra/coolify/templates/claw3d.yml",
-    defaultEnv: {},
-    planMin: Plan.STARTER,
-  },
-  {
-    key: "openclaw",
-    name: "Trợ lý ra lệnh AI (OpenClaw)",
-    category: "ai",
-    composeTemplate: "infra/coolify/templates/openclaw.yml",
-    defaultEnv: {},
-    planMin: Plan.STARTER,
-  },
   {
     key: "erpnext",
     name: "Quản trị doanh nghiệp (ERPNext)",
@@ -42,13 +28,16 @@ const CATALOG_APPS = [
 ];
 
 async function main() {
-  // ADR-005: vô hiệu hoá app cũ (giữ dữ liệu venture đã cài), thêm app mới
+  // Vô hiệu hoá app cũ (giữ dữ liệu venture đã cài), thêm app mới.
+  // ADR-005 app cũ + C9 (v2): claw3d/openclaw (cụm sang openclawos.vn).
   const OLD_KEYS = [
     "site-nextjs",
     "crm-twenty",
     "dify",
     "activepieces",
     "commerce-medusa",
+    "claw3d",
+    "openclaw",
   ];
   await prisma.catalogApp.updateMany({
     where: { key: { in: OLD_KEYS } },

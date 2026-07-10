@@ -276,6 +276,7 @@ enum InstallStatus {
   RUNNING
   FAILED
   REMOVED
+  ARCHIVED // v2 cleanup (R0 §C9): bản cài cụm v1 (claw3d/openclaw) đã lưu trữ, KHÔNG xoá cứng
 }
 
 enum TxDirection {
