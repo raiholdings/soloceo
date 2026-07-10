@@ -101,14 +101,30 @@ export class ApprovalsService {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 3000);
     try {
-      await fetch(`${this.gatewayUrl}/api/threads/${threadId}/state`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          values: { hitl_decision: "approved", note: note ?? null, runId },
-        }),
-        signal: ctrl.signal,
-      });
+      // Gateway DeerFlow chặn mọi request lạ (401). Caller tin cậy phải gửi
+      // header X-DeerFlow-Internal-Token (= DEER_FLOW_INTERNAL_AUTH_TOKEN của
+      // gateway) — xem backend/app/gateway/internal_auth.py.
+      const internalToken = process.env.DEERFLOW_INTERNAL_TOKEN;
+      if (!internalToken) {
+        throw new Error("DEERFLOW_INTERNAL_TOKEN chưa cấu hình");
+      }
+      const res = await fetch(
+        `${this.gatewayUrl}/api/threads/${threadId}/state`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-DeerFlow-Internal-Token": internalToken,
+          },
+          body: JSON.stringify({
+            values: { hitl_decision: "approved", note: note ?? null, runId },
+          }),
+          signal: ctrl.signal,
+        },
+      );
+      if (!res.ok) {
+        throw new Error(`gateway trả ${res.status}`);
+      }
     } finally {
       clearTimeout(timer);
     }
