@@ -32,12 +32,18 @@
 
 ## CHECKLIST §6 — 12 MỤC (bằng chứng thật)
 
-### 1. 8/8 nền tảng LIVE — **KHÔNG ĐẠT (5/8 LIVE+verify)**
-Xem bảng trên. N7 đang build, N3 chưa deploy, N8 chờ credential. Không tuyên bố đạt khi chưa đủ.
+### 1. 8/8 nền tảng LIVE — **CHƯA ĐẠT (6/8 LIVE+verify)**
+LIVE+verify: N0 DeerFlow, N1 AIO Sandbox, N4 sub-agents+skills, N6 Dolphin (engine-fallback), N7 g3proxy, N5 godlp (shadow). **Nợ chính N1+N7 (egress) đã ĐÓNG.** N8 chữ ký verified (vòng tin nhắn chờ credential OA). N9 license verified. Còn dở: N2 node-render/exec, N3 Midscene tool-wiring, N5 enforce (chờ đủ 24h). Không tuyên bố 8/8 khi chưa đủ.
 
-### 2. DeerFlow → AIO sandbox → egress g3 → chặn domain ngoài allowlist — **MỘT PHẦN**
-- ✅ AIO Sandbox chạy tác vụ thật (shell/browser) — verify độc lập (§ N1).
-- ❌ **Chưa nối**: đổi sandbox provider DeerFlow sang AIO + egress qua g3. g3 chưa build xong. Đây là cụm N1+N7 chưa khép kín — **nợ chính** (§12).
+### 2. DeerFlow → AIO sandbox → egress g3 → chặn domain ngoài allowlist — **ĐẠT (khép kín + verify)**
+Đã đổi `sandbox.use = deerflow.community.aio_sandbox:AioSandboxProvider` (DooD) + vá `local_backend` ép `--network sandbox-internal`. g3proxy allowlist LIVE.
+Bằng chứng (sandbox DeerFlow **tự spawn** khi 1 thread chạy shell — log `docker run ... --name soloceo-aio-b76e7c45 --network sandbox-internal`, mount 6 skill vào `/mnt/skills`):
+```
+direct example.com (không proxy, internal net) → 000  (không internet trực tiếp)
+soloceo.vn qua g3 (allowlist)                  → 200
+example.com qua g3 (ngoài allowlist)           → 000  (g3 chặn)
+gateway điều khiển sandbox OK → [SandboxAudit] "echo FRESH_NET && uname -a" verdict=pass
+```
 
 ### 3. HITL đầy đủ (gate → Phê duyệt → resume) — **ĐẠT (verify khép kín)**
 ```
@@ -117,17 +123,22 @@ Bằng chứng: test trong gateway `[create_payment] allow=False reasons=['requi
 
 ## §12. NỢ KỸ THUẬT & RỦI RO (khai trung thực)
 
-### Nợ chính (chặn "8/8 LIVE")
-1. **N7 g3proxy chưa build xong** (Rust, 3 lần fix dep: c-ares→libclang→python3). Đang compile. → egress control của sandbox **chưa** có; sandbox hiện chưa bị ép qua g3.
-2. **N1+N7 chưa khép kín**: chưa đổi sandbox provider DeerFlow sang AIO (vẫn `LocalSandboxProvider`). Cần: bật DeerFlow AIO mode (DooD, docker socket) hoặc provider tùy biến + verify 1 thread chạy tác vụ qua AIO → egress g3. **Rủi ro cao** (đụng gateway đang phục vụ) → nên làm cửa sổ riêng có canary.
-3. **N3 Midscene chưa deploy**: cần rebuild image AIO (thêm @midscene/web) + khai model **VLM** trong LiteLLM (hiện chỉ có model text DeepSeek + Claude). Chốt VLM (Qwen-VL/GPT-4o) là quyết định để lại.
-4. **N8 Zalo**: endpoint prod 404 (soi routing/redeploy) + cần credential OA. Chưa chạy vòng tin nhắn.
-5. **N2 FlowGram**: canvas render nhưng node chưa có hình + chưa nối execution DeerFlow.
-6. **N5 enforce**: chờ đủ 24h shadow (đúng quy trình, không rút ngắn).
+### ✅ Đã đóng (so với báo cáo lần 1)
+- **N7 g3proxy**: build xong (giảm feature), LIVE + verify allowlist.
+- **N1+N7 khép kín** (nợ chính): DeerFlow dùng AioSandboxProvider, sandbox ép network internal → egress chỉ qua g3, verify chặn domain ngoài allowlist.
+- **N8 Zalo**: endpoint + chữ ký verified (404 trước là "OA chưa liên kết" — đúng behavior, không phải lỗi).
+- **N9 license**: g3/arishem=Apache-2.0, godlp=MIT.
+
+### Nợ còn lại (chặn "8/8 LIVE")
+1. **N2 FlowGram**: canvas render nhưng node chưa có hình (`renderDefaultNode`) + chưa nối execution (AgentTask→DeerFlow run, HumanApproval→ApprovalRequest, persist theo org_id).
+2. **N3 Midscene chưa wiring tool**: prereq SẴN (AIO có browser CDP + Claude-vision trong LiteLLM); còn bọc tool `browser_act` MCP + thêm `@midscene/web` vào image AIO.
+3. **N5 enforce**: chờ đủ 24h shadow (~16:30 CEST 11/07; không rút ngắn).
+4. **N8 vòng tin nhắn**: chờ credential OA (§13).
+5. **Dời LiteLLM sang tenant-02**: cần đổi DNS `llm.soloceo.vn` → 194.233.85.255 (§2.A của chủ dự án).
 
 ### Rủi ro / cảnh báo
 - **core-01 kiệt RAM** (12GB, LiteLLM ~3.9GB) — đã thêm swap 8GB. Nên **dời LiteLLM sang tenant-02** (94GB) trước khi có tải thật. **CHƯA làm** (mức C cũ).
-- **arishem/godlp/g3 đang dùng engine native tôi viết** (evaluator/regex/…), chưa dùng lib gốc ByteDance. Contract cố định nên thay sau không sửa caller. Cần mở LICENSE 3 lib xác nhận Apache-2.0.
+- **arishem/godlp/g3 đang dùng engine native tôi viết** (evaluator/regex/…) cho api-core; **g3proxy dùng binary GỐC ByteDance** (build từ source). LICENSE đã xác nhận: g3=Apache-2.0, arishem=Apache-2.0, godlp=MIT. Contract cố định nên thay engine sau không sửa caller.
 - **Dolphin engine hiện là vision-fallback**, chưa benchmark tiếng Việt 10 mẫu thật.
 - **`bank_account`/`cmnd_9`** ruleset DLP có thể FP (mask nhầm) — đang theo dõi ở shadow trước khi enforce. `phone_vn` bắt nhầm MST bắt đầu 0[35789] (nhãn lệch, giá trị vẫn mask — an toàn).
 - **WoWonder/PlayTube/Grupo nulled** — nợ pháp lý trước go-live thương mại.
