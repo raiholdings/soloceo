@@ -6,6 +6,8 @@
 
 > Nguồn sự thật: quét trực tiếp 3 VPS + repo ngày 10/07/2026. Không suy đoán.
 > Nghiên cứu chi tiết từng nền tảng: `research/R0…R7`. Quyết định kiến trúc: `docs/ADR/`.
+> ⚖️ **Luật vận hành: [`docs/GOVERNANCE.md`](GOVERNANCE.md)** — thứ bậc quyền, 3 mức hành động A/B/C, quy trình thay đổi chuẩn, HITL.
+> Mọi thay đổi **mức C** (đường tiền · production không đảo ngược · secret · cổng LiteLLM · DNS) **phải được chủ dự án duyệt bằng văn bản TRƯỚC khi làm**.
 
 ---
 
