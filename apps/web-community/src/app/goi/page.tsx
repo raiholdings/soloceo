@@ -19,13 +19,17 @@ interface CheckoutResult {
 
 const PLAN_ORDER: PlanKey[] = ["STARTER", "GROWTH", "SCALE"];
 
-// Điểm bán chính của từng gói — hiển thị marketing, số liệu lấy từ PLANS
+// Điểm bán chính của từng gói — hiển thị marketing, số liệu lấy từ PLANS.
+// v2: BỎ "văn phòng 3D" và "chợ kỹ năng" (Claw3D + ClawHub đã tách sang
+// openclawos.vn). Giữ đúng năng lực v2: 6 nhân sự AI (DeerFlow sub-agents),
+// web bán hàng (commerce-starter), phê duyệt HITL, Sàn M&A.
+// Số giá KHÔNG đổi ở đây — giá là quyết định của chủ dự án (GOVERNANCE §5b, C3).
 const PLAN_PITCH: Record<PlanKey, string[]> = {
   STARTER: [
-    "1 doanh nghiệp + văn phòng 3D riêng",
+    "1 doanh nghiệp + trợ lý AI điều hành",
     "Bộ 6 nhân sự AI đầy đủ phòng ban",
-    "Web bán hàng + chợ kỹ năng",
-    "Ngân sách AI cơ bản kèm gói",
+    "Web bán hàng riêng + danh bạ doanh nghiệp",
+    "Phê duyệt an toàn: bạn chốt mọi việc chi tiền",
   ],
   GROWTH: [
     "Mọi thứ trong Khởi đầu",
@@ -99,8 +103,9 @@ export default function PricingPage() {
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold">Chọn gói cho doanh nghiệp của bạn</h1>
         <p className="mt-3 text-[#A0A0B8]">
-          Mỗi gói đều có văn phòng 3D + đội ngũ nhân sự AI làm việc 24/7. Nâng
-          hoặc hạ gói bất cứ lúc nào.
+          Mỗi gói đều có đội ngũ 6 nhân sự AI làm việc 24/7, và bạn giữ quyền
+          phê duyệt mọi việc chi tiền hay pháp lý. Nâng hoặc hạ gói bất cứ lúc
+          nào.
         </p>
       </div>
 

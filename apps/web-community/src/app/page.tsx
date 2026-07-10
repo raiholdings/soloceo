@@ -134,8 +134,8 @@ export default function HomePage() {
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-[#A0A0B8]">
             Kể ý tưởng của bạn — Lễ tân AI tư vấn và khởi tạo cả không gian
-            doanh nghiệp (văn phòng 3D + trợ lý AI + web bán hàng) trong vài
-            phút. Khi đến lúc, bán lại doanh nghiệp đó với giá xứng đáng.
+            doanh nghiệp (đội ngũ 6 nhân sự AI + web bán hàng) trong vài phút.
+            Khi đến lúc, bán lại doanh nghiệp đó với giá xứng đáng.
           </p>
 
           {/* Lễ tân AI — chat khởi tạo doanh nghiệp (kiểu manus.im) */}

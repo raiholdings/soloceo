@@ -5,12 +5,29 @@ import { useEffect, useState } from "react";
 import { clearToken, getToken } from "@/lib/api";
 import { Button } from "@soloceo/ui";
 
+/** Trang đang chạy trong iframe của workspace DeerFlow?
+ *  Khi đó ẩn hẳn header: workspace đã có sidebar + phiên đăng nhập riêng, hiện
+ *  thêm nav và nút "Đăng xuất" của web-community sẽ thành 2 menu / 2 nút đăng
+ *  xuất (§II.1 hiến chương). `?embed=1` để ép chế độ nhúng khi cần test. */
+function useEmbedded(): boolean {
+  const [embedded, setEmbedded] = useState(false);
+  useEffect(() => {
+    const forced = new URLSearchParams(window.location.search).get("embed");
+    setEmbedded(forced === "1" || window.self !== window.top);
+  }, []);
+  return embedded;
+}
+
 export function SiteHeader() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const embedded = useEmbedded();
 
   useEffect(() => {
     setLoggedIn(Boolean(getToken()));
   }, []);
+
+  // Chromeless: không render gì khi bị nhúng trong workspace.
+  if (embedded) return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-surface-border bg-canvas/80 backdrop-blur-glass">
