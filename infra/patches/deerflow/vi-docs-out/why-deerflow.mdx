@@ -1,0 +1,79 @@
+---
+title: Vì sao chọn DeerFlow
+description: DeerFlow ra đời vì các hệ thống agent hiện đại cần nhiều hơn một vòng lặp trò chuyện. Một agent hữu ích phải lập kế hoạch dài hơi, chia công việc thành các tác vụ con, sử dụng công cụ, thao tác với tệp, chạy mã một cách an toàn, và giữ đủ ngữ cảnh để duy trì sự nhất quán xuyên suốt một tác vụ phức tạp. DeerFlow được xây dựng để cung cấp nền tảng runtime đó.
+---
+
+import { Callout } from "nextra/components";
+
+# Vì sao chọn DeerFlow
+
+<Callout type="info" emoji="🦌">
+  DeerFlow khởi đầu từ nghiên cứu chuyên sâu, nhưng đã phát triển thành một
+  runtime tổng quát cho các agent dài hơi cần đến kỹ năng, bộ nhớ, công cụ và
+  khả năng phối hợp.
+</Callout>
+
+DeerFlow ra đời vì các hệ thống agent hiện đại cần nhiều hơn một vòng lặp trò chuyện. Một agent hữu ích phải lập kế hoạch dài hơi, chia công việc thành các tác vụ con, sử dụng công cụ, thao tác với tệp, chạy mã một cách an toàn, và giữ đủ ngữ cảnh để duy trì sự nhất quán xuyên suốt một tác vụ phức tạp. DeerFlow được xây dựng để cung cấp nền tảng runtime đó.
+
+## Khởi đầu từ nghiên cứu chuyên sâu
+
+Phiên bản đầu tiên của DeerFlow được thiết kế xoay quanh một mục tiêu cụ thể: tạo ra kết quả nghiên cứu thực thụ thay vì những bản tóm tắt hời hợt kiểu chatbot. Ý tưởng là để một hệ thống AI làm việc giống một nhóm nghiên cứu hơn: lập kế hoạch, thu thập nguồn, đối chiếu kết quả và bàn giao một sản phẩm có cấu trúc với chiều sâu hữu ích.
+
+Cách tiếp cận đó phát huy tác dụng, nhưng dự án nhanh chóng hé lộ một điều quan trọng hơn. Các đội nhóm không chỉ dùng DeerFlow để nghiên cứu. Họ điều chỉnh nó cho phân tích dữ liệu, tạo báo cáo, tự động hóa nội bộ, các workflow vận hành và nhiều tác vụ khác cũng đòi hỏi thực thi qua nhiều bước.
+
+Điểm chung đã rõ: giá trị không chỉ nằm ở bản thân workflow nghiên cứu, mà ở những năng lực runtime bên dưới nó.
+
+## Nghiên cứu là kỹ năng đầu tiên, không phải toàn bộ hệ thống
+
+Sự dịch chuyển trong cách sử dụng đó dẫn tới một kết luận then chốt: nghiên cứu chuyên sâu nên được xem là một năng lực bên trong một runtime agent rộng hơn, chứ không phải là định nghĩa của toàn bộ sản phẩm.
+
+Do đó DeerFlow đã tiến hóa từ một dự án tập trung vào một mẫu nghiên cứu duy nhất thành một harness đa dụng cho các agent chạy dài hơi. Trong mô hình này, nghiên cứu vẫn quan trọng, nhưng nó trở thành một kỹ năng (skill) trong số nhiều kỹ năng, chứ không còn là hình hài cố định của hệ thống.
+
+Đây là lý do DeerFlow được mô tả như một **harness** thay vì chỉ là một framework hay chỉ là một ứng dụng.
+
+## Vì sao harness lại quan trọng
+
+Harness là một runtime có quan điểm (opinionated) dành cho agent. Nó không chỉ phơi bày các lớp trừu tượng, mà còn đóng gói sẵn hạ tầng mà một agent cần để làm việc hữu ích trong những môi trường thực tế.
+
+Với DeerFlow, điều đó có nghĩa là kết hợp những mảnh ghép cốt lõi cần cho việc thực thi dài hơi:
+
+- **Kỹ năng (Skill)** cho các năng lực chuyên biệt theo tác vụ, chỉ được nạp khi cần.
+- **Thực thi trong sandbox** để agent có thể làm việc với tệp, chạy lệnh và tạo ra sản phẩm một cách an toàn.
+- **Sub-agent** để công việc phức tạp có thể được phân rã và thực thi song song.
+- **Bộ nhớ (Memory)** để hệ thống giữ lại tùy chọn của người dùng và ngữ cảnh lặp lại qua các phiên.
+- **Quản lý ngữ cảnh (Context management)** để các tác vụ dài vẫn khả thi ngay cả khi cuộc hội thoại và đầu ra ngày một phình to.
+
+Đây chính là những viên gạch giúp một agent trở nên hữu ích vượt ra ngoài một lần trao đổi hỏi–đáp đơn lẻ.
+
+## Vì sao DeerFlow vượt qua các đồ thị multi-agent cố định
+
+Các hệ thống agent thời kỳ đầu thường mô hình hóa công việc như một đồ thị cố định gồm các vai trò chuyên biệt. Cách tiếp cận đó có thể ổn với một workflow hẹp, nhưng trở nên cứng nhắc một khi người dùng muốn hệ thống xử lý một dải tác vụ rộng hơn.
+
+DeerFlow chuyển sang một kiến trúc khác: một agent dẫn dắt (lead agent) kèm middleware, công cụ và các sub-agent được gọi động. Điều này giúp hệ thống dễ mở rộng hơn, bởi năng lực mới có thể được đưa vào dưới dạng kỹ năng, công cụ hoặc chính sách runtime, thay vì phải thiết kế lại toàn bộ đồ thị điều phối.
+
+Sự dịch chuyển kiến trúc đó phản ánh động lực chính đằng sau DeerFlow: xây lớp runtime tái sử dụng được trước, rồi để nhiều workflow ngồi lên trên nó.
+
+## DeerFlow được xây cho công việc dài hơi
+
+DeerFlow xuất phát từ một góc nhìn cụ thể về agent: những hệ thống giá trị nhất không phải là hệ thống sinh ra một câu trả lời duy nhất nhanh nhất, mà là hệ thống có thể duy trì hiệu suất xuyên suốt một chuỗi hành động dài hơn.
+
+Một agent dài hơi cần làm nhiều hơn là chỉ phản hồi. Nó cần:
+
+1. quyết định việc tiếp theo cần làm,
+2. theo dõi trạng thái trung gian,
+3. lưu trữ công việc bên ngoài ngữ cảnh của mô hình khi cần,
+4. phục hồi khỏi sự phức tạp mà không mất phương hướng, và
+5. trả về một sản phẩm (artifact) mà con người có thể xem xét, tinh chỉnh hoặc tiếp tục từ đó.
+
+Đó chính là loại bài toán mà DeerFlow được thiết kế để giải quyết.
+
+## Mục tiêu
+
+Mục tiêu của DeerFlow là cung cấp một nền tảng vững chắc để xây dựng và vận hành các hệ thống agent thực sự làm được việc.
+
+Nếu bạn đang đánh giá DeerFlow, ý tưởng quan trọng là: DeerFlow không chỉ là một bản demo nghiên cứu, cũng không chỉ là một lớp vỏ giao diện bọc quanh một LLM. Nó là một harness runtime dành cho những agent cần kỹ năng, bộ nhớ, công cụ, sự cô lập và khả năng phối hợp để hoàn thành các tác vụ thực tế.
+
+<Cards num={2}>
+  <Cards.Card title="Khái niệm cốt lõi" href="/docs/introduction/core-concepts" />
+  <Cards.Card title="Harness và Ứng dụng" href="/docs/introduction/harness-vs-app" />
+</Cards>

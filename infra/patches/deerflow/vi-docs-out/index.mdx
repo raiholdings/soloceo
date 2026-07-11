@@ -1,0 +1,31 @@
+---
+title: Giới thiệu
+description: DeerFlow là một harness runtime để xây dựng các hệ thống agent dài hơi với kỹ năng (skill), bộ nhớ, công cụ và khả năng thực thi trong sandbox.
+---
+
+
+# Giới thiệu
+
+Chào mừng bạn đến với DeerFlow!
+
+DeerFlow là một framework để xây dựng và vận hành các hệ thống agent. Thay vì xem một AI agent chỉ như một cỗ máy sinh văn bản đơn thuần hay một đồ thị workflow cứng nhắc, DeerFlow cung cấp một **harness runtime** vững chắc, đóng gói sẵn những thành phần cốt lõi cần thiết để agent thực hiện được công việc có ý nghĩa và mang tính dài hơi.
+
+## DeerFlow là gì?
+
+DeerFlow lấp đầy khoảng cách giữa các mô hình LLM thô và những workflow agent sẵn sàng cho môi trường sản xuất. Nó tập trung vào những năng lực cần thiết để hoàn thành các tác vụ phức tạp:
+
+- **Lập kế hoạch dài hơi (Long-Horizon Planning)**: Giữ cho agent đi đúng hướng và nhất quán xuyên suốt nhiều vòng suy luận và nhiều lượt gọi công cụ.
+- **Phân rã bằng sub-agent (Decomposition via Subagents)**: Chia nhỏ công việc phức tạp thành các tác vụ song song, độc lập, tránh làm quá tải cửa sổ ngữ cảnh của agent chính.
+- **Thực thi trong sandbox (Sandboxed Execution)**: Cấp cho agent một môi trường hệ thống tệp an toàn, cô lập, nơi nó có thể ghi tệp, chạy kiểm thử và thực thi mã.
+- **Kỹ năng và công cụ mô-đun (Modular Skills & Tools)**: Nạp năng lực một cách linh hoạt để phần lõi của agent luôn tổng quát, đồng thời thích ứng với các tác vụ chuyên biệt (ví dụ: nghiên cứu chuyên sâu hoặc phân tích dữ liệu).
+- **Bộ nhớ bền vững và kỹ thuật ngữ cảnh (Persistent Memory & Context Engineering)**: Quản lý những gì agent ghi nhớ, tóm tắt hay quên đi qua từng lượt và từng phiên làm việc.
+
+## Nội dung phần này
+
+Để giúp bạn xây dựng đúng mô hình tư duy trước khi đi sâu vào triển khai:
+
+<Cards num={3}>
+  <Cards.Card title="Vì sao chọn DeerFlow" href="/docs/introduction/why-deerflow" />
+  <Cards.Card title="Khái niệm cốt lõi" href="/docs/introduction/core-concepts" />
+  <Cards.Card title="Harness và Ứng dụng" href="/docs/introduction/harness-vs-app" />
+</Cards>
