@@ -35,11 +35,17 @@ function useProgress(modelId: string) {
   return { done, toggle };
 }
 
-/** Giao 1 bước cho đội AI: nạp prompt vào thread mới (cơ chế kickoff có sẵn). */
+/** Giao 1 bước cho đội AI: nạp prompt vào thread mới (cơ chế kickoff có sẵn).
+ * Gói sinh từ factory không có prompt viết tay → dựng prompt chuẩn từ dữ liệu bước. */
 function giaoChoDoiAI(step: BmStep, modelTen: string) {
-  if (!step.prompt) return;
+  const text =
+    step.prompt ??
+    `Bạn là đội vận hành doanh nghiệp của tôi trên SoloCEO (mô hình kinh doanh "${modelTen}"). ` +
+      `NHIỆM VỤ: ${step.ten} — ${step.moTa} PHÂN CÔNG: sub-agent ${step.team} chủ trì. ` +
+      `KẾT QUẢ CẦN CÓ: sản phẩm cụ thể dùng được ngay (bảng/kế hoạch/nội dung), kèm 1-3 việc tôi nên làm tuần này. ` +
+      `Ràng buộc: tiếng Việt, hướng hành động cho doanh nghiệp nhỏ VN; việc chạm tiền/pháp lý phải dừng chờ tôi phê duyệt; KHÔNG tự đặt giá.`;
   try {
-    sessionStorage.setItem(KICKOFF_KEY, JSON.stringify({ text: step.prompt, stepId: step.id, model: modelTen }));
+    sessionStorage.setItem(KICKOFF_KEY, JSON.stringify({ text, stepId: step.id, model: modelTen }));
   } catch { /* sessionStorage bị chặn thì CEO tự dán */ }
   window.location.assign("/workspace/chats/new");
 }
@@ -192,17 +198,17 @@ function ModelDetail({ model, onBack }: { model: BusinessModel; onBack: () => vo
                             </div>
                           </div>
                           <div className="shrink-0">
-                            {step.prompt ? (
-                              <button onClick={() => giaoChoDoiAI(step, model.ten)}
-                                className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700">
-                                <Play className="h-3.5 w-3.5" /> Giao cho đội AI
-                              </button>
-                            ) : step.link ? (
+                            {step.link ? (
                               <Link href={step.link.href}
                                 className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm hover:bg-muted">
                                 {step.link.label} <ExternalLink className="h-3.5 w-3.5" />
                               </Link>
-                            ) : null}
+                            ) : (
+                              <button onClick={() => giaoChoDoiAI(step, model.ten)}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700">
+                                <Play className="h-3.5 w-3.5" /> Giao cho đội AI
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -248,55 +254,105 @@ function ModelDetail({ model, onBack }: { model: BusinessModel; onBack: () => vo
   );
 }
 
-// ── Trang thư viện ──────────────────────────────────────────────────────────
+// ── Trang thư viện: gói tĩnh (web3 viết tay) + gói động từ factory ──────────
+type CatalogEntry = { id: string; ten: string; tagline: string; nhom: string; planMin: string; trangThai: string };
+
 export function SoloceoBusinessModels() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selected = BUSINESS_MODELS.find((m) => m.id === selectedId);
+  const [remoteList, setRemoteList] = useState<CatalogEntry[]>([]);
+  const [remoteModel, setRemoteModel] = useState<BusinessModel | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [q, setQ] = useState("");
+  const [nhomFilter, setNhomFilter] = useState<string>("");
+
+  useEffect(() => {
+    fetch("/workspace/api/bm", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { models: [] }))
+      .then((d: { models: CatalogEntry[] }) => setRemoteList(d.models ?? []))
+      .catch(() => setRemoteList([]));
+  }, []);
+
+  const staticSel = BUSINESS_MODELS.find((m) => m.id === selectedId);
+  useEffect(() => {
+    setRemoteModel(null);
+    if (!selectedId || staticSel) return;
+    setLoadingDetail(true);
+    fetch(`/workspace/api/bm?slug=${selectedId}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: BusinessModel | null) => setRemoteModel(d))
+      .catch(() => setRemoteModel(null))
+      .finally(() => setLoadingDetail(false));
+  }, [selectedId, staticSel]);
+
+  const catalog: CatalogEntry[] = useMemo(() => {
+    const staticEntries = BUSINESS_MODELS.map((m) => ({
+      id: m.id, ten: m.ten, tagline: m.tagline, nhom: m.nhom, planMin: m.planMin, trangThai: m.trangThai,
+    }));
+    const ids = new Set(staticEntries.map((e) => e.id));
+    return [...staticEntries, ...remoteList.filter((e) => !ids.has(e.id))];
+  }, [remoteList]);
+
+  const nhoms = useMemo(() => [...new Set(catalog.map((c) => c.nhom))].sort(), [catalog]);
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return catalog.filter((c) =>
+      (!nhomFilter || c.nhom === nhomFilter) &&
+      (!needle || `${c.ten} ${c.tagline}`.toLowerCase().includes(needle)));
+  }, [catalog, q, nhomFilter]);
+
+  const detail = staticSel ?? remoteModel;
 
   return (
     <WorkspaceContainer>
       <WorkspaceHeader />
       <WorkspaceBody>
-        {selected && selected.trangThai === "SẴN SÀNG" ? (
-          <ModelDetail model={selected} onBack={() => setSelectedId(null)} />
+        {selectedId && loadingDetail ? (
+          <div className="text-muted-foreground mx-auto max-w-4xl px-4 py-16 text-sm">Đang mở gói mô hình…</div>
+        ) : selectedId && detail ? (
+          <ModelDetail model={detail} onBack={() => setSelectedId(null)} />
         ) : (
           <div className="mx-auto w-full max-w-4xl px-4 py-8">
-            <div className="mb-6 flex items-center gap-3">
+            <div className="mb-4 flex items-center gap-3">
               <Lightbulb className="h-6 w-6 text-emerald-600" />
               <div>
-                <h1 className="text-xl font-semibold">Mô hình kinh doanh</h1>
+                <h1 className="text-xl font-semibold">Mô hình kinh doanh <span className="text-muted-foreground text-sm font-normal">({catalog.length} gói)</span></h1>
                 <p className="text-muted-foreground text-sm">
                   Mô hình đóng gói trọn: công thức, hướng đi, lộ trình 90 ngày — chọn xong, đội AI bắt tay thực thi từng bước.
                 </p>
               </div>
             </div>
+
+            <div className="mb-5 flex flex-wrap gap-2">
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm mô hình… (vd: subscription, nhượng quyền, SaaS)"
+                className="min-w-56 flex-1 rounded-md border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+              <select value={nhomFilter} onChange={(e) => setNhomFilter(e.target.value)}
+                className="rounded-md border bg-transparent px-2 py-2 text-sm">
+                <option value="">Tất cả nhóm</option>
+                {nhoms.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </div>
+
             <div className="grid gap-3 sm:grid-cols-2">
-              {BUSINESS_MODELS.map((m) => {
-                const ready = m.trangThai === "SẴN SÀNG";
-                return (
-                  <button key={m.id} disabled={!ready} onClick={() => setSelectedId(m.id)}
-                    className={`flex flex-col rounded-xl border bg-card p-4 text-left shadow-sm transition ${ready ? "hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md" : "opacity-60"}`}>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{m.nhom}</span>
-                      {ready ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"><CheckCircle2 className="h-3 w-3" /> Sẵn sàng</span>
-                      ) : (
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">Sắp ra mắt</span>
-                      )}
-                    </div>
-                    <h3 className="mt-1 text-lg font-semibold">{m.ten}</h3>
-                    <p className="text-muted-foreground mt-1 flex-1 text-sm">{m.tagline}</p>
-                    {ready && (
-                      <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                        Xem công thức & lộ trình <ArrowRight className="h-4 w-4" />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+              {filtered.map((m) => (
+                <button key={m.id} onClick={() => setSelectedId(m.id)}
+                  className="flex flex-col rounded-xl border bg-card p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{m.nhom}</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"><CheckCircle2 className="h-3 w-3" /> Sẵn sàng</span>
+                  </div>
+                  <h3 className="mt-1 text-lg font-semibold">{m.ten}</h3>
+                  <p className="text-muted-foreground mt-1 flex-1 text-sm">{m.tagline}</p>
+                  <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    Xem công thức & lộ trình <ArrowRight className="h-4 w-4" />
+                  </span>
+                </button>
+              ))}
+              {filtered.length === 0 && (
+                <p className="text-muted-foreground col-span-2 py-8 text-center text-sm">Không có mô hình khớp — thử từ khoá khác.</p>
+              )}
             </div>
             <p className="text-muted-foreground mt-6 text-center text-xs">
-              Thư viện sẽ mở rộng từ kho ~180 sách mô hình kinh doanh & siêu hướng dẫn của SoloCEO.
+              Đóng gói từ kho sách mô hình kinh doanh bản quyền của SoloCEO — thư viện tiếp tục lớn.
             </p>
           </div>
         )}

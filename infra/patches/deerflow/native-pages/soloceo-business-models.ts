@@ -235,7 +235,7 @@ export const BUSINESS_MODELS: BusinessModel[] = [
         ],
       },
     ],
-    troLy: { agent: "co-van-mo-hinh-web3", ten: "Cố vấn Mô hình Web3" },
+    // troLy web3 đã gỡ (12/07): tri thức sách nằm trọn trong gói này — tránh trùng.
     appLienQuan: [
       { key: "openclaw", ten: "Trợ lý ra lệnh AI (OpenClaw)" },
       { key: "commerce-starter", ten: "Web bán hàng" },
@@ -251,23 +251,6 @@ export const BUSINESS_MODELS: BusinessModel[] = [
       "Chi phí thu hút 1 khách", "Giao dịch lặp lại", "Thanh khoản (nếu có token)",
     ],
   },
-  // Gói kế tiếp sinh từ kho 178 PDF (factory) — giữ chỗ để CEO thấy thư viện sẽ lớn.
-  {
-    id: "subscription-recurring",
-    ten: "Subscription & Doanh thu định kỳ",
-    tagline: "Biến khách mua lẻ thành dòng tiền đều hằng tháng.",
-    nhom: "Mô hình kinh doanh", planMin: "STARTER", trangThai: "SẮP RA MẮT",
-    gioiThieu: "Đang chưng cất từ kho sách mô hình kinh doanh.",
-    congThuc: { tao: "", trao: "", giu: "", doanhThu: [], chiPhi: [], ruiRoPhapLy: "" },
-    variants: [], loTrinh: [], canhBao: [], chiSo: [],
-  },
-  {
-    id: "d2c-brand",
-    ten: "Thương hiệu D2C",
-    tagline: "Bán thẳng tới khách, sở hữu dữ liệu và biên lợi nhuận.",
-    nhom: "Bán hàng", planMin: "STARTER", trangThai: "SẮP RA MẮT",
-    gioiThieu: "Đang chưng cất từ kho sách mô hình kinh doanh.",
-    congThuc: { tao: "", trao: "", giu: "", doanhThu: [], chiPhi: [], ruiRoPhapLy: "" },
-    variants: [], loTrinh: [], canhBao: [], chiSo: [],
-  },
+  // Các gói khác sinh động từ factory (kho ~45 sách Business Models) —
+  // trang tự merge từ /workspace/api/bm, không hardcode thêm ở đây.
 ];

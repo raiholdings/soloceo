@@ -92,8 +92,12 @@ services:
       - SOLOCEO_API_BASE=${SOLOCEO_API_BASE}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - DEER_FLOW_INTERNAL_GATEWAY_BASE_URL=http://gateway:8001
+      - SOLOCEO_BM_DIR=/app/bm-data
     env_file:
       - ../frontend/.env
+    volumes:
+      # Gói Mô hình kinh doanh do factory sinh (JSON) — route /workspace/api/bm đọc
+      - ../business-models:/app/bm-data:ro
     networks:
       - deer-flow
     restart: unless-stopped
