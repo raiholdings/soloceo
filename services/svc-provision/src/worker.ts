@@ -144,41 +144,32 @@ const APP_CONFIGS: Record<string, AppDeployConfig> = {
       UPSTREAM_ALLOWLIST: gatewayUrl.replace(/^wss?:\/\//, ""),
     }),
   },
+  END MOVED TO openclawos.vn */
+  // MARKETPLACE (12/07): openclaw BẬT LẠI làm mã nguồn đầu tiên của Chợ ứng dụng.
+  // Provision lên node PaaS tenant-03 (SOLOCEO_TENANT_SERVER_UUID). Image từ
+  // registry cục bộ của node (localhost:5000 — mỗi node 1 registry, cùng ref).
   openclaw: {
     image: `${REGISTRY}/soloceo/openclaw`,
     // soloceo4 = soloceo3 + seed-staff.mjs (nạp sẵn bộ nhân sự AI đầy đủ phòng ban)
-    // soloceo3 = soloceo2 (vá header iframe) + entrypoint sinh openclaw.json từ env
     tag: "soloceo4",
-    // OpenClaw gateway + Control UI phục vụ trên 18789 (KHÔNG phải 8080 — đó là lý do trước đây 502)
+    // OpenClaw gateway + Control UI phục vụ trên 18789 (KHÔNG phải 8080 — 502 nếu sai)
     port: "18789",
     subdomain: "-ai",
-    buildEnvs: ({
-      secret,
-      litellmBase,
-      litellmKey,
-      allowedOrigins,
-      claw3dUrl,
-      ventureName,
-    }) => ({
+    buildEnvs: ({ secret, litellmBase, litellmKey, allowedOrigins, ventureName }) => ({
       OPENCLAW_GATEWAY_TOKEN: secret,
       OPENAI_API_BASE: litellmBase,
       OPENAI_API_KEY: litellmKey,
       // Tên doanh nghiệp → seed-staff dùng đặt bối cảnh cho bộ nhân sự AI
       VENTURE_NAME: ventureName,
-      // Cho agent "biết" văn phòng 3D của mình (viết vào BOOTSTRAP.md lúc khởi động)
-      CLAW3D_URL: claw3dUrl,
       OPENCLAW_DEFAULT_MODEL: "soloceo-smart",
       OPENCLAW_MODEL: "soloceo-smart",
-      // Origins được phép mở WS tới gateway (Control UI trong OS Shell + Claw3D)
+      // Origins được phép mở WS tới gateway (Control UI nhúng từ shell soloceo.vn)
       OPENCLAW_ALLOWED_ORIGINS: allowedOrigins,
       OPENCLAW_TRUSTED_PROXIES: "172.16.0.0/12",
-      // Chợ kỹ năng RIÊNG của SoloCEO (self-host) thay clawhub.ai công cộng.
-      // API /api/v1 phục vụ ở convex-site (HTTP actions); web duyệt ở hub.
       CLAWHUB_URL:
         process.env.SOLOCEO_CLAWHUB_URL ?? "https://convex-site.soloceo.vn",
     }),
   },
-  END MOVED TO openclawos.vn */
   // Mẫu dự án App Store: Web bán hàng (Next.js tự chứa). CEO chọn → instance riêng.
   "commerce-starter": {
     image: `${REGISTRY}/soloceo/commerce-starter`,
@@ -250,15 +241,14 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
   const litellmBase = process.env.LITELLM_BASE_URL ?? "https://llm.soloceo.vn";
   const litellmKey = await getOrgLitellmKey(venture.orgId).catch(() => "");
 
-  // C4 (v2 cleanup — R0 §C4): token gateway OpenClaw + các biến của cụm
-  // Claw3D/OS Shell đã NGỪNG dùng ở core (cụm sang openclawos.vn).
-  // getOrCreateOpenclawToken @deprecated, không còn gọi. Giữ biến rỗng để thoả
-  // ctx buildEnvs — chỉ commerce-starter còn active và không dùng các trường này.
-  // PHA 3: thay bằng cấp AIO Sandbox per-tenant (spec §6 bước 2).
-  const gatewaySecret = "";
+  // C4 (v2 cleanup) → MARKETPLACE (12/07): openclaw bật lại trong Chợ ứng dụng.
+  // Token gateway sinh NGẪU NHIÊN per-job (không dùng getOrCreateOpenclawToken
+  // @deprecated — cụm OS Shell cũ đã sang openclawos.vn). Claw3D vẫn ngừng.
+  const gatewaySecret = randomBytes(24).toString("hex");
   const gatewayUrl = "";
   const claw3dUrl = "";
-  const allowedOrigins = "";
+  // Origins được mở WS tới OpenClaw gateway: shell soloceo.vn (Control UI nhúng).
+  const allowedOrigins = "https://soloceo.vn";
 
   let anyFailed = false;
 

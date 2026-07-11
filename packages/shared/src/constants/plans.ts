@@ -29,9 +29,9 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
     label: "Khởi đầu",
     priceVndMonthly: 299_000,
     maxVentures: 1,
-    // C8 (v2 cleanup): claw3d/openclaw đã sang openclawos.vn. App v2 tạm thời:
-    // web bán hàng mẫu + ERPNext. AI (DeerFlow/AIO) sẽ nối ở PHA 3.
-    allowedAppKeys: ["commerce-starter", "erpnext"],
+    // C8 (v2 cleanup) → MARKETPLACE (12/07): openclaw bật lại làm mã nguồn đầu
+    // tiên của Chợ ứng dụng (provision lên node PaaS tenant-03). Claw3D vẫn ngừng.
+    allowedAppKeys: ["commerce-starter", "erpnext", "openclaw"],
     aiTokenCredit: 50_000,
     paymentFeePct: 3,
     maListingAllowed: false,
@@ -42,8 +42,8 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
     label: "Tăng trưởng",
     priceVndMonthly: 990_000,
     maxVentures: 1,
-    // C8 (v2 cleanup): claw3d/openclaw → openclawos.vn. Tạm: web + ERPNext.
-    allowedAppKeys: ["commerce-starter", "erpnext"],
+    // MARKETPLACE (12/07): + openclaw (như STARTER).
+    allowedAppKeys: ["commerce-starter", "erpnext", "openclaw"],
     aiTokenCredit: 500_000,
     paymentFeePct: 2,
     maListingAllowed: true,
