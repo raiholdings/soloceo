@@ -125,6 +125,8 @@ services:
       - ../soloceo_guardrail:/app/backend/soloceo_guardrail:ro
       # SoloCEO v2: vá CSRF cho HITL resume (internal token bypass)
       - ../patches/gateway/csrf_middleware.py:/app/backend/app/gateway/csrf_middleware.py:ro
+      # SoloCEO: Việt hoá chặn sửa/xoá TRỢ LÝ MẶC ĐỊNH (agents layout chung) — 409 chỉ admin
+      - ../patches/gateway/agents_router.py:/app/backend/app/gateway/routers/agents.py:ro
       - ../patches/aio_sandbox/local_backend.py:/app/backend/packages/harness/deerflow/community/aio_sandbox/local_backend.py:ro
       # DooD: the host Docker socket is NOT mounted by default. It is added only
       # for aio (pure-DooD) sandbox mode via the opt-in docker-compose.dood.yaml
