@@ -40,6 +40,10 @@ Thu lead → Nurture → Tư vấn → Báo giá ⛔ → Chốt ⛔ → Thanh to
 ```
 
 - **Chạy được ngay (không cần quyết định):** thu lead, nurture, tư vấn, soạn **báo giá nháp**, nội dung bán hàng, landing. Đội AI làm trong sandbox live; CEO xem trực tiếp.
+- ✅ **ĐÃ CHẠY THẬT (11/07, thread `8e1eb282…` owner=org openclawos):** lead_agent trả kết quả bước 1:
+  (1) 3 kênh (FB Groups / LinkedIn / cold email) + 3 thông điệp thu lead; (2) bài ra mắt 157 chữ kèm CTA
+  "để lại liên hệ — báo giá & demo trong 24h"; (3) khung báo giá A-setup/B-thuê bao/C-bổ sung với **mọi ô
+  giá = "Chờ duyệt"** — agent tôn trọng đúng ràng buộc KHÔNG tự đặt giá.
 - **⛔ Điểm dừng HITL (arishem gác luật → hàng chờ Phê duyệt):** báo giá, chốt hợp đồng, và đặc biệt **thanh toán thật**.
 - **Bước THU TIỀN THẬT dừng chờ chủ dự án** — cần 4 quyết định (§5). Chưa có = chạy tới báo giá/nội dung/lead, không hứa quá đà.
 
