@@ -29,10 +29,15 @@ var detectors = []detector{
 	// Số tài khoản NH: CHỈ khớp khi có keyword neo (STK/tài khoản) để KHÔNG
 	// mask nhầm mọi dãy số. Chỉ phần chữ số bị che (giữ nhãn) — xem maskValue.
 	{"bank_account", regexp.MustCompile(`(?i)(?:số tài khoản|tài khoản|stk)\s*[:.]?\s*\d{8,16}`), 4},
-	{"mst", regexp.MustCompile(`\b\d{10}(?:-\d{3})?\b`), 3},
-	{"cmnd_9", regexp.MustCompile(`\b\d{9}\b`), 3},
+	// MST & CMND: NEO theo keyword. Trước enforce, battery FP cho thấy dãy 10 số
+	// (giá BĐS "3500000000", mã vận đơn) và dãy 9 số (số tiền "250000000", mã đơn)
+	// bị mask nhầm → hỏng prompt kế toán/bán hàng. Neo keyword giữ đúng ý fail-safe:
+	// thà bỏ sót ID không nhãn còn hơn che số tiền/giá/mã của doanh nghiệp.
+	{"mst", regexp.MustCompile(`(?i)(?:mã số thuế|mst|tax\s*code)\s*[:.]?\s*\d{10}(?:-\d{3})?\b`), 3},
+	{"cmnd_9", regexp.MustCompile(`(?i)(?:cmnd|chứng minh(?:\s*nhân\s*dân)?|cmt)\s*[:.]?\s*\d{9}\b`), 3},
 	{"email", regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`), 0},
-	{"bien_so_xe", regexp.MustCompile(`\b\d{2}[A-Z]{1,2}[- ]?\d{3,5}\b`), 0},
+	// Biển số xe: neo keyword để không mask nhầm mã kiểu "12AB3456" (SKU, mã lô).
+	{"bien_so_xe", regexp.MustCompile(`(?i)(?:biển số|biển kiểm soát|bks)\s*[:.]?\s*\d{2}[A-Z]{1,2}[- ]?\d{3,5}\b`), 0},
 }
 
 type maskReq struct {
