@@ -35,6 +35,27 @@
 > - **Chưa verify:** trải nghiệm visual bấm-thử-browser (công cụ chặn browse prod) — chủ dự án tự bấm.
 > - **Hướng manus (chat-centric, sidebar tối giản, tạo-DN-chat-driven): ĐỂ DÀNH v3** theo chỉ đạo — đợt này chỉ gỡ frontend cũ, giữ đủ 8 nền tảng gồm FlowGram.
 
+> **CẬP NHẬT LẦN 4 (11/07, đợt HOÀN-THIỆN + VẬN-HÀNH openclawos):**
+>
+> **A. Tạo DN SÂU — XONG + verify build/route:** sau tạo Org+Venture → **bảng khởi động theo ngành** (mỗi bước 1 thẻ "Bắt đầu") → **auto-send** lời nhắc vào thread DeerFlow mới (lead_agent + 6 sub-agent chạy sandbox live, có HITL). Thêm trang **`/workspace/doanh-nghiep`** (bảng điều hành: venture/doanh thu/hàng chờ duyệt). Verify: TS build pass, route 307 (thật, vs 404 giả), chuỗi client chứa `soloceo-kickoff`/`stepsForIndustry`/`Doanh nghiệp của tôi`. Bấm-thử-browser: chủ dự án.
+>
+> **B3. godlp — FP fix + enforce SẴN (chưa bật, chờ 24h):** battery FP phát hiện `cmnd_9` (mọi dãy 9 số) + `mst` (mọi dãy 10 số) **che nhầm số tiền/giá** ("doanh thu 250000000", "giá 3500000000"). ĐÃ **neo keyword** (CMND/MST/BKS) → rebuild+redeploy `soloceo/svc-dlp:v1`, re-test SẠCH (PII có nhãn vẫn mask, số tiền/giá không còn bị che). **Enforce chờ đủ 24h (~18:28 CEST 11/07)** — ràng buộc "không rút ngắn 24h". Runbook+rollback: `research/GODLP-ENFORCE-RUNBOOK.md` (fail-open giữ nguyên).
+>
+> **B4. trace org_id — MỘT PHẦN:** key ảo `org-openclawos` gắn `metadata.org_id` (budget cứng $10/30d) → trace của openclawos CÓ org_id. Nhưng lời gọi điều phối của DeerFlow dùng 1 `$LITELLM_KEY` chung → chưa tag org_id per-request (cần sửa DeerFlow-core: inject org_id vào metadata mỗi call). Sandbox tool call dùng key per-org (đã tag).
+>
+> **C. openclawos = Venture #1 — XONG + verify:** ARCHIVE 2 demo (Chào Buổi Sáng, Phạm Văn Thư → PAUSED, không xoá cứng, backup DB); tạo **Org OpenClawOS + Venture openclawos (LIVE)**; key ảo budget cứng $10 (verify max_budget=10, org_id đúng); trang chủ thẻ openclawos dẫn ra openclawos.vn. Directory public: chỉ còn OpenClawOS. Cỗ máy doanh thu: `research/VAN-HANH-OPENCLAWOS.md` (chạy tới báo giá/nội dung/lead; **thu tiền thật DỪNG chờ 4 quyết định C.4**).
+>
+> **D. Docs VI — thêm bản tiếng Việt** `/vi/docs/introduction` (dịch trọn 4 trang intro + đăng ký locale vi + chuyển EN/VI) + `research/VAN-HANH-OPENCLAWOS.md`.
+>
+> **CÒN NỢ THẬT (khai đủ, KHÔNG tô 8/8):**
+> - **N2 FlowGram exec:** canvas render OK nhưng node-render (`materials.renderDefaultNode`) + nối execution + persist org_id CHƯA xong (API khó tra trong `@flowgram.ai` 1.0.12; canvas là iframe web-community). **Deep platform work.**
+> - **N3 Midscene:** wiring tool `browser_act` (Claude-vision, Assist) vào runtime agent DeerFlow CHƯA làm. **Deep platform work.**
+> - **N5 enforce:** chờ đủ 24h (runbook sẵn).
+> - **B5 dời LiteLLM tenant-02:** chặn DNS `llm` (việc tay §2.A) — runbook `research/LITELLM-MOVE-RUNBOOK.md`.
+> - **N8 Zalo:** chờ credential OA.
+>
+> **Đếm trung thực: 6/8 LIVE+verify** (N0/N1/N4/N6/N7 + godlp-shadow-đã-FP-fix). N2/N3 còn deep-work → **KHÔNG tuyên bố 8/8**.
+
 ---
 
 ## CHECKLIST §6 — 12 MỤC (bằng chứng thật)

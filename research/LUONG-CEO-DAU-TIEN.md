@@ -22,6 +22,8 @@ POST /v1/ventures {name,slug:tiem-banh-…,industry:fnb}
 ```
 ✅ **ĐẠT** — Org+Venture tạo được, `org_id` gắn đúng CEO. *(Multi-tenant theo org_id — bất biến §4.)*
 
+> **NÂNG CẤP 11/07 — Tạo DN giờ là HÀNH TRÌNH, không dừng ở form:** sau khi tạo Venture, trang **native** hiện **bảng khởi động theo ngành** (F&B: dựng thực đơn + landing + kế hoạch 30 ngày + kênh + kế toán). Mỗi bước 1 thẻ **"Bắt đầu"** → nạp lời nhắc vào **thread DeerFlow "Khởi động {tên DN}"** mới (auto-send) → lead_agent phân công 6 sub-agent, chạy trong **sandbox live**, dừng **HITL** khi cần. Thêm trang **"Doanh nghiệp của tôi"** (`/workspace/doanh-nghiep`) = **bảng điều hành** (tiến độ, việc đang chạy, hàng chờ duyệt, doanh thu). Verify build/route đã pass; trải nghiệm bấm-thử: chủ dự án.
+
 ## Bước 3 — Chat với đội ngũ AI
 ```
 POST /api/threads (owner=org 3f1948a3…) → thread e7c2bac4…
