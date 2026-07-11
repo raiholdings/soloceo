@@ -55,6 +55,12 @@
 > - **N8 Zalo:** chờ credential OA.
 >
 > **Đếm trung thực: 6/8 LIVE+verify** (N0/N1/N4/N6/N7 + godlp-shadow-đã-FP-fix). N2/N3 còn deep-work → **KHÔNG tuyên bố 8/8**.
+>
+> **BỔ SUNG CÙNG NGÀY (chiều 11/07):**
+> - **🔧 SỬA REGRESSION N1+N7 (nghiêm trọng, tìm ra khi chạy thật):** network `sandbox-internal` có `Internal=true` ⇒ Docker **bỏ qua published port** ⇒ gateway (`host.docker.internal:8080`) rơi vào coolify-proxy chết ⇒ **tool call sandbox treo** (loop start/stop 66s). Fix: nối `deer-flow-gateway` vào `sandbox-internal` (compose+live) + patch `local_backend._soloceo_sandbox_url()` điều khiển qua **IP container :8080**. **Verify:** gateway→sandbox IP:8080 = **401** (API trả lời, đòi key); egress giữ khép kín (direct→000, g3+soloceo→200, g3+example→000).
+> - **🏭 CỖ MÁY DOANH THU openclawos CHẠY THẬT (bước 1):** thread `8e1eb282…` (owner=org openclawos) → lead_agent trả **kết quả thật**: (1) 3 kênh + 3 thông điệp thu lead, (2) bài ra mắt 157 chữ kèm CTA, (3) **khung báo giá mọi ô giá = "Chờ duyệt"** (đúng ràng buộc agent KHÔNG tự đặt giá). = "agent chạy tới bước báo giá/nội dung/lead" ĐẠT.
+> - **⏰ godlp enforce ĐÃ LÊN LỊCH đúng 24h:** systemd timer `godlp-enforce` trên core-01 chạy `/root/godlp-enforce.sh` lúc ~18:35 CEST (mốc 24h = 18:28, KHÔNG rút ngắn) — flip `DLP_HOOK_MODE=enforce` qua Coolify + restart + tự verify, log `/root/godlp-enforce.log`. Rollback: `DLP_HOOK_MODE=off`.
+> - **📚 Docs VI:** cần thêm `vi` vào `next.config.js i18n.locales` (thiếu → 500) — đã sửa, rebuild.
 
 ---
 
