@@ -204,4 +204,91 @@ export class AdminController {
       take: 100,
     });
   }
+
+  // ── Cockpit /workspace/admin (12/07 — hướng "Appsmith + code riêng") ──────
+
+  @Get("overview")
+  @ApiOperation({ summary: "Tổng quan hệ sinh thái cho cockpit" })
+  async overview() {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000);
+    const [orgs, ventures, installs, revenue30d, pendingApprovals, pendingListings] =
+      await Promise.all([
+        this.prisma.org.groupBy({ by: ["status"], _count: true }),
+        this.prisma.venture.groupBy({ by: ["status"], _count: true }),
+        this.prisma.appInstall.groupBy({ by: ["status"], _count: true }),
+        this.prisma.transaction.aggregate({
+          where: { direction: "IN", verified: true, occurredAt: { gte: thirtyDaysAgo } },
+          _sum: { grossAmount: true },
+        }),
+        this.prisma.approvalRequest.count({ where: { status: "PENDING" } }),
+        this.prisma.listing.count({ where: { status: "PENDING_REVIEW" } }),
+      ]);
+    return {
+      orgs: Object.fromEntries(orgs.map((o) => [o.status, o._count])),
+      ventures: Object.fromEntries(ventures.map((v) => [v.status, v._count])),
+      installs: Object.fromEntries(installs.map((i) => [i.status, i._count])),
+      revenue30d: Number(revenue30d._sum.grossAmount ?? 0),
+      pendingApprovals,
+      pendingListings,
+    };
+  }
+
+  @Get("ventures")
+  @ApiOperation({ summary: "Danh sách venture kèm org (cockpit)" })
+  ventures() {
+    return this.prisma.venture.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      select: {
+        id: true, name: true, slug: true, industry: true, status: true,
+        revenueVerified: true, createdAt: true,
+        org: { select: { id: true, name: true, plan: true, status: true } },
+      },
+    });
+  }
+
+  @Get("installs")
+  @ApiOperation({ summary: "Danh sách app đã cài (Marketplace) toàn hệ thống" })
+  installs() {
+    return this.prisma.appInstall.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      select: {
+        id: true, status: true, url: true, createdAt: true,
+        venture: { select: { name: true, slug: true } },
+        catalogApp: { select: { key: true, name: true } },
+      },
+    });
+  }
+
+  @Get("approvals")
+  @ApiOperation({ summary: "Hàng chờ phê duyệt HITL toàn hệ thống" })
+  approvals() {
+    return this.prisma.approvalRequest.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "asc" },
+      take: 100,
+    });
+  }
+
+  /**
+   * Proxy danh sách TRỢ LÝ MẶC ĐỊNH từ DeerFlow gateway — token nội bộ nằm
+   * server-side (env DEERFLOW_INTERNAL_TOKEN), KHÔNG bao giờ xuống browser.
+   */
+  @Get("agents")
+  @ApiOperation({ summary: "49+ trợ lý mặc định (proxy DeerFlow gateway)" })
+  async agents() {
+    const base = process.env.DEERFLOW_PUBLIC_BASE ?? "https://soloceo.vn";
+    const token = process.env.DEERFLOW_INTERNAL_TOKEN;
+    if (!token) return { agents: [], note: "Chưa cấu hình DEERFLOW_INTERNAL_TOKEN" };
+    const res = await fetch(`${base}/api/agents`, {
+      headers: { "X-DeerFlow-Internal-Token": token },
+    });
+    if (!res.ok) return { agents: [], note: `Gateway trả ${res.status}` };
+    const data = (await res.json()) as { agents?: { name: string; description?: string }[] };
+    // chỉ trả metadata (không trả soul đầy đủ cho nhẹ)
+    return {
+      agents: (data.agents ?? []).map((a) => ({ name: a.name, description: a.description ?? "" })),
+    };
+  }
 }

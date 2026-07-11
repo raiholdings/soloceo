@@ -3,6 +3,8 @@
 import { BookUser, BotIcon, Building2, CalendarClock, CreditCard, Lightbulb, MessageCircle, MessagesSquare, Rocket, ShieldCheck, ShoppingBag, Users, Video, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getSoloceoAuth } from "@/components/workspace/soloceo-api";
 
 import {
   SidebarGroup,
@@ -22,6 +24,11 @@ export function WorkspaceNavChatList() {
   const { t } = useI18n();
   const pathname = usePathname();
   const { enabled: agentsEnabled } = useAgentsApiEnabled();
+  // Mục "Quản trị" chỉ hiện với tài khoản ADMIN_EMAILS (cờ từ cầu SSO — cache sẵn)
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    getSoloceoAuth().then((a) => setIsAdmin(a.platformAdmin === true)).catch(() => setIsAdmin(false));
+  }, []);
   return (
     <SidebarGroup className="pt-1">
       <SidebarMenu>
@@ -91,6 +98,20 @@ export function WorkspaceNavChatList() {
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
+        {/* Quản trị — chỉ tài khoản ADMIN_EMAILS thấy (guard api-core vẫn chặn 403 phía sau) */}
+        {isAdmin && (
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={pathname.startsWith("/workspace/admin")}
+              asChild
+            >
+              <Link className="text-muted-foreground" href="/workspace/admin">
+                <ShieldCheck />
+                <span>Quản trị</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
         <SidebarMenuItem>
           <SidebarMenuButton
             isActive={pathname.startsWith("/workspace/scheduled-tasks")}

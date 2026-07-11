@@ -1,14 +1,16 @@
 "use client";
 
 // Client gọi api-core /v1 với JWT lấy từ cầu SSO (/workspace/api/soloceo-token).
-let cached: { token: string; apiBase: string; email?: string } | null = null;
+let cached: { token: string; apiBase: string; email?: string; platformAdmin?: boolean } | null = null;
 
 export async function getSoloceoAuth() {
   if (cached) return cached;
   const r = await fetch("/workspace/api/soloceo-token", { cache: "no-store" });
   if (!r.ok) throw new Error("Chưa đăng nhập SoloCEO");
-  const d = (await r.json()) as { token: string; apiBase: string; user?: { email?: string } };
-  cached = { token: d.token, apiBase: d.apiBase, email: d.user?.email };
+  const d = (await r.json()) as {
+    token: string; apiBase: string; user?: { email?: string }; platformAdmin?: boolean;
+  };
+  cached = { token: d.token, apiBase: d.apiBase, email: d.user?.email, platformAdmin: d.platformAdmin === true };
   return cached;
 }
 

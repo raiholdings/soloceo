@@ -61,10 +61,20 @@ export class AuthController {
     if (!expected || token !== expected) {
       throw new ForbiddenException("Token nội bộ không hợp lệ");
     }
+    // Cockpit admin: email thuộc ADMIN_EMAILS (phân tách phẩy) nhận claim
+    // platform_admin → thấy /workspace/admin. Email lấy từ phiên BetterAuth
+    // đã xác thực (server-to-server), không phải input tự khai của client.
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+    const isAdmin =
+      !!dto.email && adminEmails.includes(dto.email.trim().toLowerCase());
     const accessToken = this.authService.issueSessionToken({
       userId: dto.userId,
       email: dto.email ?? null,
+      platformAdmin: isAdmin,
     });
-    return { accessToken, tokenType: "bearer" };
+    return { accessToken, tokenType: "bearer", platformAdmin: isAdmin };
   }
 }

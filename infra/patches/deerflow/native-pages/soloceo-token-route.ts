@@ -23,10 +23,11 @@ export async function GET() {
   if (!res.ok) {
     return NextResponse.json({ error: "exchange_failed" }, { status: 502 });
   }
-  const data = (await res.json()) as { accessToken: string };
+  const data = (await res.json()) as { accessToken: string; platformAdmin?: boolean };
   return NextResponse.json({
     token: data.accessToken,
     user: { id: user.id, email: user.email },
     apiBase,
+    platformAdmin: data.platformAdmin === true,
   });
 }
