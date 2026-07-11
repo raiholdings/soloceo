@@ -1,6 +1,6 @@
 "use client";
 
-import { BookUser, BotIcon, Building2, CalendarClock, CreditCard, Lightbulb, MessageCircle, MessagesSquare, Rocket, ShieldCheck, ShoppingBag, Users, Video, Workflow } from "lucide-react";
+import { BotIcon, Building2, CalendarClock, Lightbulb, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Users, Video, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -157,39 +157,6 @@ export function WorkspaceNavChatList() {
             <Link className="text-muted-foreground" href="/workspace/quy-trinh">
               <Workflow />
               <span>Quy trình</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/tao-doanh-nghiep")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/tao-doanh-nghiep">
-              <Rocket />
-              <span>Tạo doanh nghiệp</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/goi-cuoc")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/goi-cuoc">
-              <CreditCard />
-              <span>Gói cước</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/danh-ba")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/danh-ba">
-              <BookUser />
-              <span>Danh bạ</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

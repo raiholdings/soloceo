@@ -18,6 +18,7 @@ import { PaymentsModule } from "./payments/payments.module";
 import { CommunityModule } from "./community/community.module";
 import { MarketplaceModule } from "./marketplace/marketplace.module";
 import { AdminModule } from "./admin/admin.module";
+import { OnboardModule } from "./onboard/onboard.module";
 // SoloCEO OS v2 (PHA 3) — HITL 2 tầng
 import { RulesModule } from "./rules/rules.module";
 import { ApprovalsModule } from "./approvals/approvals.module";
@@ -47,6 +48,7 @@ import { ChannelsModule } from "./channels/channels.module";
     CommunityModule,
     MarketplaceModule,
     AdminModule,
+    OnboardModule,
     RulesModule,
     ApprovalsModule,
     ChannelsModule,
