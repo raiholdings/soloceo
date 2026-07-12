@@ -422,3 +422,16 @@ enum ApprovalStatus {
   REJECTED
   EXPIRED
 }
+
+/// N2 FlowGram — quy trình tái dùng của CEO (persist theo org_id).
+/// graphJson = { nodes: [{id,type,title,config}], edges: [{from,to,branch?}] }.
+model Flow {
+  id        String   @id @default(uuid())
+  orgId     String
+  name      String
+  graphJson Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orgId, updatedAt])
+}
