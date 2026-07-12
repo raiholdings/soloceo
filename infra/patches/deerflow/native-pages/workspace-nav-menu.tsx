@@ -8,9 +8,11 @@ import {
   InfoIcon,
   Settings2Icon,
   SettingsIcon,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { getSoloceoAuth } from "@/components/workspace/soloceo-api";
 
 import {
   DropdownMenu,
@@ -57,11 +59,13 @@ export function WorkspaceNavMenu() {
     "appearance" | "memory" | "tools" | "skills" | "notification" | "about"
   >("appearance");
   const [mounted, setMounted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { open: isSidebarOpen } = useSidebar();
   const { t } = useI18n();
 
   useEffect(() => {
     setMounted(true);
+    getSoloceoAuth().then((a) => setIsAdmin(a.platformAdmin === true)).catch(() => setIsAdmin(false));
   }, []);
 
   return (
@@ -118,6 +122,14 @@ export function WorkspaceNavMenu() {
                       Danh bạ
                     </DropdownMenuItem>
                   </Link>
+                  {isAdmin && (
+                    <Link href="/workspace/admin">
+                      <DropdownMenuItem>
+                        <ShieldCheck />
+                        Quản trị hệ thống
+                      </DropdownMenuItem>
+                    </Link>
+                  )}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

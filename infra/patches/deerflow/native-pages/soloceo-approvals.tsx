@@ -29,13 +29,22 @@ interface Approval {
 }
 
 function summarize(p: Record<string, unknown> | null): string {
-  if (!p) return "—";
-  if (typeof p.step === "string") return String(p.step);
-  if (typeof p.flowName === "string") return `Quy trình: ${p.flowName}`;
-  if (typeof p.amount === "number") return `${new Intl.NumberFormat("vi-VN").format(p.amount)} đ`;
-  if (typeof p.count === "number") return `${p.count} bản ghi`;
-  const s = JSON.stringify(p);
-  return s.length > 90 ? `${s.slice(0, 90)}…` : s;
+  if (!p) return "Đội AI đề xuất một hành động cần bạn duyệt.";
+  // Ưu tiên trường mô tả người đọc hiểu
+  for (const k of ["moTa", "mo_ta", "description", "reason", "ly_do", "note", "content", "message", "summary"]) {
+    if (typeof p[k] === "string" && (p[k] as string).trim()) return String(p[k]);
+  }
+  const parts: string[] = [];
+  if (typeof p.step === "string") parts.push(String(p.step));
+  if (typeof p.flowName === "string") parts.push(`(quy trình: ${p.flowName})`);
+  if (typeof p.amount === "number") parts.push(`Số tiền: ${new Intl.NumberFormat("vi-VN").format(p.amount)} đ`);
+  if (typeof p.to === "string") parts.push(`Đến: ${p.to}`);
+  if (typeof p.count === "number") parts.push(`${p.count} bản ghi`);
+  if (parts.length) return parts.join(" · ");
+  // fallback: liệt kê cặp khóa-giá trị dễ đọc thay vì JSON thô
+  const kv = Object.entries(p).filter(([k]) => !["orgId", "org_id", "ventureId"].includes(k))
+    .map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : String(v)}`).slice(0, 4).join(" · ");
+  return kv || "Hành động cần bạn duyệt.";
 }
 
 export function SoloceoApprovals() {

@@ -9,6 +9,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { WorkspaceBody, WorkspaceContainer, WorkspaceHeader } from "@/components/workspace/workspace-container";
 import { soloceoApi } from "@/components/workspace/soloceo-api";
+import { KICKOFF_KEY } from "@/components/workspace/soloceo-kickoff";
 
 type NodeType = "start" | "agent_task" | "human_approval" | "form" | "note" | "end";
 type FlowNode = { id: string; type: NodeType; title: string; config?: { prompt?: string; label?: string } };
@@ -112,13 +113,24 @@ export function SoloceoQuyTrinh() {
       await loadFlows();
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   }
-  async function runFlow() {
-    if (!editing?.id) { setErr("Lưu quy trình trước khi chạy."); return; }
-    setBusy(true); setRunResult(null); setErr(null);
-    try {
-      const r = await soloceoApi<{ ran: number; steps: { outcome: string; type: string }[] }>(`/flows/${editing.id}/run`, { method: "POST" });
-      setRunResult(`Đã chạy ${r.ran} bước: ` + r.steps.map((s) => s.outcome).join(" → "));
-    } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  // Chạy quy trình = mở phiên chat để CEO XEM đội AI chạy từng bước (không tạo
+  // thread ẩn). Bước "Chờ CEO duyệt" → AI dừng lại báo bạn. Không cần lưu trước.
+  function runFlow() {
+    if (!editing) return;
+    const steps = editing.graphJson.nodes.filter((n) => n.type !== "start" && n.type !== "end");
+    if (steps.length === 0) { setErr("Quy trình chưa có bước nào."); return; }
+    const lines = steps.map((n, i) => {
+      if (n.type === "human_approval") return `Bước ${i + 1} — ⏸ DỪNG chờ tôi phê duyệt: ${n.title}${n.config?.label ? ` (${n.config.label})` : ""}. Tóm tắt kết quả trước đó rồi hỏi tôi Duyệt/Từ chối, KHÔNG tự tiếp.`;
+      if (n.type === "agent_task") return `Bước ${i + 1} — GIAO ĐỘI AI: ${n.title}. ${n.config?.prompt ?? ""}`;
+      return `Bước ${i + 1} — ${n.title} (${n.type}).`;
+    });
+    const text =
+      `Hãy chạy giúp tôi quy trình "${editing.name}" theo ĐÚNG THỨ TỰ dưới đây, làm từng bước một, ` +
+      `báo cáo kết quả ngắn gọn sau mỗi bước bằng tiếng Việt. Gặp bước có ⏸ thì DỪNG chờ tôi quyết định rồi mới tiếp:\n\n` +
+      lines.join("\n") +
+      `\n\nBắt đầu từ Bước 1.`;
+    try { sessionStorage.setItem(KICKOFF_KEY, JSON.stringify({ text, flow: editing.name })); } catch { /* bỏ qua */ }
+    window.location.assign("/workspace/chats/new");
   }
   async function del(id: string) {
     await soloceoApi(`/flows/${id}`, { method: "DELETE" }).catch(() => null);
@@ -141,7 +153,7 @@ export function SoloceoQuyTrinh() {
             <button onClick={() => void save()} disabled={busy} className="inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm hover:bg-muted">
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Lưu
             </button>
-            <button onClick={() => void runFlow()} disabled={busy || !editing.id} className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+            <button onClick={() => runFlow()} disabled={busy} className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
               <Play className="h-4 w-4" /> Chạy quy trình
             </button>
           </div>

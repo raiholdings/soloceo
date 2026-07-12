@@ -1,10 +1,8 @@
 "use client";
 
-import { BotIcon, Building2, CalendarClock, Lightbulb, Filter as FunnelIcon, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Users, Video, VideoIcon, Workflow } from "lucide-react";
+import { BotIcon, CalendarClock, Lightbulb, Filter as FunnelIcon, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Users, Video, VideoIcon, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getSoloceoAuth } from "@/components/workspace/soloceo-api";
 
 import {
   SidebarGroup,
@@ -24,11 +22,6 @@ export function WorkspaceNavChatList() {
   const { t } = useI18n();
   const pathname = usePathname();
   const { enabled: agentsEnabled } = useAgentsApiEnabled();
-  // Mục "Quản trị" chỉ hiện với tài khoản ADMIN_EMAILS (cờ từ cầu SSO — cache sẵn)
-  const [isAdmin, setIsAdmin] = useState(false);
-  useEffect(() => {
-    getSoloceoAuth().then((a) => setIsAdmin(a.platformAdmin === true)).catch(() => setIsAdmin(false));
-  }, []);
   return (
     <SidebarGroup className="pt-1">
       <SidebarMenu>
@@ -110,20 +103,8 @@ export function WorkspaceNavChatList() {
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
-        {/* Quản trị — chỉ tài khoản ADMIN_EMAILS thấy (guard api-core vẫn chặn 403 phía sau) */}
-        {isAdmin && (
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={pathname.startsWith("/workspace/admin")}
-              asChild
-            >
-              <Link className="text-muted-foreground" href="/workspace/admin">
-                <ShieldCheck />
-                <span>Quản trị</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        )}
+        {/* Quản trị & Doanh nghiệp của tôi ĐÃ CHUYỂN vào menu "Settings and more"
+            (theo yêu cầu — không để ở nav chính). isAdmin vẫn dùng cho menu đó. */}
         <SidebarMenuItem>
           <SidebarMenuButton
             isActive={pathname.startsWith("/workspace/scheduled-tasks")}
@@ -139,17 +120,6 @@ export function WorkspaceNavChatList() {
           </SidebarMenuButton>
         </SidebarMenuItem>
         {/* --- Nền tảng phục vụ Solo CEO (SoloCEO OS v2) --- */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/doanh-nghiep")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/doanh-nghiep">
-              <Building2 />
-              <span>Doanh nghiệp của tôi</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
         <SidebarMenuItem>
           <SidebarMenuButton
             isActive={pathname.startsWith("/workspace/phe-duyet")}
