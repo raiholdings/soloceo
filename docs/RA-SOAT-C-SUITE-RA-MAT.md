@@ -94,27 +94,26 @@ Trang Phê duyệt trước đọc token từ cookie `soloceo_token` (cơ chế 
 
 ## 7. 🗺️ LỘ TRÌNH RA MẮT (ưu tiên, nhiều phiên)
 
-### Phiên A — Dọn dẹp & nhất quán (làm ngay, rủi ro thấp)
-- [x] Sửa Phê duyệt SSO (xong phiên này)
-- [ ] Retire app.soloceo.vn (redirect → soloceo.vn); tao-doanh-nghiep → bat-dau
-- [ ] Gom 94 trợ lý thành ~15 nhóm hiển thị
-- [ ] Gộp/đồng bộ 3 trang xã hội (SSO WoWonder hoặc gom 1 mục)
+### Phiên A — Dọn dẹp & nhất quán
+- [x] Sửa Phê duyệt SSO (1 đăng nhập, hết nhảy sang app)
+- [x] **Retire app.soloceo.vn** (DNS đã xoá → stop container, reversible); tao-doanh-nghiep → bat-dau
+- [ ] Gom 94 trợ lý thành ~15 nhóm — *hoãn: chạm gallery agents lõi DeerFlow, rủi ro; làm sau khi có eval*
+- [ ] Đồng bộ 3 trang xã hội WoWonder — *cần token bridge WoWonder, việc lớn riêng*
 
-### Phiên B — Sẵn sàng vận hành (trước pilot)
-- [ ] Dời LiteLLM → tenant-02 (chờ DNS `llm`)
-- [ ] DNS wildcard `*.app` → tenant-03
-- [ ] Thông báo in-app (việc chờ duyệt / agent xong)
-- [ ] Uptime Kuma + status.soloceo.vn + backup đêm đã test khôi phục
+### Phiên B — Sẵn sàng vận hành ⛔ **CHẶN bởi DNS (việc tay chủ dự án)**
+- [ ] **DNS `llm.soloceo.vn` → 194.233.85.255** rồi báo em dời LiteLLM (gỡ nghẽn RAM core-01)
+- [ ] **DNS wildcard `*.app.soloceo.vn` → 82.197.71.41** (app CEO mua sống public trên node PaaS)
+- [ ] Thông báo in-app; Uptime Kuma + status page; backup đêm test khôi phục
 
-### Phiên C — Ra tiền thật (chờ quyết định chủ dự án)
-- [ ] 4 quyết định C.4 → key Stripe/PayOS live → 1 giao dịch verified
-- [ ] Thanh toán mua app trong Chợ
-- [ ] Zalo OA (credential)
+### Phiên C — Ra tiền thật ⛔ **CHẶN bởi quyết định + key cổng (chủ dự án)**
+- [ ] 4 quyết định C.4 (bán gì/giá/cổng/kênh) + **key Stripe/PayOS live** → 1 giao dịch verified
+- [ ] Thanh toán mua app trong Chợ · Zalo OA (credential)
 
 ### Phiên D — Pháp lý & bảo mật go-live
-- [ ] Điều khoản dịch vụ + Chính sách dữ liệu (Nghị định 13) đăng công khai
-- [ ] Đổi mật khẩu Appsmith; rà OpenClaw device-auth; browser egress qua g3
-- [ ] Rà license (LiveSmart, các lib)
+- [x] **Điều khoản dịch vụ + Chính sách dữ liệu (NĐ 13)** đăng công khai `/dieu-khoan` `/bao-mat` + link footer
+- [ ] **Đổi mật khẩu Appsmith** (chủ dự án — đã lộ trong chat)
+- [ ] Browser egress qua g3 — *hardening: cần sửa image sandbox ép chromium `--proxy-server`; shell đã qua g3*
+- [ ] Rà OpenClaw device-auth; xác nhận license LiveSmart (bản quyền thương mại đã mua)
 
 ---
 
