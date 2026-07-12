@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put,
+  Body, Controller, Delete, Get, NotFoundException, Param, ParseUUIDPipe, Post, Put,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { IsArray, IsObject, IsOptional, IsString, MaxLength } from "class-validator";
@@ -29,27 +29,50 @@ type FlowNode = {
 export class FlowsController {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Đảm bảo user có Org (1 CEO = 1 Org). Nếu chưa (chưa qua onboarding), tạo lazy
+   * để mọi thao tác ghi không vỡ 500. Trả về orgId.
+   */
+  private async ensureOrgId(user: RequestUser): Promise<string> {
+    if (user.orgId) return user.orgId;
+    const existing = await this.prisma.org.findFirst({
+      where: { ownerUserId: user.userId },
+      select: { id: true },
+    });
+    if (existing) return existing.id;
+    const name = (user.email ? user.email.split("@")[0] : "") || "Doanh nghiệp của tôi";
+    const org = await this.prisma.org.create({
+      data: { name, ownerUserId: user.userId, plan: "STARTER" },
+      select: { id: true },
+    });
+    return org.id;
+  }
+
   @Get()
   @ApiOperation({ summary: "Danh sách quy trình của org" })
-  list(@CurrentUser() user: RequestUser) {
+  async list(@CurrentUser() user: RequestUser) {
+    const orgId = user.orgId;
+    if (!orgId) return [];
     return this.prisma.flow.findMany({
-      where: { orgId: user.orgId! },
+      where: { orgId },
       orderBy: { updatedAt: "desc" },
     });
   }
 
   @Get(":id")
   async get(@CurrentUser() user: RequestUser, @Param("id", ParseUUIDPipe) id: string) {
-    const f = await this.prisma.flow.findFirst({ where: { id, orgId: user.orgId! } });
-    if (!f) throw new Error("Không tìm thấy quy trình");
+    const orgId = await this.ensureOrgId(user);
+    const f = await this.prisma.flow.findFirst({ where: { id, orgId } });
+    if (!f) throw new NotFoundException("Không tìm thấy quy trình");
     return f;
   }
 
   @Post()
   @ApiOperation({ summary: "Tạo quy trình" })
-  create(@CurrentUser() user: RequestUser, @Body() dto: FlowDto) {
+  async create(@CurrentUser() user: RequestUser, @Body() dto: FlowDto) {
+    const orgId = await this.ensureOrgId(user);
     return this.prisma.flow.create({
-      data: { orgId: user.orgId!, name: dto.name, graphJson: dto.graphJson as object },
+      data: { orgId, name: dto.name, graphJson: dto.graphJson as object },
     });
   }
 
@@ -76,6 +99,7 @@ export class FlowsController {
   @Post(":id/run")
   @ApiOperation({ summary: "Chạy quy trình: agent_task→DeerFlow, human_approval→ApprovalRequest" })
   async run(@CurrentUser() user: RequestUser, @Param("id", ParseUUIDPipe) id: string) {
+    const orgId = await this.ensureOrgId(user);
     const flow = await this.get(user, id);
     const graph = flow.graphJson as unknown as { nodes: FlowNode[] };
     const nodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
@@ -94,7 +118,7 @@ export class FlowsController {
             const t = await fetch(`${gwBase}/api/threads`, {
               method: "POST",
               headers: { "X-DeerFlow-Internal-Token": gwToken, "Content-Type": "application/json" },
-              body: JSON.stringify({ metadata: { owner: user.orgId, title: `Quy trình: ${n.title}` } }),
+              body: JSON.stringify({ metadata: { owner: orgId, title: `Quy trình: ${n.title}` } }),
             });
             const td = (await t.json()) as { thread_id?: string };
             const threadId = td.thread_id;
@@ -118,7 +142,7 @@ export class FlowsController {
         // Tạo ApprovalRequest tier 2 → hiện ở trang Phê duyệt (HITL)
         const ap = await this.prisma.approvalRequest.create({
           data: {
-            orgId: user.orgId!,
+            orgId,
             actionType: "flow_approval",
             payloadJson: { flowId: id, flowName: flow.name, step: n.title } as object,
             tier: 2,
