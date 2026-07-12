@@ -1,6 +1,6 @@
 "use client";
 
-import { BotIcon, CalendarClock, Lightbulb, Filter as FunnelIcon, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Users, Video, VideoIcon, Workflow } from "lucide-react";
+import { BotIcon, CalendarClock, Lightbulb, Filter as FunnelIcon, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Store, Users, Video, VideoIcon, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -103,6 +103,18 @@ export function WorkspaceNavChatList() {
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
+        {/* Thị trường — hub kết nối ~50 nền tảng ra thị trường (đa kênh) */}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            isActive={pathname.startsWith("/workspace/thi-truong")}
+            asChild
+          >
+            <Link className="text-muted-foreground" href="/workspace/thi-truong">
+              <Store />
+              <span>Thị trường</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
         {/* Quản trị & Doanh nghiệp của tôi ĐÃ CHUYỂN vào menu "Settings and more"
             (theo yêu cầu — không để ở nav chính). isAdmin vẫn dùng cho menu đó. */}
         <SidebarMenuItem>
@@ -122,23 +134,23 @@ export function WorkspaceNavChatList() {
         {/* --- Nền tảng phục vụ Solo CEO (SoloCEO OS v2) --- */}
         <SidebarMenuItem>
           <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/phe-duyet")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/phe-duyet">
-              <ShieldCheck />
-              <span>Phê duyệt</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
             isActive={pathname.startsWith("/workspace/quy-trinh")}
             asChild
           >
             <Link className="text-muted-foreground" href="/workspace/quy-trinh">
               <Workflow />
               <span>Quy trình</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            isActive={pathname.startsWith("/workspace/phe-duyet")}
+            asChild
+          >
+            <Link className="text-muted-foreground" href="/workspace/phe-duyet">
+              <ShieldCheck />
+              <span>Phê duyệt</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
