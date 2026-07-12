@@ -9,7 +9,7 @@ import { KICKOFF_KEY } from "@/components/workspace/soloceo-kickoff";
 import {
   API_LABEL, NHOM_ICON, NHOM_LIST, PLATFORMS, promptConnect,
   type Platform, type Region,
-} from "@/components/workspace/soloceo-market";
+} from "@/components/workspace/soloceo-market-data";
 
 const USING_KEY = "soloceo-market-using";
 
