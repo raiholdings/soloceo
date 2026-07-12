@@ -34,7 +34,8 @@ export function SoloceoMeeting() {
     getSoloceoAuth()
       .then((a) => {
         const email = a.email ?? "";
-        setName(email ? email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()) : "Chủ phòng");
+        const local = email.split("@")[0] ?? "";
+        setName(local ? local.replace(/[._-]+/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()) : "Chủ phòng");
       })
       .catch(() => setName("Chủ phòng"))
       .finally(() => setReady(true));
@@ -49,7 +50,7 @@ export function SoloceoMeeting() {
   }
 
   function vaoPhong() {
-    const code = joinCode.trim().replace(/^.*\//, "").split("?")[0]; // chấp cả link dán vào
+    const code = (joinCode.trim().replace(/^.*\//, "").split("?")[0] ?? "").trim(); // chấp cả link dán vào
     if (!code) return;
     window.open(meetingUrl(code, name || "Khách", false), "_blank", "noopener");
   }
