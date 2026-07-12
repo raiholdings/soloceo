@@ -1,6 +1,6 @@
 "use client";
 
-import { BotIcon, Building2, CalendarClock, Lightbulb, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Users, Video, Workflow } from "lucide-react";
+import { BotIcon, Building2, CalendarClock, Lightbulb, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Users, Video, VideoIcon, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -191,6 +191,18 @@ export function WorkspaceNavChatList() {
             <Link className="text-muted-foreground" href="/workspace/nhom-chat">
               <MessageCircle />
               <span>Nhóm chat</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        {/* Họp video — LiveSmart SFU tại meeting.soloceo.vn (Zoom của SoloCEO) */}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            isActive={pathname.startsWith("/workspace/hop-video")}
+            asChild
+          >
+            <Link className="text-muted-foreground" href="/workspace/hop-video">
+              <VideoIcon />
+              <span>Họp video</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
