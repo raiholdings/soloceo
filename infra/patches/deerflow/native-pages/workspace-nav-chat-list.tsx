@@ -1,6 +1,6 @@
 "use client";
 
-import { BotIcon, Building2, CalendarClock, Lightbulb, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Users, Video, VideoIcon, Workflow } from "lucide-react";
+import { BotIcon, Building2, CalendarClock, Lightbulb, Filter as FunnelIcon, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Users, Video, VideoIcon, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -95,6 +95,18 @@ export function WorkspaceNavChatList() {
             <Link className="text-muted-foreground" href="/workspace/mo-hinh-kinh-doanh">
               <Lightbulb />
               <span>Mô hình kinh doanh</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        {/* Phễu bán hàng — thư viện khung phễu, đội AI thi công từng khâu */}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            isActive={pathname.startsWith("/workspace/pheu-ban-hang")}
+            asChild
+          >
+            <Link className="text-muted-foreground" href="/workspace/pheu-ban-hang">
+              <FunnelIcon />
+              <span>Phễu bán hàng</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
