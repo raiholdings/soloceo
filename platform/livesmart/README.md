@@ -20,3 +20,11 @@ Vào phòng qua URL `meeting.soloceo.vn/{room}?p=base64({visitorName|agentName})
 
 ## Việc tay chủ dự án
 DNS A-record `meeting.soloceo.vn → 82.197.71.41` (Cloudflare proxy TẮT lúc cấp SSL đầu). SSL tự cấp sau.
+
+## Vá quan trọng (13/07): stub /server/script.php
+LiveSmart client gọi `server/script.php` (PHP) khi mở phòng — image node KHÔNG có PHP → 404 → phòng
+loading vô tận. Fix: thêm route Node `app.all('/server/script.php')` trong `src/livesmart.js` (sau
+`app.use(express.json())` + thêm `express.urlencoded`) trả mặc định (getvirtualimages→[], còn lại→"").
+Các tính năng cần PHP+MySQL (lưu chat/thanh toán/checkroom) đều tắt trong config nên không cần DB.
+Bản vá đầy đủ: `livesmart.js.patched`. Rebuild image + recreate container (giữ nguyên labels+UDP+env).
+Cũng nhớ: DNS thêm sau → phải restart coolify-proxy để Traefik xin Let's Encrypt (nếu không cert=self-signed→trình duyệt loading).
