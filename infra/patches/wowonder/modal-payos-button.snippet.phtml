@@ -1,0 +1,7 @@
+				<?php if (isset($wo['config']['payos']) && $wo['config']['payos'] == 'yes') { ?>
+				<!-- PayOS (QR chuyển khoản VN) -->
+					<button class="btn" style="background:#00a862;color:#fff;" onclick="window.location.href='<?php echo rtrim($wo['config']['site_url'],'/'); ?>/requests.php?f=payos_payment&pro_type={pro_type_id}';">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+						PayOS (QR chuyển khoản)
+					</button>
+				<?php } ?>
