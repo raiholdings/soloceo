@@ -57,11 +57,12 @@ if ($f == 'payos_payment') {
     curl_close($ch);
 
     if (isset($r['code']) && $r['code'] === '00' && !empty($r['data']['checkoutUrl'])) {
-        mysqli_query($sqlConnect, "CREATE TABLE IF NOT EXISTS Wo_Payos_Pending (
+        // Bảng đã tồn tại (có cột kind). CREATE IF NOT EXISTS chỉ để fresh-install;
+        // KHÔNG chạy ALTER (PHP8 mysqli ném exception "Duplicate column" → 500).
+        @mysqli_query($sqlConnect, "CREATE TABLE IF NOT EXISTS Wo_Payos_Pending (
             id INT AUTO_INCREMENT PRIMARY KEY, order_code BIGINT, user_id INT,
             kind VARCHAR(10) DEFAULT 'pro', pro_type INT, amount INT,
             status VARCHAR(20) DEFAULT 'PENDING', created INT, INDEX(order_code)) ENGINE=InnoDB");
-        @mysqli_query($sqlConnect, "ALTER TABLE Wo_Payos_Pending ADD COLUMN kind VARCHAR(10) DEFAULT 'pro'");
         $oc = (int) $order_code; $uid = (int) $user_id; $pt = (int) $pro_type; $am = (int) $amount; $t = time();
         $kd = mysqli_real_escape_string($sqlConnect, $kind);
         mysqli_query($sqlConnect, "INSERT INTO Wo_Payos_Pending (order_code,user_id,kind,pro_type,amount,status,created) VALUES ($oc,$uid,'$kd',$pt,$am,'PENDING',$t)");
