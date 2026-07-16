@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Award,
   BookUser,
   Building2,
   ChevronsUpDown,
@@ -114,6 +115,12 @@ export function WorkspaceNavMenu() {
                     <DropdownMenuItem>
                       <CreditCard />
                       Gói cước
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/workspace/solo-ceo-dien-hinh">
+                    <DropdownMenuItem>
+                      <Award />
+                      Solo CEO điển hình
                     </DropdownMenuItem>
                   </Link>
                   <Link href="/workspace/danh-ba">
