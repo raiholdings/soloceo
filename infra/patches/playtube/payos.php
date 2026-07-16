@@ -54,7 +54,8 @@ if ($action == 'return') { header('Location: ' . rtrim($pt->config->site_url, '/
 if ($action == 'webhook') {
     header('Content-type: application/json');
     $payload = json_decode(file_get_contents('php://input'), true);
-    if (!$payload || empty($payload['data'])) { http_response_code(400); echo json_encode(array('success' => false)); exit; }
+    // PayOS ping xác thực khi thêm webhook → trả 200. Chỉ cộng ví khi chữ ký hợp lệ.
+    if (!$payload || empty($payload['data'])) { http_response_code(200); echo json_encode(array('success' => true)); exit; }
     $data = $payload['data']; ksort($data);
     $pairs = array();
     foreach ($data as $k => $v) {
@@ -62,7 +63,7 @@ if ($action == 'webhook') {
         if ($v === null) $v = ''; if ($v === true) $v = 'true'; if ($v === false) $v = 'false';
         $pairs[] = $k . '=' . $v;
     }
-    if (!hash_equals(hash_hmac('sha256', implode('&', $pairs), $checksum_key), (string) ($payload['signature'] ?? ''))) { http_response_code(400); echo json_encode(array('success' => false, 'error' => 'sig')); exit; }
+    if (!hash_equals(hash_hmac('sha256', implode('&', $pairs), $checksum_key), (string) ($payload['signature'] ?? ''))) { http_response_code(200); echo json_encode(array('success' => true)); exit; }
     $order_code = isset($payload['data']['orderCode']) ? (int) $payload['data']['orderCode'] : 0;
     if (($payload['code'] ?? '') === '00' && $order_code > 0) {
         $row = $db->where('order_code', $order_code)->getOne('payos_pending');

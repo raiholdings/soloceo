@@ -13,9 +13,11 @@ header('Content-Type: application/json');
 
 $raw = file_get_contents('php://input');
 $payload = json_decode($raw, true);
+// PayOS gửi ping xác thực khi thêm webhook → PHẢI trả 200 để được chấp nhận.
+// Chỉ cộng Pro khi có chữ ký hợp lệ + code 00 + pending khớp (bên dưới).
 if (!$payload || empty($payload['data'])) {
-    http_response_code(400);
-    echo json_encode(array('success' => false));
+    http_response_code(200);
+    echo json_encode(array('success' => true));
     exit();
 }
 
@@ -34,8 +36,9 @@ foreach ($data as $k => $v) {
 }
 $expected = hash_hmac('sha256', implode('&', $pairs), $checksum_key);
 if (!hash_equals($expected, (string) ($payload['signature'] ?? ''))) {
-    http_response_code(400);
-    echo json_encode(array('success' => false, 'error' => 'signature'));
+    // Trả 200 để PayOS chấp nhận webhook (không cộng Pro vì chữ ký sai)
+    http_response_code(200);
+    echo json_encode(array('success' => true));
     exit();
 }
 
