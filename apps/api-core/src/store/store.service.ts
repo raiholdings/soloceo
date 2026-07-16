@@ -103,6 +103,136 @@ export class StoreService {
     return install;
   }
 
+  /**
+   * [NỘI BỘ] Auto-provisioning PaaS từ WHMCS (khép kín dòng tiền — v1.1).
+   * WHMCS đặt hàng 1 sản phẩm PaaS → gọi qua đây (X-Internal-Token). Tái dùng
+   * TRỌN pipeline Venture/AppInstall/worker Coolify: mỗi instance PaaS của CEO
+   * = 1 Venture, deploy image/compose theo catalogApp.key, gán subdomain, poll
+   * trạng thái. Không cần migration, không sửa worker.
+   *
+   * Định danh CEO: ưu tiên orgId (do SSO truyền); nếu trống → org theo email
+   * (`whmcs:{email}`) tạo mới nếu chưa có. Idempotent theo (org, catalogApp):
+   * nếu đã có install RUNNING/QUEUED cho product này → trả lại install đó.
+   */
+  async provisionPaas(input: {
+    productKey: string;
+    email?: string;
+    orgId?: string;
+    name?: string;
+  }) {
+    const app = await this.prisma.catalogApp.findUnique({
+      where: { key: input.productKey },
+    });
+    if (!app || !app.active) {
+      throw new NotFoundException(
+        `Sản phẩm PaaS "${input.productKey}" không có trong catalog (thêm CatalogApp + template trước)`,
+      );
+    }
+
+    // 1) Org: orgId tường minh > org theo email > tạo mới theo email
+    let org = input.orgId
+      ? await this.prisma.org.findUnique({ where: { id: input.orgId } })
+      : null;
+    if (!org && input.email) {
+      const identity = `whmcs:${input.email.toLowerCase()}`;
+      org = await this.prisma.org.findFirst({
+        where: { ownerUserId: identity },
+      });
+      if (!org) {
+        org = await this.prisma.org.create({
+          data: {
+            name: input.name?.trim() || input.email,
+            ownerUserId: identity,
+            plan: "STARTER",
+          },
+        });
+      }
+    }
+    if (!org) {
+      throw new BadRequestException("Cần orgId hoặc email để xác định CEO");
+    }
+
+    // Virtual key LiteLLM (một số product cần gọi model qua gateway)
+    await this.ai.ensureVirtualKey(org.id).catch(() => undefined);
+
+    // 2) Venture đại diện instance PaaS của CEO cho product này (tái dùng)
+    const base = this.slugify(
+      `${(input.email ?? org.name).split("@")[0]}-${app.key}`,
+    );
+    let venture = await this.prisma.venture.findFirst({
+      where: { orgId: org.id, slug: { startsWith: base } },
+    });
+    if (!venture) {
+      venture = await this.prisma.venture.create({
+        data: {
+          orgId: org.id,
+          name: input.name?.trim() || app.name,
+          slug: await this.uniqueSlug(base),
+          status: "PROVISIONING",
+        },
+      });
+    }
+
+    // 3) AppInstall idempotent theo (venture, app)
+    let install = await this.prisma.appInstall.findFirst({
+      where: {
+        ventureId: venture.id,
+        catalogAppId: app.id,
+        status: { in: ["QUEUED", "DEPLOYING", "RUNNING"] },
+      },
+    });
+    if (!install) {
+      install = await this.prisma.appInstall.create({
+        data: { ventureId: venture.id, catalogAppId: app.id, status: "QUEUED" },
+      });
+      await this.queue.enqueueProvision({
+        ventureId: venture.id,
+        installIds: [install.id],
+      });
+    }
+
+    return {
+      ref: `${venture.id}:${install.id}`,
+      ventureId: venture.id,
+      installId: install.id,
+      orgId: org.id,
+      status: install.status,
+      url: install.url ?? null,
+    };
+  }
+
+  /** [NỘI BỘ] Trạng thái 1 đơn PaaS theo ref "ventureId:installId" */
+  async paasStatus(ref: string) {
+    const [, installId] = ref.split(":");
+    if (!installId) throw new BadRequestException("ref không hợp lệ");
+    const install = await this.prisma.appInstall.findUnique({
+      where: { id: installId },
+    });
+    if (!install) throw new NotFoundException("Không tìm thấy đơn PaaS");
+    return { ref, status: install.status, url: install.url ?? null };
+  }
+
+  private slugify(s: string): string {
+    return s
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/đ/g, "d")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || "paas";
+  }
+
+  private async uniqueSlug(base: string): Promise<string> {
+    let slug = base;
+    let n = 1;
+    // slug @unique — tránh đụng khi 2 CEO trùng prefix
+    while (await this.prisma.venture.findUnique({ where: { slug } })) {
+      slug = `${base}-${++n}`;
+    }
+    return slug;
+  }
+
   /** POST /v1/ventures/:id/launch — DRAFT → PROVISIONING, cài app mặc định theo gói */
   async launch(user: RequestUser, ventureId: string) {
     const venture = await this.getOwnedVenture(user, ventureId);
