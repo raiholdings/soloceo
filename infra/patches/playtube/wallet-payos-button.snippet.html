@@ -1,0 +1,15 @@
+<?php if (isset($pt->config->payos) && $pt->config->payos == '1') { ?>
+<div class="payos-deposit" style="margin-top:12px">
+	<button type="button" class="btn btn-main" style="background:#00a862;color:#fff" onclick="PT_PayosDeposit();">Nạp ví bằng PayOS (QR chuyển khoản)</button>
+</div>
+<script>
+function PT_PayosDeposit(){
+	var amount = $("#wallet_amount").val();
+	if(!amount || parseInt(amount) < 1){ alert("Nhập số tiền cần nạp"); return; }
+	$.post("{{LINK aj/payos/create}}", {amount: amount}, function(data){
+		if(data && data.status == 200 && data.url){ window.location.href = data.url; }
+		else { alert((data && data.error) ? data.error : "Lỗi PayOS"); }
+	}, "json");
+}
+</script>
+<?php } ?>
