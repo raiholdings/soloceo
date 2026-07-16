@@ -204,13 +204,18 @@ function renderTemplate(
 async function waitUntilRunning(
   coolify: ICoolifyClient,
   appUuid: string,
+  isService = false,
 ): Promise<void> {
   const deadline = Date.now() + DEPLOY_TIMEOUT_MS;
   // App vừa tạo có status "exited:unhealthy" (chưa deploy) — KHÔNG fail sớm.
   // Chỉ coi là chạy khi "running"; hết giờ thì báo timeout.
+  // Compose = /services (getStatus); dockerimage = /applications (getAppStatus).
+  // Poll nhầm endpoint → 404 "not found" → deploy thật vẫn chạy nhưng bị báo fail.
   let lastStatus = "";
   while (Date.now() < deadline) {
-    const status = await coolify.getAppStatus(appUuid);
+    const status = isService
+      ? await coolify.getStatus(appUuid)
+      : await coolify.getAppStatus(appUuid);
     lastStatus = status;
     if (status.includes("running")) return;
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
@@ -312,7 +317,8 @@ export async function processProvisionJob(job: Job<ProvisionJobData>) {
       }
       await coolify.deploy(app.uuid);
       await job.log(`[${appKey}] đang deploy (${app.uuid})...`);
-      await waitUntilRunning(coolify, app.uuid);
+      // cfg = app image (application); ngược lại = compose (service)
+      await waitUntilRunning(coolify, app.uuid, !cfg);
 
       await prisma.appInstall.update({
         where: { id: install.id },
