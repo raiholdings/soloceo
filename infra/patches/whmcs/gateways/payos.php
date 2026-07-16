@@ -79,7 +79,10 @@ function payos_link($params)
     $invoiceId = $params["invoiceid"];
     $amount = (int) round($params["amount"]); // PayOS = VND nguyên
     $systemUrl = rtrim($params["systemurl"], "/");
-    $returnUrl = $systemUrl . "/viewinvoice.php?id=" . $invoiceId;
+    // PayOS tự chèn ?id=<paymentLinkId> vào returnUrl → nếu để viewinvoice.php?id=
+    // sẽ bị đè, WHMCS báo "Invalid invoice id". Dùng trang trung gian map theo
+    // orderCode → redirect về đúng hoá đơn.
+    $returnUrl = $systemUrl . "/payos-return.php";
     $callbackUrl = $systemUrl . "/modules/gateways/callback/payos.php";
 
     // orderCode phải là số nguyên duy nhất — dùng invoiceId + timestamp ngắn
