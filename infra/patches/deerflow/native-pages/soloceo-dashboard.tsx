@@ -1,8 +1,9 @@
 "use client";
 // Bảng điều hành "Doanh nghiệp của tôi" — thay cho màn 1 dòng "DRAFT".
 // Tổng hợp từ api-core: /ventures (danh sách + trạng thái), /ventures/:id/revenue
-// (doanh thu tháng/12 tháng), /approvals/pending (hàng chờ phê duyệt HITL).
-import { Building2, CheckCircle2, Clock, Loader2, Rocket, ShieldAlert, TrendingUp } from "lucide-react";
+// (doanh thu tháng/12 tháng), /approvals/pending (hàng chờ phê duyệt HITL),
+// /ai/usage/summary (chi phí AI tháng + ngân sách gói).
+import { Bot, Building2, CheckCircle2, Clock, Loader2, Rocket, ShieldAlert, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { WorkspaceBody, WorkspaceContainer, WorkspaceHeader } from "@/components/workspace/workspace-container";
 import { soloceoApi } from "@/components/workspace/soloceo-api";
@@ -10,18 +11,21 @@ import { soloceoApi } from "@/components/workspace/soloceo-api";
 type Venture = { id: string; name: string; slug: string; industry?: string; status: string; revenueVerified?: boolean };
 type Revenue = { mtdRevenue: number; ttmRevenue: number; revenueVerified: boolean; status: string };
 type Approval = { id: string; action?: string; summary?: string; ventureId?: string; createdAt?: string; status?: string };
+type AiSummary = { totalCostUsd: number; totalTokens: number; budgetUsd: number; budgetUsedPct: number };
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: "Bản nháp", PROVISIONING: "Đang khởi tạo", LIVE: "Đang hoạt động",
   PAUSED: "Tạm dừng", LISTED: "Đang niêm yết", SOLD: "Đã bán",
 };
 const vnd = (n: number) => new Intl.NumberFormat("vi-VN").format(Math.round(n)) + "₫";
+const usd = (n: number) => "$" + (n ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export function SoloceoDashboard() {
   const [loading, setLoading] = useState(true);
   const [ventures, setVentures] = useState<Venture[]>([]);
   const [rev, setRev] = useState<Record<string, Revenue>>({});
   const [approvals, setApprovals] = useState<Approval[]>([]);
+  const [ai, setAi] = useState<AiSummary | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,6 +35,8 @@ export function SoloceoDashboard() {
         setVentures(vs);
         const ap = await soloceoApi<Approval[]>("/approvals/pending").catch(() => []);
         setApprovals(Array.isArray(ap) ? ap : []);
+        const a = await soloceoApi<AiSummary>("/ai/usage/summary").catch(() => null);
+        setAi(a);
         const revs: Record<string, Revenue> = {};
         await Promise.all(
           vs.map(async (v) => {
@@ -46,6 +52,9 @@ export function SoloceoDashboard() {
   const totalMtd = Object.values(rev).reduce((s, r) => s + (r.mtdRevenue || 0), 0);
   const totalTtm = Object.values(rev).reduce((s, r) => s + (r.ttmRevenue || 0), 0);
   const liveCount = ventures.filter((v) => v.status === "LIVE").length;
+  const aiPct = ai ? Math.min(100, Math.round(ai.budgetUsedPct)) : 0;
+  const aiOver = aiPct >= 100;
+  const aiWarn = aiPct >= 80;
 
   return (
     <WorkspaceContainer>
@@ -56,7 +65,7 @@ export function SoloceoDashboard() {
             <Building2 className="h-6 w-6 text-emerald-600" />
             <div>
               <h1 className="text-xl font-semibold">Doanh nghiệp của tôi</h1>
-              <p className="text-muted-foreground text-sm">Bảng điều hành — tiến độ, việc đang chạy, hàng chờ duyệt, doanh thu.</p>
+              <p className="text-muted-foreground text-sm">Bảng điều hành — tiến độ, việc đang chạy, hàng chờ duyệt, doanh thu, chi phí AI.</p>
             </div>
           </div>
 
@@ -76,12 +85,34 @@ export function SoloceoDashboard() {
           ) : (
             <div className="space-y-6">
               {/* Thẻ tổng quan */}
-              <div className="grid gap-3 sm:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard icon={<Building2 className="h-4 w-4" />} label="Doanh nghiệp" value={String(ventures.length)} sub={`${liveCount} đang hoạt động`} />
                 <StatCard icon={<TrendingUp className="h-4 w-4" />} label="Doanh thu tháng" value={vnd(totalMtd)} />
                 <StatCard icon={<TrendingUp className="h-4 w-4" />} label="Doanh thu 12 tháng" value={vnd(totalTtm)} />
                 <StatCard icon={<ShieldAlert className="h-4 w-4" />} label="Chờ phê duyệt" value={String(approvals.length)} sub={approvals.length ? "cần bạn quyết" : "không có"} accent={approvals.length > 0} />
               </div>
+
+              {/* Chi phí AI tháng này + ngân sách gói */}
+              {ai && (
+                <div className={`rounded-xl border p-4 ${aiOver ? "border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30" : aiWarn ? "border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30" : "bg-card"}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Bot className="h-4 w-4 text-indigo-600" /> Chi phí AI tháng này
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-semibold">{usd(ai.totalCostUsd)}</span>
+                      <span className="text-muted-foreground"> / {usd(ai.budgetUsd)} ngân sách gói</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div className={`h-full rounded-full transition-all ${aiOver ? "bg-red-500" : aiWarn ? "bg-amber-500" : "bg-indigo-500"}`} style={{ width: `${aiPct}%` }} />
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{new Intl.NumberFormat("vi-VN").format(ai.totalTokens)} token</span>
+                    <span>{aiOver ? "Đã vượt ngân sách — mua thêm credit để tiếp tục" : aiWarn ? `Đã dùng ${aiPct}% — sắp chạm ngưỡng` : `Đã dùng ${aiPct}%`}</span>
+                  </div>
+                </div>
+              )}
 
               {/* Hàng chờ phê duyệt */}
               {approvals.length > 0 && (
