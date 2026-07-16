@@ -1,0 +1,36 @@
+# Template: Odoo 17 (ERP/CRM mã nguồn mở) — sản phẩm PaaS SoloCEO.
+# Biến mustache: DOMAIN, VENTURE_SLUG, DB_PASSWORD
+# Odoo cần Postgres với role 'odoo' có quyền CREATEDB.
+services:
+  odoo-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD={{DB_PASSWORD}}
+      - POSTGRES_DB=postgres
+    volumes:
+      - odoo-db:/var/lib/postgresql/data
+
+  odoo:
+    image: odoo:17
+    restart: unless-stopped
+    depends_on:
+      - odoo-db
+    environment:
+      - HOST=odoo-db
+      - USER=odoo
+      - PASSWORD={{DB_PASSWORD}}
+    volumes:
+      - odoo-web:/var/lib/odoo
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-odoo.rule=Host(`{{DOMAIN}}`)
+      - traefik.http.routers.{{VENTURE_SLUG}}-odoo.entrypoints=https
+      - traefik.http.routers.{{VENTURE_SLUG}}-odoo.tls=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-odoo.tls.certresolver=letsencrypt
+      - traefik.http.services.{{VENTURE_SLUG}}-odoo.loadbalancer.server.port=8069
+
+volumes:
+  odoo-db:
+  odoo-web:

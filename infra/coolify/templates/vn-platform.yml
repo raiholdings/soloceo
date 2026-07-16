@@ -1,0 +1,41 @@
+# Template: Nền tảng mặc định Tiếng Việt = WordPress (vi_VN) — website/CMS bán
+# hàng cho Solo CEO. Biến mustache: DOMAIN, VENTURE_SLUG, DB_PASSWORD
+services:
+  vn-db:
+    image: mariadb:10.6
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      - MYSQL_ROOT_PASSWORD={{DB_PASSWORD}}
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD={{DB_PASSWORD}}
+    volumes:
+      - vn-db:/var/lib/mysql
+
+  vn-web:
+    image: wordpress:6-php8.2-apache
+    restart: unless-stopped
+    depends_on:
+      - vn-db
+    environment:
+      - WORDPRESS_DB_HOST=vn-db
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD={{DB_PASSWORD}}
+      - WORDPRESS_DB_NAME=wordpress
+      - WORDPRESS_CONFIG_EXTRA=define('WPLANG','vi');
+    volumes:
+      - vn-web:/var/www/html
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-vn.rule=Host(`{{DOMAIN}}`)
+      - traefik.http.routers.{{VENTURE_SLUG}}-vn.entrypoints=https
+      - traefik.http.routers.{{VENTURE_SLUG}}-vn.tls=true
+      - traefik.http.routers.{{VENTURE_SLUG}}-vn.tls.certresolver=letsencrypt
+      - traefik.http.services.{{VENTURE_SLUG}}-vn.loadbalancer.server.port=80
+
+volumes:
+  vn-db:
+  vn-web:

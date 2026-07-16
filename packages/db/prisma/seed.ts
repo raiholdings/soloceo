@@ -25,6 +25,23 @@ const CATALOG_APPS = [
     defaultEnv: {},
     planMin: Plan.STARTER,
   },
+  // v1.1 — sản phẩm PaaS bán qua WHMCS (auto-provision qua compose template).
+  {
+    key: "odoo",
+    name: "Odoo 17 (ERP/CRM)",
+    category: "erp",
+    composeTemplate: "infra/coolify/templates/odoo.yml",
+    defaultEnv: {},
+    planMin: Plan.STARTER,
+  },
+  {
+    key: "vn-platform",
+    name: "Nền tảng website mặc định (WordPress vi)",
+    category: "web",
+    composeTemplate: "infra/coolify/templates/vn-platform.yml",
+    defaultEnv: {},
+    planMin: Plan.STARTER,
+  },
 ];
 
 async function main() {
