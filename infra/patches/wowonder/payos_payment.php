@@ -14,10 +14,10 @@ if ($f == 'payos_payment') {
         exit();
     }
     $pro_type = (int) $_GET['pro_type'];
-    $type_map = array(1 => 'star', 2 => 'hot', 3 => 'ultima', 4 => 'vip');
+    // pro_packages có key là chính pro_type (1..4), giá VND. (KHÔNG map sang star/hot.)
     $amount = 0;
-    if (isset($wo['pro_packages'][$type_map[$pro_type]]['price'])) {
-        $amount = (int) round((float) $wo['pro_packages'][$type_map[$pro_type]]['price']);
+    if (isset($wo['pro_packages'][$pro_type]['price'])) {
+        $amount = (int) round((float) $wo['pro_packages'][$pro_type]['price']);
     }
     $client_id = isset($wo['config']['payos_client_id']) ? $wo['config']['payos_client_id'] : '';
     $api_key = isset($wo['config']['payos_api_key']) ? $wo['config']['payos_api_key'] : '';
