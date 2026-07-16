@@ -40,8 +40,11 @@ if ($f == 'payos_payment') {
     $user_id = (int) $wo['user']['user_id'];
     $order_code = (int) (substr((string) time(), -8) . rand(10, 99));
     $site = rtrim($wo['config']['site_url'], '/');
-    $return_url = $site . '/requests.php?f=payos_return';
-    $cancel_url = $site . '/' . ($is_wallet ? 'index.php?link1=wallet' : 'index.php?link1=upgrade');
+    // Trỏ thẳng trang ví/upgrade (PayOS chèn ?code&id&status vào sau — WoWonder
+    // đọc link1, bỏ qua tham số thừa). KHÔNG dùng requests.php?f=payos_return
+    // vì requests.php include xhr/payos_return.php (không tồn tại) → trắng trang.
+    $return_url = $site . '/index.php?link1=' . ($is_wallet ? 'wallet' : 'upgrade');
+    $cancel_url = $return_url;
 
     $sign_str = "amount=" . $amount . "&cancelUrl=" . $cancel_url . "&description=" . $desc
         . "&orderCode=" . $order_code . "&returnUrl=" . $return_url;
