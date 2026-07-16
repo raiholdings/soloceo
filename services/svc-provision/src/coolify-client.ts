@@ -141,6 +141,9 @@ export class CoolifyClient implements ICoolifyClient {
     const r = await this.request<{ uuid: string }>("POST", "/services", {
       project_uuid: input.projectUuid,
       server_uuid: input.serverUuid,
+      // Coolify v4 bắt buộc environment_name/uuid (như createDockerImageApp) —
+      // thiếu → 422. Mọi app compose (erpnext/odoo/vn-platform) đi qua đây.
+      environment_name: "production",
       name: input.name,
       docker_compose_raw: Buffer.from(input.dockerCompose).toString("base64"),
     });
