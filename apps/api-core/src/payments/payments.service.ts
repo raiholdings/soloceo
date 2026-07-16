@@ -90,8 +90,8 @@ export class PaymentsService {
       const workspaceUrl =
         this.config.get<string>("PUBLIC_WORKSPACE_URL") ?? "https://soloceo.vn";
       const desc = "SoloCEO goi"; // <=25 ký tự
-      const returnUrl = `${workspaceUrl}/workspace/goi?paid=1`;
-      const cancelUrl = `${workspaceUrl}/workspace/goi?cancel=1`;
+      const returnUrl = `${workspaceUrl}/workspace/goi-cuoc?paid=1`;
+      const cancelUrl = `${workspaceUrl}/workspace/goi-cuoc?cancel=1`;
       const amount = dto.amount;
 
       const signStr =
