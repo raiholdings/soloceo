@@ -49,23 +49,26 @@ if ($success && $order_code > 0) {
     $row = mysqli_fetch_assoc(mysqli_query($sqlConnect, "SELECT * FROM Wo_Payos_Pending WHERE order_code = $order_code LIMIT 1"));
     if ($row && $row['status'] !== 'PAID') {
         $user_id = (int) $row['user_id'];
-        $pro_type = (int) $row['pro_type'];
         $amount = (int) $row['amount'];
-        $update_array = array(
-            'is_pro' => 1,
-            'pro_time' => time(),
-            'pro_' => 1,
-            'pro_type' => $pro_type,
-        );
-        if (function_exists('Wo_UpdateUserData')) {
-            Wo_UpdateUserData($user_id, $update_array);
+        $kind = isset($row['kind']) ? $row['kind'] : 'pro';
+        if ($kind === 'wallet') {
+            // Nạp ví: cộng số dư
+            mysqli_query($sqlConnect, "UPDATE Wo_Users SET `wallet` = `wallet` + $amount WHERE user_id = $user_id");
+            mysqli_query($sqlConnect, "INSERT INTO Wo_Payment_Transactions (`userid`,`kind`,`amount`,`notes`) VALUES ($user_id,'WALLET',$amount,'PayOS')");
+            if (function_exists('cache')) { @cache($user_id, 'users', 'delete'); }
         } else {
-            mysqli_query($sqlConnect, "UPDATE Wo_Users SET is_pro=1, pro_time=" . time() . ", pro_=1, pro_type=$pro_type WHERE user_id=$user_id");
+            // Mua Pro trực tiếp
+            $pro_type = (int) $row['pro_type'];
+            $update_array = array('is_pro' => 1, 'pro_time' => time(), 'pro_' => 1, 'pro_type' => $pro_type);
+            if (function_exists('Wo_UpdateUserData')) {
+                Wo_UpdateUserData($user_id, $update_array);
+            } else {
+                mysqli_query($sqlConnect, "UPDATE Wo_Users SET is_pro=1, pro_time=" . time() . ", pro_=1, pro_type=$pro_type WHERE user_id=$user_id");
+            }
+            mysqli_query($sqlConnect, "INSERT INTO Wo_Payment_Transactions (`userid`,`kind`,`amount`,`notes`) VALUES ($user_id,'PRO',$amount,'Nang cap Pro : PayOS')");
+            if (function_exists('Wo_CreatePayment')) { @Wo_CreatePayment($pro_type); }
+            if (function_exists('cache')) { @cache($user_id, 'users', 'delete'); }
         }
-        $notes = 'Nang cap Pro : PayOS';
-        mysqli_query($sqlConnect, "INSERT INTO Wo_Payment_Transactions (`userid`,`kind`,`amount`,`notes`) VALUES ($user_id,'PRO',$amount,'$notes')");
-        if (function_exists('Wo_CreatePayment')) { @Wo_CreatePayment($pro_type); }
-        if (function_exists('cache')) { @cache($user_id, 'users', 'delete'); }
         mysqli_query($sqlConnect, "UPDATE Wo_Payos_Pending SET status='PAID' WHERE order_code=$order_code");
     }
 }
