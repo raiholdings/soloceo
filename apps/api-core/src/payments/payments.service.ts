@@ -6,7 +6,8 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PLANS, type PlanKey } from "@soloceo/shared";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
+import type { Plan } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import type { RequestUser } from "../auth/auth.types";
 import { CheckoutDto, ManualRevenueDto } from "./payments.dto";
@@ -73,15 +74,146 @@ export class PaymentsService {
     }
 
     if (provider === "payos") {
-      // PayOS REST: POST /v2/payment-requests (cần PAYOS_CLIENT_ID/API_KEY)
+      const clientId = this.config.get<string>("PAYOS_CLIENT_ID");
+      const apiKey = this.config.get<string>("PAYOS_API_KEY");
+      const checksumKey = this.config.get<string>("PAYOS_CHECKSUM_KEY");
+      if (!clientId || !apiKey || !checksumKey) {
+        throw new BadRequestException(
+          "PayOS chưa cấu hình — điền PAYOS_* vào .env hoặc bật PAYMENTS_FAKE=1",
+        );
+      }
+
+      // orderCode PayOS phải là số nguyên dương, duy nhất theo merchant.
+      const orderCodeNum = Number(
+        String(Date.now()).slice(-8) + String(Math.floor(Math.random() * 90 + 10)),
+      );
+      const workspaceUrl =
+        this.config.get<string>("PUBLIC_WORKSPACE_URL") ?? "https://soloceo.vn";
+      const desc = "SoloCEO goi"; // <=25 ký tự
+      const returnUrl = `${workspaceUrl}/workspace/goi?paid=1`;
+      const cancelUrl = `${workspaceUrl}/workspace/goi?cancel=1`;
+      const amount = dto.amount;
+
+      const signStr =
+        `amount=${amount}&cancelUrl=${cancelUrl}&description=${desc}` +
+        `&orderCode=${orderCodeNum}&returnUrl=${returnUrl}`;
+      const signature = createHmac("sha256", checksumKey)
+        .update(signStr)
+        .digest("hex");
+
+      const res = await fetch(
+        "https://api-merchant.payos.vn/v2/payment-requests",
+        {
+          method: "POST",
+          headers: {
+            "x-client-id": clientId,
+            "x-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderCode: orderCodeNum,
+            amount,
+            description: desc,
+            returnUrl,
+            cancelUrl,
+            signature,
+          }),
+        },
+      );
+      const j = (await res.json().catch(() => null)) as {
+        code?: string;
+        desc?: string;
+        data?: { checkoutUrl?: string };
+      } | null;
+
+      if (j?.code === "00" && j.data?.checkoutUrl) {
+        // Lưu "pending": tạo Subscription tạm để webhook tra theo providerRef.
+        // Chỉ subscription mới kích hoạt gói; ai_credit/venture_payment chỉ ghi log.
+        if (dto.type === "subscription") {
+          await this.prisma.subscription.create({
+            data: {
+              orgId: user.orgId,
+              plan: dto.plan as Plan,
+              provider: "payos",
+              providerRef: String(orderCodeNum),
+              status: "pending",
+              currentPeriodEnd: new Date(),
+            },
+          });
+        }
+        return {
+          provider,
+          orderCode: String(orderCodeNum),
+          checkoutUrl: j.data.checkoutUrl,
+          amount,
+          currency: "VND",
+        };
+      }
       throw new BadRequestException(
-        "PayOS chưa cấu hình — điền PAYOS_* vào .env hoặc bật PAYMENTS_FAKE=1",
+        "Không tạo được thanh toán PayOS" + (j?.desc ? `: ${j.desc}` : ""),
       );
     }
     // Stripe REST: POST /v1/checkout/sessions (cần STRIPE_SECRET_KEY)
     throw new BadRequestException(
       "Stripe chưa cấu hình — điền STRIPE_SECRET_KEY vào .env hoặc bật PAYMENTS_FAKE=1",
     );
+  }
+
+  /**
+   * Webhook PayOS (công khai) — kích hoạt gói nền tảng trực tiếp, KHÔNG qua
+   * WoWonder Pro. LUÔN trả {success:true} (HTTP 200) cho ping xác thực; chỉ
+   * kích hoạt khi chữ ký hợp lệ + code 00 + có Subscription pending khớp.
+   */
+  async handlePayosWebhook(payload: {
+    code?: string;
+    signature?: string;
+    data?: Record<string, unknown>;
+  }): Promise<{ success: true }> {
+    const ok = { success: true as const };
+    if (!payload?.data) return ok;
+
+    const checksumKey = this.config.get<string>("PAYOS_CHECKSUM_KEY");
+    if (!checksumKey) return ok;
+
+    // verify: ksort data → nối k=v& → HMAC checksumKey
+    const data = payload.data;
+    const pairs = Object.keys(data)
+      .sort()
+      .map((k) => {
+        let v = data[k];
+        if (v && typeof v === "object") v = JSON.stringify(v);
+        if (v === null || v === undefined) v = "";
+        if (v === true) v = "true";
+        if (v === false) v = "false";
+        return `${k}=${String(v)}`;
+      });
+    const expected = createHmac("sha256", checksumKey)
+      .update(pairs.join("&"))
+      .digest("hex");
+    if (expected !== payload.signature) return ok;
+
+    if (payload.code !== "00") return ok;
+    const orderCode = data["orderCode"];
+    if (orderCode === undefined || orderCode === null) return ok;
+
+    const sub = await this.prisma.subscription.findFirst({
+      where: { providerRef: String(orderCode), status: "pending" },
+    });
+    if (!sub) return ok; // đã kích hoạt hoặc không phải đơn của ta → idempotent
+
+    const periodEnd = new Date();
+    periodEnd.setDate(periodEnd.getDate() + 30);
+    await this.prisma.$transaction([
+      this.prisma.subscription.update({
+        where: { id: sub.id },
+        data: { status: "active", currentPeriodEnd: periodEnd },
+      }),
+      this.prisma.org.update({
+        where: { id: sub.orgId },
+        data: { plan: sub.plan, status: "ACTIVE" },
+      }),
+    ]);
+    return ok;
   }
 
   /** GET /v1/revenue/ledger?ventureId=&from=&to= */
