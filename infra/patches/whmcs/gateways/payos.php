@@ -100,7 +100,8 @@ function payos_link($params)
         "orderCode" => $orderCode,
         "returnUrl" => $returnUrl,
     ], $params["checksumKey"]);
-    $body["webhookUrl"] = $callbackUrl;
+    // LƯU Ý: PayOS v2 KHÔNG nhận webhookUrl trong body payment-request
+    // ("property webhookUrl should not exist"). Webhook khai riêng ở dashboard PayOS.
 
     $ch = curl_init("https://api-merchant.payos.vn/v2/payment-requests");
     curl_setopt_array($ch, [
