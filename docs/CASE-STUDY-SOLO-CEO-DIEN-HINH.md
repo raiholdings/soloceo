@@ -66,5 +66,7 @@ Toàn bộ số liệu lấy từ dữ liệu vận hành thực của tài kho�
 - Niêm yết: `Listing` LIVE, `askPrice=1.400.000.000`, `ttmRevenue` tự tính → `GET /v1/marketplace/listings`.
 - Chi phí AI: 90 ngày `AiUsage` → thẻ chi phí trên Tổng quan.
 - Cộng đồng: 7 bài đăng hành trình trên `my.soloceo.vn/openclawos`.
+- Hệ sinh thái sản phẩm: website **openclawos.vn** (SaaS chính) + **hub.openclawos.vn**
+  (chợ kỹ năng/skill registry của sản phẩm — self-host, SSL hợp lệ).
 
 _Cập nhật: 17/07/2026._
