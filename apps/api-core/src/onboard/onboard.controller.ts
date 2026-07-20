@@ -2,6 +2,9 @@ import { Body, Controller, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ConfigService } from "@nestjs/config";
 import { IsArray, IsOptional, IsString, MaxLength } from "class-validator";
+import { CurrentUser } from "../auth/decorators";
+import type { RequestUser } from "../auth/auth.types";
+import { PrismaService } from "../prisma/prisma.service";
 
 class DanhGiaDto {
   @IsString() @MaxLength(120) tenDN!: string;
@@ -24,11 +27,14 @@ class DanhGiaDto {
 @ApiBearerAuth()
 @Controller("onboard")
 export class OnboardController {
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Post("danh-gia")
   @ApiOperation({ summary: "Đánh giá ý tưởng → gói BM + trợ lý + nền tảng phù hợp" })
-  async danhGia(@Body() dto: DanhGiaDto) {
+  async danhGia(@Body() dto: DanhGiaDto, @CurrentUser() user?: RequestUser) {
     // 1) Lấy danh sách trợ lý mặc định (metadata) từ gateway
     let troLyCatalog: { name: string; description: string }[] = [];
     const gwBase = process.env.DEERFLOW_PUBLIC_BASE ?? "https://soloceo.vn";
@@ -109,6 +115,33 @@ Trả về DUY NHẤT JSON (tiếng Việt, thực dụng, không tâng bốc):
       parsed.troLyPhuHop = ((parsed.troLyPhuHop as { name: string }[]) ?? [])
         .filter((t) => tlNames.has(t.name))
         .slice(0, 7);
+      // Ghi lại dự án CEO đã tạo để Admin theo dõi (best-effort — không chặn luồng CEO)
+      try {
+        const diem = Number(parsed.diem);
+        await this.prisma.ceoProject.create({
+          data: {
+            orgId: user?.orgId ?? null,
+            userId: user?.userId ?? null,
+            ceoEmail: user?.email ?? null,
+            businessName: dto.tenDN,
+            industry: dto.nganh,
+            capital: dto.vonKhoiDiem ?? null,
+            idea: dto.yTuong,
+            channels: dto.kenhBan ?? null,
+            goal6m: dto.mucTieu ?? null,
+            score: Number.isFinite(diem) ? Math.round(diem) : null,
+            evaluation: typeof parsed.danhGia === "string" ? parsed.danhGia : null,
+            firstStep: typeof parsed.buocDauTien === "string" ? parsed.buocDauTien : null,
+            recommended: {
+              models: parsed.goiPhuHop,
+              agents: parsed.troLyPhuHop,
+              platforms: parsed.nenTang,
+            } as never,
+          },
+        });
+      } catch {
+        /* lỗi ghi log không được ảnh hưởng tới kết quả trả CEO */
+      }
       return { ok: true, ketQua: parsed };
     } catch {
       return { ok: false, loi: "Kết quả đánh giá không đọc được — thử lại." };

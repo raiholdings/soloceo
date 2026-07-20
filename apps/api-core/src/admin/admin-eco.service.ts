@@ -790,6 +790,19 @@ ${body}
     return this.prisma.projectTemplate.findFirst({ where: { slug, status: "PUBLISHED" } });
   }
 
+  // ── Doanh nghiệp CEO tự tạo ở workspace (/workspace/bat-dau) ─────────────
+  async ceoProjects() {
+    const [items, total] = await Promise.all([
+      this.prisma.ceoProject.findMany({ orderBy: { createdAt: "desc" }, take: 200 }),
+      this.prisma.ceoProject.count(),
+    ]);
+    return { total, items };
+  }
+
+  ceoProjectDelete(id: string) {
+    return this.prisma.ceoProject.delete({ where: { id } });
+  }
+
   // ── 6. Trợ lý AI (proxy DeerFlow gateway) ───────────────────────────────
   async agents() {
     const base = this.config.get<string>("DEERFLOW_PUBLIC_BASE") ?? "https://soloceo.vn";

@@ -224,6 +224,30 @@ model ProjectTemplate {
   @@index([status, createdAt])
 }
 
+// Doanh nghiệp/ý tưởng CEO tự tạo ở workspace (/workspace/bat-dau) — ghi lại
+// mỗi lần onboarding để Admin theo dõi TẤT CẢ dự án CEO đã tạo (kèm điểm đánh giá AI).
+model CeoProject {
+  id           String   @id @default(uuid())
+  orgId        String? // Org của CEO (từ JWT)
+  userId       String? // auth.users.id
+  ceoEmail     String?
+  businessName String
+  industry     String?
+  capital      String? // vốn khởi điểm (text tự do)
+  idea         String
+  channels     String? // kênh bán dự kiến
+  goal6m       String? // mục tiêu 6 tháng
+  score        Int? // điểm đánh giá AI 1-10
+  evaluation   String? // nhận xét AI
+  firstStep    String? // việc đầu tiên nên giao đội AI
+  recommended  Json? // { models:[], agents:[], platforms:[] }
+  source       String   @default("workspace")
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([orgId])
+}
+
 // Feed cộng đồng MVP
 model Post {
   id        String    @id @default(uuid())

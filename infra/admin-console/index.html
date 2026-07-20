@@ -467,7 +467,12 @@ async function vDocs(){
 
 async function vProjects(){
   try{
-    const list = await api("/admin/eco/projects"); CACHE.projects=list;
+    const [list, ceo] = await Promise.all([
+      api("/admin/eco/projects"),
+      api("/admin/eco/ceo-projects").catch(()=>({total:0,items:[]}))
+    ]);
+    CACHE.projects=list;
+    const items=(ceo&&ceo.items)||[];
     V(H("Tạo dự án từ ý tưởng","Gõ ý tưởng → AI tổng hợp mã nguồn + agent + nền tảng → mẫu dự án bán trên Sàn M&A")+
     `<div class="card" style="margin-bottom:16px">
       <div class="field"><label>Ý tưởng dự án</label>
@@ -476,10 +481,46 @@ async function vProjects(){
         <input id="pGoal" placeholder="VD: bán turnkey cho CEO ngành du lịch"></div>
       <button class="btn" onclick="genProject(this)">✦ Sinh dự án bằng AI</button>
     </div>
-    <div class="sec-title">Mẫu dự án (${list.length})</div>
-    <div class="grid g2" id="pGrid">${list.map(projCard).join("")||'<div class="muted">Chưa có mẫu dự án — gõ ý tưởng ở trên để sinh.</div>'}</div>`);
+    <div class="sec-title">Mẫu dự án Sàn M&A (${list.length})</div>
+    <div class="grid g2" id="pGrid">${list.map(projCard).join("")||'<div class="muted">Chưa có mẫu dự án — gõ ý tưởng ở trên để sinh.</div>'}</div>
+    <div class="sec-title" style="margin-top:28px">Doanh nghiệp CEO đã tạo ở workspace (${(ceo&&ceo.total)||0})</div>
+    <div class="faint" style="font-size:12px;margin:-4px 2px 10px">Tự động ghi mỗi khi CEO tạo doanh nghiệp ở <b>/workspace/bat-dau</b> — theo dõi toàn bộ ý tưởng + điểm đánh giá AI.</div>
+    <div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Doanh nghiệp</th><th>Ngành</th><th>CEO</th><th class="right">Điểm</th><th>Ý tưởng</th><th>Lúc</th><th></th></tr></thead>
+      <tbody>${items.map(ceoRow).join("")||'<tr><td colspan=7 class="muted center" style="padding:24px">Chưa có CEO nào tạo doanh nghiệp.</td></tr>'}</tbody></table></div>`);
   }catch(e){ errBox(e); }
 }
+function ceoRow(c){
+  const d=c.createdAt?new Date(c.createdAt):null;
+  const dt=d?`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`:"—";
+  const sc=(c.score!=null)?`<span class="tag ${c.score>=7?'t-ok':'t-mut'}">${c.score}/10</span>`:"—";
+  return `<tr>
+    <td><b>${esc(c.businessName||"—")}</b></td>
+    <td class="faint">${esc(c.industry||"")}</td>
+    <td class="faint" style="font-size:12px">${esc(c.ceoEmail||"—")}</td>
+    <td class="right">${sc}</td>
+    <td class="faint" style="max-width:280px;font-size:12px">${esc((c.idea||"").slice(0,120))}${(c.idea||"").length>120?"…":""}</td>
+    <td class="faint mono" style="font-size:11px">${dt}</td>
+    <td class="right"><button class="btn ghost sm" onclick='ceoDetail(${JSON.stringify(c).replace(/'/g,"&#39;")})'>Xem</button></td>
+  </tr>`;
+}
+function ceoDetail(c){
+  const r=c.recommended||{};
+  const chips=(arr,key)=>(Array.isArray(arr)?arr:[]).map(x=>`<span class="tag t-mut" style="margin:2px">${esc(x[key]||x.name||x.id||x.key||"")}</span>`).join("")||'<span class="faint">—</span>';
+  modal(`<h3>${esc(c.businessName)} <span class="faint" style="font-size:13px">· ${esc(c.industry||"")}</span></h3>
+    <div class="faint" style="font-size:12px;margin-bottom:8px">${esc(c.ceoEmail||"")} · ${c.score!=null?c.score+"/10":"chưa chấm"}</div>
+    <div class="field"><label>Ý tưởng</label><div class="prose" style="font-size:13px">${esc(c.idea||"")}</div></div>
+    ${c.evaluation?`<div class="field"><label>Đánh giá AI</label><div class="prose" style="font-size:13px">${esc(c.evaluation)}</div></div>`:""}
+    ${c.firstStep?`<div class="field"><label>Việc đầu tiên nên giao đội AI</label><div class="prose" style="font-size:13px">${esc(c.firstStep)}</div></div>`:""}
+    <div class="row" style="gap:16px;flex-wrap:wrap;font-size:12px">
+      <div><b class="faint">Vốn:</b> ${esc(c.capital||"—")}</div>
+      <div><b class="faint">Kênh bán:</b> ${esc(c.channels||"—")}</div>
+      <div><b class="faint">Mục tiêu 6th:</b> ${esc(c.goal6m||"—")}</div>
+    </div>
+    <div class="field" style="margin-top:8px"><label>Mô hình gợi ý</label><div>${chips(r.models,"id")}</div></div>
+    <div class="field"><label>Trợ lý gợi ý</label><div>${chips(r.agents,"name")}</div></div>
+    <div class="row" style="justify-content:flex-end"><button class="btn bad" onclick="ceoProjDelete('${c.id}')">Xoá bản ghi</button><button class="btn ghost" onclick="closeModal()">Đóng</button></div>`);
+}
+async function ceoProjDelete(id){ if(!confirm("Xoá bản ghi doanh nghiệp CEO này?"))return; try{ await api(`/admin/eco/ceo-projects/${id}`,{method:"DELETE"}); toast("Đã xoá"); closeModal(); vProjects(); }catch(e){toast(e.message,true);} }
 function projCard(p){
   const c=p.components||{}; const chips=(arr)=>(arr||[]).map(x=>`<span class="tag t-mut" style="margin:2px">${esc(x)}</span>`).join("");
   return `<div class="card">

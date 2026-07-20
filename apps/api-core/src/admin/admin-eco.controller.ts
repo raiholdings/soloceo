@@ -240,6 +240,21 @@ export class AdminEcosystemController {
     return { deleted: true };
   }
 
+  // Doanh nghiệp CEO tự tạo ở workspace (/workspace/bat-dau)
+  @Get("ceo-projects")
+  @ApiOperation({ summary: "Tất cả doanh nghiệp/ý tưởng CEO đã tạo ở workspace" })
+  ceoProjects() {
+    return this.eco.ceoProjects();
+  }
+
+  @Delete("ceo-projects/:id")
+  @ApiOperation({ summary: "Xoá bản ghi doanh nghiệp CEO" })
+  async ceoProjectDelete(@CurrentUser() user: RequestUser, @Param("id") id: string) {
+    await this.eco.ceoProjectDelete(id);
+    await this.audit(user, "ceo_project.delete", id);
+    return { deleted: true };
+  }
+
   // Trợ lý AI
   @Get("agents")
   @ApiOperation({ summary: "Danh sách trợ lý AI (proxy DeerFlow)" })
