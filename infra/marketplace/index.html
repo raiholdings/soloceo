@@ -48,6 +48,10 @@
   .search input{flex:1;background:none;border:none;color:var(--txt);font-family:inherit;font-size:14px;padding:11px 0;outline:none}
   .search svg{flex:none;opacity:.5}
   select.sort{background:var(--panel);color:var(--txt);border:1px solid var(--line2);border-radius:11px;padding:11px 13px;font-family:inherit;font-size:13px;cursor:pointer}
+  .segs{display:inline-flex;gap:4px;margin-top:20px;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:4px}
+  .seg{padding:8px 16px;border-radius:9px;font-size:13px;cursor:pointer;color:var(--mut);white-space:nowrap;transition:.12s}
+  .seg:hover{color:var(--txt)}
+  .seg.on{background:var(--txt);color:#0b0b0c;font-weight:600}
   .filters{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 6px}
   .chip{border:1px solid var(--line2);color:var(--mut);border-radius:20px;padding:6px 14px;font-size:12.5px;cursor:pointer;background:transparent;transition:.12s}
   .chip:hover{border-color:var(--txt);color:var(--txt)}
@@ -157,7 +161,7 @@
 
 <script>
 const API="/api"; // nginx same-origin proxy → api.soloceo.vn/v1
-let ALL=[], FILTER="all", SORT="new", Q="";
+let ALL=[], FILTER="all", SORT="new", Q="", TYPE="all";
 const app=document.getElementById("app");
 
 const INDNAME={"du-lich":"Du lịch","fnb":"F&B","giao-duc":"Giáo dục","bat-dong-san":"Bất động sản","ban-le":"Bán lẻ","dich-vu":"Dịch vụ","thuong-mai":"Thương mại","cong-nghe":"Công nghệ","khac":"Khác"};
@@ -165,6 +169,8 @@ const esc=s=>(s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt
 const vnd=n=>{n=Number(n)||0; if(!n)return "Liên hệ"; if(n>=1e9)return (n/1e9).toFixed(n%1e9?1:0).replace(".",",")+" tỷ"; if(n>=1e6)return Math.round(n/1e6)+" triệu"; return n.toLocaleString("vi-VN")+"đ";};
 const clean=s=>String(s).replace(/\s*\(.*?\)\s*/g,"").trim();
 const indLabel=p=>INDNAME[p.industry]||p.industry||"Dự án";
+const isFree=p=>Number(p.priceVnd)===0;
+const WORKSPACE="https://soloceo.vn/workspace/bat-dau";
 const icoCheck='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const icoBox='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>';
 
@@ -212,17 +218,19 @@ function renderList(){
   if(ALL===null){ app.innerHTML='<div class="wrap"><div class="spin">Không tải được dữ liệu. Vui lòng thử lại sau.</div></div>'; return; }
   const prices=ALL.map(p=>Number(p.priceVnd)||0).filter(x=>x>0);
   const min=prices.length?Math.min(...prices):0;
+  const freeN=ALL.filter(isFree).length, mnaN=ALL.length-freeN;
   app.innerHTML=`
   <section class="hero"><div class="wrap">
     <p class="eyebrow">Sàn M&A · Doanh nghiệp vận hành bằng AI</p>
     <h1>Mua trọn một doanh nghiệp AI<br>vận hành sẵn.</h1>
-    <p class="lead">Mỗi dự án là một venture turnkey — mã nguồn, đội ngũ agent AI, nền tảng cộng đồng, cổng thanh toán — đóng gói và bàn giao. Nhận về là chạy, hoặc mua để bán lại.</p>
+    <p class="lead">Mua trọn một venture AI vận hành sẵn trên <b>Sàn M&A</b> — hoặc bắt đầu <b>miễn phí</b> với ${freeN}+ mẫu ứng dụng AI mã nguồn mở, đội AI SoloCEO dựng giúp.</p>
     <div class="stats">
-      <div><div class="big">${ALL.length}</div><div class="lab">Dự án niêm yết</div></div>
-      <div><div class="big">${min?vnd(min):"—"}</div><div class="lab">Giá từ</div></div>
-      <div><div class="big">Turnkey</div><div class="lab">Bàn giao trọn gói</div></div>
-      <div><div class="big">5–10 ngày</div><div class="lab">Thời gian chuyển giao</div></div>
+      <div><div class="big">${ALL.length}</div><div class="lab">Tổng mẫu dự án</div></div>
+      <div><div class="big" style="color:var(--ok)">${freeN}</div><div class="lab">Mẫu miễn phí</div></div>
+      <div><div class="big">${mnaN}</div><div class="lab">Doanh nghiệp M&A</div></div>
+      <div><div class="big">${min?vnd(min):"—"}</div><div class="lab">Giá M&A từ</div></div>
     </div>
+    <div class="segs" id="segs"></div>
     <div class="toolbar">
       <label class="search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -246,37 +254,43 @@ function renderList(){
   paint();
 }
 function paint(){
-  const inds=[...new Set(ALL.map(p=>p.industry).filter(Boolean))];
-  document.getElementById("filters").innerHTML=
-    [`<span class="chip ${FILTER==='all'?'on':''}" onclick="setF('all')">Tất cả</span>`]
-    .concat(inds.map(i=>`<span class="chip ${FILTER===i?'on':''}" onclick="setF('${i}')">${esc(INDNAME[i]||i)}</span>`)).join("");
+  const seg=(v,l)=>`<span class="seg ${TYPE===v?'on':''}" onclick="setT('${v}')">${l}</span>`;
+  const sg=document.getElementById("segs");
+  if(sg) sg.innerHTML=seg('all','Tất cả')+seg('free','● Miễn phí')+seg('mna','Doanh nghiệp M&A');
   let list=ALL.slice();
+  if(TYPE==="free") list=list.filter(isFree); else if(TYPE==="mna") list=list.filter(p=>!isFree(p));
+  const inds=[...new Set(list.map(p=>p.industry).filter(Boolean))];
+  document.getElementById("filters").innerHTML=
+    [`<span class="chip ${FILTER==='all'?'on':''}" onclick="setF('all')">Tất cả ngành</span>`]
+    .concat(inds.map(i=>`<span class="chip ${FILTER===i?'on':''}" onclick="setF('${i}')">${esc(INDNAME[i]||i)}</span>`)).join("");
   if(FILTER!=="all") list=list.filter(p=>p.industry===FILTER);
   if(Q.trim()){ const q=Q.toLowerCase(); list=list.filter(p=>(p.name+" "+(p.summary||"")+" "+indLabel(p)+" "+topTags(p,20).join(" ")).toLowerCase().includes(q)); }
   if(SORT==="asc") list.sort((a,b)=>(+a.priceVnd||0)-(+b.priceVnd||0));
   else if(SORT==="desc") list.sort((a,b)=>(+b.priceVnd||0)-(+a.priceVnd||0));
   else list.sort((a,b)=>new Date(b.publishedAt||b.createdAt||0)-new Date(a.publishedAt||a.createdAt||0));
-  document.getElementById("count").textContent=list.length+" dự án"+(FILTER!=="all"?" · "+(INDNAME[FILTER]||FILTER):"");
-  document.getElementById("grid").innerHTML=list.map(card).join("")||'<div class="spin">Chưa có dự án phù hợp.</div>';
+  document.getElementById("count").textContent=list.length+" mẫu"+(TYPE==='free'?' miễn phí':TYPE==='mna'?' M&A':'')+(FILTER!=="all"?" · "+(INDNAME[FILTER]||FILTER):"");
+  document.getElementById("grid").innerHTML=list.map(card).join("")||'<div class="spin">Chưa có mẫu phù hợp.</div>';
 }
 function setF(f){ FILTER=f; paint(); }
+function setT(t){ TYPE=t; FILTER="all"; paint(); }
 function card(p){
+  const free=isFree(p);
   const tags=topTags(p,4), extra=compCount(p)-tags.length;
   return `<a class="card" href="/du-an/${encodeURIComponent(p.slug)}" data-link>
     <div class="top">
       <span class="ind">${esc(indLabel(p))}</span>
-      ${p.demoUrl?'<span class="live"><span class="dot"></span>LIVE DEMO</span>':''}
+      ${free?'<span class="live" style="color:var(--gold)"><span class="dot" style="background:var(--gold);box-shadow:0 0 0 3px rgba(227,179,65,.16)"></span>MIỄN PHÍ</span>':(p.demoUrl?'<span class="live"><span class="dot"></span>LIVE DEMO</span>':'')}
     </div>
     <h3>${esc(p.name)}</h3>
     <div class="sum">${esc((p.summary||"").slice(0,140))}${(p.summary||"").length>140?"…":""}</div>
     <div class="chips">${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}${extra>0?`<span class="tag more">+${extra}</span>`:""}</div>
     <div class="metrics">
-      <div class="m"><div class="v">${compCount(p)}</div><div class="l">Thành phần</div></div>
-      <div class="m"><div class="v">${agentCount(p)||"—"}</div><div class="l">Agent AI</div></div>
-      <div class="m"><div class="v">Turnkey</div><div class="l">Bàn giao</div></div>
+      <div class="m"><div class="v">${compCount(p)}</div><div class="l">${free?'Công nghệ':'Thành phần'}</div></div>
+      <div class="m"><div class="v">${free?'Mở':(agentCount(p)||'—')}</div><div class="l">${free?'Mã nguồn':'Agent AI'}</div></div>
+      <div class="m"><div class="v">${free?'Tự dựng':'Turnkey'}</div><div class="l">${free?'Đội AI hỗ trợ':'Bàn giao'}</div></div>
     </div>
     <div class="priceRow">
-      <div><span class="p">${vnd(p.priceVnd)}</span> <span class="f">${Number(p.monthlyFeeVnd)?"+ "+vnd(p.monthlyFeeVnd)+"/th":""}</span></div>
+      <div>${free?'<span class="p" style="color:var(--ok)">Miễn phí</span>':`<span class="p">${vnd(p.priceVnd)}</span> <span class="f">${Number(p.monthlyFeeVnd)?"+ "+vnd(p.monthlyFeeVnd)+"/th":""}</span>`}</div>
       <span class="cta-arrow">Chi tiết →</span>
     </div>
   </a>`;
@@ -295,6 +309,7 @@ async function renderDetail(slug){
   const bs=Array.isArray(p.buildSteps)?p.buildSteps:[];
   const groups=compGroups(p);
   const mailto=`mailto:info@fbgproperty.vn?subject=${encodeURIComponent("Đặt mua dự án: "+p.name)}&body=${encodeURIComponent("Tôi quan tâm tới dự án \""+p.name+"\" trên Sàn dự án SoloCEO. Vui lòng liên hệ tư vấn và báo giá chi tiết.")}`;
+  const free=isFree(p);
 
   const stackHtml=groups.map(([t,arr])=>`
     <div class="sgroup">
@@ -310,15 +325,19 @@ async function renderDetail(slug){
     <div class="dhead">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span class="ind">${esc(indLabel(p))}</span>
-        ${p.demoUrl?'<span class="live"><span class="dot"></span>ĐANG CHẠY — LIVE DEMO</span>':''}
+        ${free?'<span class="live" style="color:var(--gold)"><span class="dot" style="background:var(--gold)"></span>MẪU MIỄN PHÍ · MÃ NGUỒN MỞ</span>':(p.demoUrl?'<span class="live"><span class="dot"></span>ĐANG CHẠY — LIVE DEMO</span>':'')}
       </div>
       <h1>${esc(p.name)}</h1>
       <p class="lead">${esc(p.summary||"")}</p>
-      <div class="strip">
+      <div class="strip">${free?`
+        <div class="s"><div class="v" style="color:var(--ok)">Miễn phí</div><div class="l">Chi phí</div></div>
+        <div class="s"><div class="v">Apache-2.0</div><div class="l">Giấy phép mở</div></div>
+        <div class="s"><div class="v">${compCount(p)}</div><div class="l">Công nghệ</div></div>
+        <div class="s"><div class="v">Đội AI</div><div class="l">Hỗ trợ dựng</div></div>`:`
         <div class="s"><div class="v">${vnd(p.priceVnd)}</div><div class="l">Giá bàn giao</div></div>
         <div class="s"><div class="v">${Number(p.monthlyFeeVnd)?vnd(p.monthlyFeeVnd):"—"}</div><div class="l">Phí vận hành/tháng</div></div>
         <div class="s"><div class="v">${compCount(p)}</div><div class="l">Thành phần đóng gói</div></div>
-        <div class="s"><div class="v">${agentCount(p)||"—"}</div><div class="l">Agent AI</div></div>
+        <div class="s"><div class="v">${agentCount(p)||"—"}</div><div class="l">Agent AI</div></div>`}
       </div>
     </div>
 
@@ -330,32 +349,49 @@ async function renderDetail(slug){
         </div>
 
         <div class="block">
-          <h2>Trọn bộ bàn giao — có gì trong dự án</h2>
+          <h2>${free?'Công nghệ &amp; mã nguồn':'Trọn bộ bàn giao — có gì trong dự án'}</h2>
           <div class="stack">${stackHtml||'<p class="prose">Đang cập nhật danh mục thành phần.</p>'}</div>
         </div>
 
         ${vp.length?`<div class="block">
-          <h2>Vì sao đáng mua</h2>
+          <h2>${free?'Điểm nổi bật':'Vì sao đáng mua'}</h2>
           <ul class="vlist">${vp.map(v=>`<li>${icoCheck}<span>${esc(v)}</span></li>`).join("")}</ul>
         </div>`:""}
 
         ${bs.length?`<div class="block">
-          <h2>Quy trình bàn giao</h2>
+          <h2>${free?'Cách dùng nhanh':'Quy trình bàn giao'}</h2>
           <ol class="steps">${bs.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol>
         </div>`:""}
 
-        <div class="block faq">
+        ${free?`<div class="block">
+          <h2>Về mẫu nguồn mở này</h2>
+          <p class="prose">Mẫu lấy từ bộ <b style="color:var(--txt)">awesome-llm-apps</b> (giấy phép <b style="color:var(--txt)">Apache-2.0</b>) — bạn được dùng, sửa và thương mại hoá miễn phí, chỉ cần giữ ghi công tác giả gốc. Cấu hình khoá mô hình AI qua <b style="color:var(--txt)">cổng LiteLLM của SoloCEO</b> là chạy được. Không rành kỹ thuật? Bấm <b style="color:var(--txt)">“Đội AI dựng giúp”</b> để SoloCEO triển khai cho bạn.</p>
+        </div>`:`<div class="block faq">
           <h2>Câu hỏi thường gặp</h2>
           <details><summary>Tôi nhận được gì khi mua?</summary><p>Toàn bộ mã nguồn và cấu hình hạ tầng (container), đội agent AI được huấn luyện sẵn, tên miền, dữ liệu mẫu và quyền sở hữu dự án được chuyển giao trên Coolify — sẵn sàng vận hành ngay.</p></details>
           <details><summary>Bàn giao mất bao lâu?</summary><p>Thường 5–10 ngày làm việc: chuyển quyền sở hữu (org), chuyển Coolify project và bí mật hệ thống qua từng bước có checkpoint admin để đảm bảo an toàn.</p></details>
           <details><summary>Sau bàn giao có được hỗ trợ không?</summary><p>Bao gồm 30 ngày hỗ trợ kỹ thuật. Có thể chọn gói vận hành hộ (managed) theo phí tháng để SoloCEO tiếp tục duy trì hạ tầng, AI và cập nhật.</p></details>
           <details><summary>Phí vận hành hằng tháng gồm những gì?</summary><p>Hạ tầng máy chủ, cổng AI (LiteLLM/token), cổng thanh toán và các nền tảng cộng đồng đi kèm. Hiển thị minh bạch ở mục "Phí vận hành/tháng".</p></details>
           <details><summary>Mua xong có bán lại được không?</summary><p>Có. Mọi dự án đủ điều kiện niêm yết lại trên Sàn M&A SoloCEO với doanh thu đã xác thực qua nền tảng — nền tảng để định giá và chuyển nhượng minh bạch.</p></details>
-        </div>
+        </div>`}
       </div>
 
       <aside class="rail">
-        <div class="buybox">
+        <div class="buybox">${free?`
+          <div class="pl">Mẫu miễn phí</div>
+          <div class="pv" style="color:var(--ok)">Miễn phí</div>
+          <div class="pf">Mã nguồn mở · Apache-2.0 · dùng &amp; thương mại hoá tự do</div>
+          <a class="btn block" href="${esc(WORKSPACE)}" target="_blank" rel="noopener">✦ Đội AI dựng giúp</a>
+          ${p.demoUrl?`<a class="btn ghost block" style="margin-top:10px" href="${esc(p.demoUrl)}" target="_blank" rel="noopener">Xem mã nguồn (GitHub) ↗</a>`:""}
+          <ul class="trust">
+            <li>${icoCheck}<span>Miễn phí, mã nguồn mở đầy đủ</span></li>
+            <li>${icoCheck}<span>Chạy qua cổng AI của SoloCEO</span></li>
+            <li>${icoCheck}<span>Tuỳ biến tự do theo nghiệp vụ</span></li>
+            <li>${icoCheck}<span>Đội AI SoloCEO hỗ trợ triển khai</span></li>
+          </ul>
+          <div class="badges"><span class="badge">◇ Mã nguồn mở</span><span class="badge">Apache-2.0</span></div>
+          <div class="railnote">Nguồn: awesome-llm-apps — giữ ghi công tác giả gốc.</div>
+          `:`
           <div class="pl">Giá bàn giao trọn gói</div>
           <div class="pv">${vnd(p.priceVnd)}</div>
           <div class="pf">${Number(p.monthlyFeeVnd)?"+ "+vnd(p.monthlyFeeVnd)+" / tháng phí vận hành":"Phí vận hành: liên hệ"}</div>
@@ -369,7 +405,7 @@ async function renderDetail(slug){
           </ul>
           <div class="badges"><span class="badge">◆ Đã thẩm định</span><span class="badge">⇄ Sàn M&A SoloCEO</span></div>
           <div class="railnote">Escrow &amp; chuyển nhượng có admin SoloCEO giám sát từng bước.</div>
-        </div>
+          `}</div>
       </aside>
     </div>
 

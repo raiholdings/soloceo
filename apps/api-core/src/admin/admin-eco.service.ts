@@ -776,8 +776,8 @@ ${body}
   projectPublicList() {
     return this.prisma.projectTemplate.findMany({
       where: { status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
-      take: 100,
+      orderBy: [{ priceVnd: "desc" }, { publishedAt: "desc" }],
+      take: 500,
       select: {
         id: true, name: true, slug: true, industry: true, summary: true,
         components: true, valueProps: true, priceVnd: true, monthlyFeeVnd: true,

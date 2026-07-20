@@ -1,0 +1,702 @@
+[
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_domain_deep_research_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_domain_deep_research_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_domain_deep_research_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai domain deep research agent"
+ },
+ {
+  "path": "voice_ai_agents/customer_support_voice_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/voice_ai_agents/customer_support_voice_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/voice_ai_agents/customer_support_voice_agent/README.md",
+  "cat": "voice_ai_agents",
+  "name_en": "customer support voice agent"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_seo_audit_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_seo_audit_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_seo_audit_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai seo audit team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_vc_due_diligence_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_vc_due_diligence_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_vc_due_diligence_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai vc due diligence agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_email_gtm_outreach_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_email_gtm_outreach_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_email_gtm_outreach_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai email gtm outreach agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_customer_support_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_customer_support_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_customer_support_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai customer support agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_deep_research_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_deep_research_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_deep_research_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai deep research agent"
+ },
+ {
+  "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_research_papers",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_research_papers",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_research_papers/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "chat with research papers"
+ },
+ {
+  "path": "rag_tutorials/ai_blog_search",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/ai_blog_search",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/ai_blog_search/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "ai blog search"
+ },
+ {
+  "path": "rag_tutorials/rag-as-a-service",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/rag-as-a-service",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/rag-as-a-service/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "rag-as-a-service"
+ },
+ {
+  "path": "voice_ai_agents/insurance_claim_live_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/voice_ai_agents/insurance_claim_live_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/voice_ai_agents/insurance_claim_live_agent_team/README.md",
+  "cat": "voice_ai_agents",
+  "name_en": "insurance claim live agent team"
+ },
+ {
+  "path": "voice_ai_agents/voice_rag_openaisdk",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/voice_ai_agents/voice_rag_openaisdk",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/voice_ai_agents/voice_rag_openaisdk/README.md",
+  "cat": "voice_ai_agents",
+  "name_en": "voice rag openaisdk"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ag2 adaptive research team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_competitor_intelligence_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_competitor_intelligence_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_competitor_intelligence_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai competitor intelligence agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai finance agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team/local_ai_legal_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team/local_ai_legal_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team/local_ai_legal_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "local ai legal agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_real_estate_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_real_estate_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_real_estate_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai real estate agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai recruitment agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_sales_intelligence_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_sales_intelligence_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_sales_intelligence_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai sales intelligence agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_services_agency",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_services_agency",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_services_agency/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai services agency"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_travel_planner_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_travel_planner_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_travel_planner_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai travel planner agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_financial_coach_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_financial_coach_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_financial_coach_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai financial coach agent"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_news_and_podcast_agents/web",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_news_and_podcast_agents/web",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_news_and_podcast_agents/web/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "web"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/multi_agent_researcher",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/multi_agent_researcher",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/multi_agent_researcher/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "multi agent researcher"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/product_launch_intelligence_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/product_launch_intelligence_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/product_launch_intelligence_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "product launch intelligence agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_consultant_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_consultant_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_consultant_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai consultant agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_email_gtm_reachout_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_email_gtm_reachout_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_email_gtm_reachout_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai email gtm reachout agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_health_fitness_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_health_fitness_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_health_fitness_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai health fitness agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_journalist_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_journalist_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_journalist_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai journalist agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_meeting_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_meeting_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_meeting_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai meeting agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_movie_production_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_movie_production_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_movie_production_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai movie production agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_personal_finance_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_personal_finance_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_personal_finance_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai personal finance agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/ai_startup_insight_fire1_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/ai_startup_insight_fire1_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/ai_startup_insight_fire1_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai startup insight fire1 agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/earnings_call_analyst_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/earnings_call_analyst_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/earnings_call_analyst_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "earnings call analyst agent"
+ },
+ {
+  "path": "advanced_ai_agents/single_agent_apps/research_agent_gemini_interaction_api",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/single_agent_apps/research_agent_gemini_interaction_api",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/single_agent_apps/research_agent_gemini_interaction_api/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "research agent gemini interaction api"
+ },
+ {
+  "path": "advanced_llm_apps/chat-with-tarots",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/chat-with-tarots",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/chat-with-tarots/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "chat-with-tarots"
+ },
+ {
+  "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_github/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "chat with github"
+ },
+ {
+  "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "chat with gmail"
+ },
+ {
+  "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_pdf",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_pdf",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_pdf/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "chat with pdf"
+ },
+ {
+  "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_substack",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_substack",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_substack/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "chat with substack"
+ },
+ {
+  "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_youtube_videos",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_youtube_videos",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/chat_with_X_tutorials/chat_with_youtube_videos/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "chat with youtube videos"
+ },
+ {
+  "path": "advanced_llm_apps/chat_with_X_tutorials/streaming_ai_chatbot",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/chat_with_X_tutorials/streaming_ai_chatbot",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/chat_with_X_tutorials/streaming_ai_chatbot/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "streaming ai chatbot"
+ },
+ {
+  "path": "advanced_llm_apps/cursor_ai_experiments/local_chatgpt_clone",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/cursor_ai_experiments/local_chatgpt_clone",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/cursor_ai_experiments/local_chatgpt_clone/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "local chatgpt clone"
+ },
+ {
+  "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "ai travel agent memory"
+ },
+ {
+  "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/local_chatgpt_with_memory",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/llm_apps_with_memory_tutorials/local_chatgpt_with_memory",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/llm_apps_with_memory_tutorials/local_chatgpt_with_memory/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "local chatgpt with memory"
+ },
+ {
+  "path": "advanced_llm_apps/resume_job_matcher",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/resume_job_matcher",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/resume_job_matcher/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "resume job matcher"
+ },
+ {
+  "path": "advanced_llm_apps/thinkpath_chatbot_app",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_llm_apps/thinkpath_chatbot_app",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_llm_apps/thinkpath_chatbot_app/README.md",
+  "cat": "advanced_llm_apps",
+  "name_en": "thinkpath chatbot app"
+ },
+ {
+  "path": "generative_ui_agents/ai-deep-research-agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/generative_ui_agents/ai-deep-research-agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/generative_ui_agents/ai-deep-research-agent/README.md",
+  "cat": "generative_ui_agents",
+  "name_en": "ai-deep-research-agent"
+ },
+ {
+  "path": "generative_ui_agents/ai-financial-coach-agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/generative_ui_agents/ai-financial-coach-agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/generative_ui_agents/ai-financial-coach-agent/README.md",
+  "cat": "generative_ui_agents",
+  "name_en": "ai-financial-coach-agent"
+ },
+ {
+  "path": "generative_ui_agents/ai-mcp-app-builder/apps/mcp-use-server/.agent/skills/chatgpt-app-builder/evals",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/generative_ui_agents/ai-mcp-app-builder/apps/mcp-use-server/.agent/skills/chatgpt-app-builder/evals",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/generative_ui_agents/ai-mcp-app-builder/apps/mcp-use-server/.agent/skills/chatgpt-app-builder/evals/README.md",
+  "cat": "generative_ui_agents",
+  "name_en": "evals"
+ },
+ {
+  "path": "generative_ui_agents/ai-mcp-app-builder/apps/threejs-server",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/generative_ui_agents/ai-mcp-app-builder/apps/threejs-server",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/generative_ui_agents/ai-mcp-app-builder/apps/threejs-server/README.md",
+  "cat": "generative_ui_agents",
+  "name_en": "threejs-server"
+ },
+ {
+  "path": "mcp_ai_agents/ai_travel_planner_mcp_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/mcp_ai_agents/ai_travel_planner_mcp_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/mcp_ai_agents/ai_travel_planner_mcp_agent_team/README.md",
+  "cat": "mcp_ai_agents",
+  "name_en": "ai travel planner mcp agent team"
+ },
+ {
+  "path": "rag_tutorials/agentic_rag_embedding_gemma",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/agentic_rag_embedding_gemma",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/agentic_rag_embedding_gemma/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "agentic rag embedding gemma"
+ },
+ {
+  "path": "rag_tutorials/agentic_rag_gpt5",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/agentic_rag_gpt5",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/agentic_rag_gpt5/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "agentic rag gpt5"
+ },
+ {
+  "path": "rag_tutorials/agentic_rag_math_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/agentic_rag_math_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/agentic_rag_math_agent/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "agentic rag math agent"
+ },
+ {
+  "path": "rag_tutorials/agentic_rag_with_reasoning",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/agentic_rag_with_reasoning",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/agentic_rag_with_reasoning/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "agentic rag with reasoning"
+ },
+ {
+  "path": "rag_tutorials/agentic_typed_rag_pydanticai",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/agentic_typed_rag_pydanticai",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/agentic_typed_rag_pydanticai/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "agentic typed rag pydanticai"
+ },
+ {
+  "path": "rag_tutorials/autonomous_rag",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/autonomous_rag",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/autonomous_rag/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "autonomous rag"
+ },
+ {
+  "path": "rag_tutorials/contextualai_rag_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/contextualai_rag_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/contextualai_rag_agent/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "contextualai rag agent"
+ },
+ {
+  "path": "rag_tutorials/corrective_rag",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/corrective_rag",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/corrective_rag/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "corrective rag"
+ },
+ {
+  "path": "rag_tutorials/deepseek_local_rag_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/deepseek_local_rag_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/deepseek_local_rag_agent/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "deepseek local rag agent"
+ },
+ {
+  "path": "rag_tutorials/gemini_agentic_rag",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/gemini_agentic_rag",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/gemini_agentic_rag/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "gemini agentic rag"
+ },
+ {
+  "path": "rag_tutorials/hybrid_search_rag",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/hybrid_search_rag",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/hybrid_search_rag/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "hybrid search rag"
+ },
+ {
+  "path": "rag_tutorials/knowledge_graph_rag_citations",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/knowledge_graph_rag_citations",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/knowledge_graph_rag_citations/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "knowledge graph rag citations"
+ },
+ {
+  "path": "rag_tutorials/llama3.1_local_rag",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/llama3.1_local_rag",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/llama3.1_local_rag/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "llama3.1 local rag"
+ },
+ {
+  "path": "rag_tutorials/local_hybrid_search_rag",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/local_hybrid_search_rag",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/local_hybrid_search_rag/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "local hybrid search rag"
+ },
+ {
+  "path": "rag_tutorials/local_rag_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/local_rag_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/local_rag_agent/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "local rag agent"
+ },
+ {
+  "path": "rag_tutorials/multimodal_agentic_rag",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/multimodal_agentic_rag",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/multimodal_agentic_rag/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "multimodal agentic rag"
+ },
+ {
+  "path": "rag_tutorials/qwen_local_rag",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/qwen_local_rag",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/qwen_local_rag/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "qwen local rag"
+ },
+ {
+  "path": "rag_tutorials/rag_agent_cohere",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/rag_agent_cohere",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/rag_agent_cohere/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "rag agent cohere"
+ },
+ {
+  "path": "rag_tutorials/rag_chain",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/rag_chain",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/rag_chain/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "rag chain"
+ },
+ {
+  "path": "rag_tutorials/rag_database_routing",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/rag_database_routing",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/rag_database_routing/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "rag database routing"
+ },
+ {
+  "path": "rag_tutorials/rag_failure_diagnostics_clinic",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/rag_failure_diagnostics_clinic",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/rag_failure_diagnostics_clinic/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "rag failure diagnostics clinic"
+ },
+ {
+  "path": "rag_tutorials/vision_rag",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/rag_tutorials/vision_rag",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/rag_tutorials/vision_rag/README.md",
+  "cat": "rag_tutorials",
+  "name_en": "vision rag"
+ },
+ {
+  "path": "starter_ai_agents/ai_blog_to_podcast_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/starter_ai_agents/ai_blog_to_podcast_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/starter_ai_agents/ai_blog_to_podcast_agent/README.md",
+  "cat": "starter_ai_agents",
+  "name_en": "ai blog to podcast agent"
+ },
+ {
+  "path": "starter_ai_agents/ai_data_analysis_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/starter_ai_agents/ai_data_analysis_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/starter_ai_agents/ai_data_analysis_agent/README.md",
+  "cat": "starter_ai_agents",
+  "name_en": "ai data analysis agent"
+ },
+ {
+  "path": "starter_ai_agents/ai_life_insurance_advisor_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/starter_ai_agents/ai_life_insurance_advisor_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/starter_ai_agents/ai_life_insurance_advisor_agent/README.md",
+  "cat": "starter_ai_agents",
+  "name_en": "ai life insurance advisor agent"
+ },
+ {
+  "path": "starter_ai_agents/ai_medical_imaging_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/starter_ai_agents/ai_medical_imaging_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/starter_ai_agents/ai_medical_imaging_agent/README.md",
+  "cat": "starter_ai_agents",
+  "name_en": "ai medical imaging agent"
+ },
+ {
+  "path": "starter_ai_agents/ai_startup_trend_analysis_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/starter_ai_agents/ai_startup_trend_analysis_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/starter_ai_agents/ai_startup_trend_analysis_agent/README.md",
+  "cat": "starter_ai_agents",
+  "name_en": "ai startup trend analysis agent"
+ },
+ {
+  "path": "starter_ai_agents/ai_travel_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/starter_ai_agents/ai_travel_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/starter_ai_agents/ai_travel_agent/README.md",
+  "cat": "starter_ai_agents",
+  "name_en": "ai travel agent"
+ },
+ {
+  "path": "starter_ai_agents/openai_research_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/starter_ai_agents/openai_research_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/starter_ai_agents/openai_research_agent/README.md",
+  "cat": "starter_ai_agents",
+  "name_en": "openai research agent"
+ },
+ {
+  "path": "starter_ai_agents/xai_finance_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/starter_ai_agents/xai_finance_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/starter_ai_agents/xai_finance_agent/README.md",
+  "cat": "starter_ai_agents",
+  "name_en": "xai finance agent"
+ },
+ {
+  "path": "voice_ai_agents/ai_audio_tour_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/voice_ai_agents/ai_audio_tour_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/voice_ai_agents/ai_audio_tour_agent/README.md",
+  "cat": "voice_ai_agents",
+  "name_en": "ai audio tour agent"
+ },
+ {
+  "path": "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_3dpygame_r1",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/autonomous_game_playing_agent_apps/ai_3dpygame_r1",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/autonomous_game_playing_agent_apps/ai_3dpygame_r1/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai 3dpygame r1"
+ },
+ {
+  "path": "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_chess_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/autonomous_game_playing_agent_apps/ai_chess_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/autonomous_game_playing_agent_apps/ai_chess_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai chess agent"
+ },
+ {
+  "path": "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_tic_tac_toe_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/autonomous_game_playing_agent_apps/ai_tic_tac_toe_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/autonomous_game_playing_agent_apps/ai_tic_tac_toe_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai tic tac toe agent"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_game_design_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_game_design_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_game_design_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai game design agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_teaching_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_teaching_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_teaching_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai teaching agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_coding_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_coding_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_coding_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "multimodal coding agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_design_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_design_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_design_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "multimodal design agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_uiux_feedback_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_uiux_feedback_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_uiux_feedback_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "multimodal uiux feedback agent team"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_aqi_analysis_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_aqi_analysis_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_aqi_analysis_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai aqi analysis agent"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_home_renovation_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_home_renovation_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_home_renovation_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai home renovation agent"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_mental_wellbeing_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_mental_wellbeing_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_mental_wellbeing_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai mental wellbeing agent"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_negotiation_battle_simulator",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_negotiation_battle_simulator",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_negotiation_battle_simulator/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai negotiation battle simulator"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_self_evolving_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_self_evolving_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_self_evolving_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai self evolving agent"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/ai_speech_trainer_agent",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/ai_speech_trainer_agent",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/ai_speech_trainer_agent/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "ai speech trainer agent"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/devpulse_ai",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/devpulse_ai",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/devpulse_ai/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "devpulse ai"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/multi_agent_trust_layer",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/multi_agent_trust_layer",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/multi_agent_trust_layer/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "multi agent trust layer"
+ },
+ {
+  "path": "advanced_ai_agents/multi_agent_apps/trust_gated_agent_team",
+  "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/trust_gated_agent_team",
+  "raw": "https://raw.githubusercontent.com/Shubhamsaboo/awesome-llm-apps/main/advanced_ai_agents/multi_agent_apps/trust_gated_agent_team/README.md",
+  "cat": "advanced_ai_agents",
+  "name_en": "trust gated agent team"
+ }
+]
