@@ -437,7 +437,7 @@ async function renderDetail(slug){
           <div class="pl">Mẫu miễn phí</div>
           <div class="pv" style="color:var(--ok)">Miễn phí</div>
           <div class="pf">Mã nguồn mở · Apache-2.0 · dùng &amp; thương mại hoá tự do</div>
-          <a class="btn block" href="${esc(WORKSPACE)}" target="_blank" rel="noopener">✦ Đội AI dựng giúp</a>
+          <a class="btn block" href="${esc(WORKSPACE)}?tpl=${encodeURIComponent(p.slug)}" target="_blank" rel="noopener">✦ Đội AI dựng giúp</a>
           ${p.demoUrl?`<a class="btn ghost block" style="margin-top:10px" href="${esc(p.demoUrl)}" target="_blank" rel="noopener">Xem mã nguồn (GitHub) ↗</a>`:""}
           <ul class="trust">
             <li>${icoCheck}<span>Miễn phí, mã nguồn mở đầy đủ</span></li>

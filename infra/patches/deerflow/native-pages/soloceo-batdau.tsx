@@ -4,10 +4,11 @@
 // ghép gói Mô hình kinh doanh + trợ lý AI + nền tảng PHÙ HỢP → chỉ setup phần
 // liên quan vào workspace của CEO (lưu soloceo-setup để dashboard cá nhân hoá).
 import { ArrowRight, Bot, CheckCircle2, Lightbulb, Loader2, Rocket, Sparkles, Star } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { WorkspaceBody, WorkspaceContainer, WorkspaceHeader } from "@/components/workspace/workspace-container";
 import { soloceoApi } from "@/components/workspace/soloceo-api";
 import { KICKOFF_KEY } from "@/components/workspace/soloceo-kickoff";
+import { useSearchParams } from "next/navigation";
 import { PLATFORMS, type PlatformKey } from "@/components/workspace/soloceo-business-models";
 
 const NGANH = [
@@ -30,6 +31,23 @@ export function SoloceoBatDau() {
   const [kq, setKq] = useState<KetQua | null>(null);
   const [goiTen, setGoiTen] = useState<Record<string, string>>({});
   const [err, setErr] = useState<string | null>(null);
+  const [tplName, setTplName] = useState<string | null>(null);
+  const tplRef = useRef<{ name: string; demoUrl?: string } | null>(null);
+  const sp = useSearchParams();
+  useEffect(() => {
+    const slug = sp.get("tpl");
+    if (!slug) return;
+    fetch("https://api.soloceo.vn/v1/marketplace/project-templates/" + encodeURIComponent(slug))
+      .then((r) => r.json())
+      .then((t) => {
+        if (!t || !t.slug) return;
+        tplRef.current = { name: t.name, demoUrl: t.demoUrl };
+        setTplName(t.name);
+        const MAP: Record<string, string> = { "du-lich": "services", fnb: "fnb", "giao-duc": "education", "bat-dong-san": "real_estate", "ban-le": "commerce", "dich-vu": "services", "tai-chinh": "services", "cong-nghe": "tech", "thuong-mai": "commerce", khac: "other" };
+        setF((c) => ({ ...c, tenDN: c.tenDN || t.name, nganh: MAP[t.industry as string] ?? "services", yTuong: c.yTuong || ((t.summary ?? "") + (t.demoUrl ? "\n\nDựng theo mẫu: " + t.name + " (" + t.demoUrl + ")" : "")) }));
+      })
+      .catch(() => { /* bỏ qua */ });
+  }, [sp]);
 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setF((c) => ({ ...c, [k]: e.target.value }));
@@ -70,6 +88,7 @@ export function SoloceoBatDau() {
     try {
       sessionStorage.setItem(KICKOFF_KEY, JSON.stringify({
         text: `Doanh nghiệp của tôi: "${f.tenDN}" (${f.nganh}). Ý tưởng: ${f.yTuong.slice(0, 500)}. ` +
+          (tplRef.current ? `Tôi muốn DỰNG THEO MẪU "${tplRef.current.name}"${tplRef.current.demoUrl ? " (mã nguồn tham khảo: " + tplRef.current.demoUrl + ")" : ""}. ` : "") +
           `Việc đầu tiên: ${kq.buocDauTien} — hãy bắt tay làm ngay, phân công sub-agent phù hợp, kết quả cụ thể dùng được, tiếng Việt.`,
       }));
     } catch { /* bỏ qua */ }
@@ -88,6 +107,9 @@ export function SoloceoBatDau() {
                 <div>
                   <h1 className="text-xl font-semibold">Bắt đầu — kể ý tưởng của bạn</h1>
                   <p className="text-muted-foreground text-sm">AI sẽ đánh giá và setup workspace đúng thứ bạn cần: mô hình, trợ lý, công cụ.</p>
+                  {tplName && (
+                    <p className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">✦ Đang dựng theo mẫu: {tplName}</p>
+                  )}
                 </div>
               </div>
               <div className="space-y-4">

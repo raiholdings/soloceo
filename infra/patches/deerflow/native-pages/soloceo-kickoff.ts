@@ -119,3 +119,33 @@ export function startKickoff(
   // Dùng location thay router.push để chắc chắn ChatPage mount lại và đọc key.
   window.location.assign("/workspace/chats/new");
 }
+
+// ── Mẫu dự án (marketplace) → dựng trong workspace ──────────────────────────
+export type ProjectTemplate = {
+  slug: string;
+  name: string;
+  summary?: string;
+  industry?: string;
+  priceVnd: string | number;
+  monthlyFeeVnd?: string | number;
+  demoUrl?: string;
+  components?: Record<string, unknown>;
+};
+
+/** Nạp lời nhắc "dựng dự án theo mẫu" vào 1 thread mới của DeerFlow. */
+export function startTemplateKickoff(t: ProjectTemplate) {
+  const free = Number(t.priceVnd) === 0;
+  const src = t.demoUrl ? ` (mã nguồn tham khảo: ${t.demoUrl})` : "";
+  const text = free
+    ? `Tôi muốn dựng dự án theo mẫu "${t.name}"${src}. Mô tả: ${t.summary ?? ""}. ` +
+      `Hãy: (1) tóm tắt mẫu này giúp doanh nghiệp một người làm được gì; (2) hỏi tôi các thông tin doanh nghiệp cần thiết; ` +
+      `(3) phân công sub-agent dựng phiên bản chạy được, nối vào cổng AI LiteLLM của SoloCEO; (4) hướng dẫn tôi từng bước bằng tiếng Việt.`
+    : `Tôi quan tâm mẫu doanh nghiệp "${t.name}"${src}. Mô tả: ${t.summary ?? ""}. ` +
+      `Hãy phân tích mô hình, liệt kê thành phần cần có và lập kế hoạch dựng/tiếp quản, hướng dẫn tôi bằng tiếng Việt.`;
+  try {
+    sessionStorage.setItem(KICKOFF_KEY, JSON.stringify({ text, templateSlug: t.slug }));
+  } catch {
+    /* sessionStorage bị chặn — vẫn điều hướng, CEO tự gõ */
+  }
+  window.location.assign("/workspace/chats/new");
+}
