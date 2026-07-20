@@ -26,6 +26,11 @@
   .nav{display:flex;align-items:center;gap:12px;height:64px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:600}
   .brand small{display:block;color:var(--faint);font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-family:var(--mono)}
+  .mainnav{display:flex;gap:4px;margin-left:22px}
+  .mainnav a{font-size:13.5px;color:var(--mut);padding:7px 13px;border-radius:9px;cursor:pointer;transition:.12s;white-space:nowrap}
+  .mainnav a:hover{color:var(--txt);background:var(--panel2)}
+  .mainnav a.on{color:var(--txt);background:var(--panel2);font-weight:600}
+  @media(max-width:720px){.mainnav{display:none}}
   .nav .sp{margin-left:auto}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--txt);color:#0b0b0c;border:none;border-radius:10px;padding:10px 16px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
   .btn:hover{opacity:.9}
@@ -58,6 +63,18 @@
   .chip.on{background:var(--txt);color:#0b0b0c;border-color:var(--txt);font-weight:600}
   .count{color:var(--faint);font-size:12.5px;font-family:var(--mono);padding:10px 0}
   /* grid + cards */
+  .featured{display:grid;grid-template-columns:1fr 300px;gap:26px;align-items:center;margin:22px 0 8px;padding:26px 28px;border-radius:18px;background:linear-gradient(135deg,rgba(63,185,80,.07),var(--panel) 60%);border:1px solid var(--line2);border-left:3px solid var(--ok);transition:.15s}
+  .featured:hover{border-color:var(--ok);transform:translateY(-2px);box-shadow:0 16px 48px rgba(0,0,0,.35)}
+  .fbadges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+  .fb{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;padding:3px 9px;border-radius:7px;border:1px solid var(--line2);color:var(--mut)}
+  .fb.ok{color:var(--ok);border-color:var(--okline,rgba(63,185,80,.34));background:rgba(63,185,80,.1)}
+  .featured h2{font-size:22px;letter-spacing:-.015em;line-height:1.2}
+  .fsum{color:var(--mut);font-size:14.5px;margin:9px 0 0;max-width:60ch}
+  .fmet{display:flex;gap:26px;flex-wrap:wrap;margin-top:18px}
+  .fmet .v{font-size:19px;font-weight:700;letter-spacing:-.01em}
+  .fmet .l{color:var(--faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-top:2px}
+  .fcta{display:flex;flex-direction:column}
+  @media(max-width:720px){.featured{grid-template-columns:1fr;gap:18px}}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;padding:6px 0 64px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;cursor:pointer;transition:.15s;position:relative}
   .card:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.35)}
@@ -150,6 +167,11 @@
     <svg width="26" height="26" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="none" stroke="#f5f5f6" stroke-width="7"/><circle cx="50" cy="50" r="11" fill="#f5f5f6"/></svg>
     <div>SoloCEO<small>Sàn dự án · M&A</small></div>
   </a>
+  <nav class="mainnav">
+    <a data-nav="all" onclick="navType('all')">Tất cả</a>
+    <a data-nav="free" onclick="navType('free')">Miễn phí</a>
+    <a data-nav="mna" onclick="navType('mna')">Sàn M&A</a>
+  </nav>
   <span class="sp"></span>
   <a class="btn ghost sm" href="https://soloceo.vn" target="_blank">soloceo.vn</a>
   <a class="btn sm" href="mailto:info@fbgproperty.vn?subject=Quan tam san du an SoloCEO">Liên hệ</a>
@@ -245,6 +267,7 @@ function renderList(){
     <div class="filters" id="filters"></div>
   </div></section>
   <div class="wrap">
+    <div id="featured"></div>
     <div class="count" id="count"></div>
     <div class="grid" id="grid"></div>
   </div>`;
@@ -257,7 +280,13 @@ function paint(){
   const seg=(v,l)=>`<span class="seg ${TYPE===v?'on':''}" onclick="setT('${v}')">${l}</span>`;
   const sg=document.getElementById("segs");
   if(sg) sg.innerHTML=seg('all','Tất cả')+seg('free','● Miễn phí')+seg('mna','Doanh nghiệp M&A');
+  markNav();
+  const oc=(ALL||[]).find(p=>p.slug==="openclawos");
+  const showFeat=!!oc && TYPE==="mna" && FILTER==="all" && !Q.trim();
+  const feat=document.getElementById("featured");
+  if(feat) feat.innerHTML=showFeat?featured(oc):"";
   let list=ALL.slice();
+  if(showFeat) list=list.filter(p=>p.slug!=="openclawos");
   if(TYPE==="free") list=list.filter(isFree); else if(TYPE==="mna") list=list.filter(p=>!isFree(p));
   const inds=[...new Set(list.map(p=>p.industry).filter(Boolean))];
   document.getElementById("filters").innerHTML=
@@ -268,11 +297,38 @@ function paint(){
   if(SORT==="asc") list.sort((a,b)=>(+a.priceVnd||0)-(+b.priceVnd||0));
   else if(SORT==="desc") list.sort((a,b)=>(+b.priceVnd||0)-(+a.priceVnd||0));
   else list.sort((a,b)=>new Date(b.publishedAt||b.createdAt||0)-new Date(a.publishedAt||a.createdAt||0));
-  document.getElementById("count").textContent=list.length+" mẫu"+(TYPE==='free'?' miễn phí':TYPE==='mna'?' M&A':'')+(FILTER!=="all"?" · "+(INDNAME[FILTER]||FILTER):"");
-  document.getElementById("grid").innerHTML=list.map(card).join("")||'<div class="spin">Chưa có mẫu phù hợp.</div>';
+  const shown=list.length+(showFeat?1:0);
+  document.getElementById("count").textContent=shown+" mẫu"+(TYPE==='free'?' miễn phí':TYPE==='mna'?' doanh nghiệp M&A':'')+(FILTER!=="all"?" · "+(INDNAME[FILTER]||FILTER):"");
+  document.getElementById("grid").innerHTML=list.map(card).join("")||(showFeat?'<div class="spin" style="padding:26px">Các doanh nghiệp M&A khác sẽ xuất hiện tại đây khi được niêm yết.</div>':'<div class="spin">Chưa có mẫu phù hợp.</div>');
 }
 function setF(f){ FILTER=f; paint(); }
 function setT(t){ TYPE=t; FILTER="all"; paint(); }
+function navType(t){ TYPE=t; FILTER="all"; Q="";
+  if(location.pathname!=="/"){ history.pushState({},"","/"); renderList(); }
+  else paint();
+  const g=document.getElementById("grid"); if(g) g.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function markNav(){ document.querySelectorAll(".mainnav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===TYPE)); }
+function featured(p){
+  const host=(p.demoUrl||"").replace(/^https?:\/\//,"").replace(/\/$/,"");
+  return `<a class="featured" href="/du-an/${encodeURIComponent(p.slug)}" data-link>
+    <div class="fx">
+      <div class="fbadges"><span class="fb ok">◉ ĐANG VẬN HÀNH THẬT</span><span class="fb">Doanh thu đã xác thực</span><span class="fb">Dự án điển hình</span></div>
+      <h2>${esc(p.name)} — venture đang chạy thật</h2>
+      <p class="fsum">${esc(p.summary||"")}</p>
+      <div class="fmet">
+        <div><div class="v">${vnd(p.priceVnd)}</div><div class="l">Định giá M&A</div></div>
+        <div><div class="v">${Number(p.monthlyFeeVnd)?vnd(p.monthlyFeeVnd)+"/th":"—"}</div><div class="l">Phí vận hành</div></div>
+        <div><div class="v">${compCount(p)}</div><div class="l">Thành phần</div></div>
+        <div><div class="v" style="color:var(--ok)">LIVE</div><div class="l">${esc(host||"đang chạy")}</div></div>
+      </div>
+    </div>
+    <div class="fcta">
+      <span class="btn block">Xem hồ sơ M&A →</span>
+      ${p.demoUrl?`<span class="btn ghost block" style="margin-top:10px" onclick="event.preventDefault();event.stopPropagation();window.open('${esc(p.demoUrl)}','_blank','noopener')">Ghé ${esc(host)} ↗</span>`:""}
+    </div>
+  </a>`;
+}
 function card(p){
   const free=isFree(p);
   const tags=topTags(p,4), extra=compCount(p)-tags.length;
