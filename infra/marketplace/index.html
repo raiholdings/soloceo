@@ -5,171 +5,381 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sàn dự án SoloCEO — Mua doanh nghiệp AI vận hành sẵn</title>
 <meta name="description" content="Sàn M&A dự án SoloCEO: mua trọn gói một doanh nghiệp vận hành bằng AI — mã nguồn, đội agent, nền tảng cộng đồng, thanh toán — bàn giao turnkey.">
+<meta property="og:title" content="Sàn dự án SoloCEO — Mua doanh nghiệp AI vận hành sẵn">
+<meta property="og:description" content="Mỗi dự án là một venture turnkey: mã nguồn + đội agent AI + nền tảng cộng đồng + cổng thanh toán, đóng gói và bàn giao trọn gói.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='none' stroke='%23f5f5f6' stroke-width='7'/%3E%3Ccircle cx='50' cy='50' r='11' fill='%23f5f5f6'/%3E%3C/svg%3E">
 <style>
   :root{
-    --bg:#0b0b0c; --panel:#141416; --panel2:#1a1a1d; --line:#242427; --line2:#33333a;
-    --txt:#f5f5f6; --mut:#a0a0a8; --faint:#6b6b73; --ok:#3fb950; --mono:'SF Mono',ui-monospace,Menlo,monospace;
+    --bg:#0b0b0c; --panel:#131315; --panel2:#1a1a1d; --line:#232326; --line2:#33333a;
+    --txt:#f5f5f6; --mut:#a2a2aa; --faint:#6b6b73; --ok:#3fb950; --gold:#e3b341;
+    --mono:'SF Mono',ui-monospace,Menlo,monospace;
     --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
   body{background:var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
-  header{border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,11,12,.85);backdrop-filter:blur(14px);z-index:20}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 22px}
+  /* header */
+  header{border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,11,12,.82);backdrop-filter:blur(16px);z-index:30}
   .nav{display:flex;align-items:center;gap:12px;height:64px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:600}
   .brand small{display:block;color:var(--faint);font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-family:var(--mono)}
   .nav .sp{margin-left:auto}
-  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--txt);color:#0b0b0c;border:none;border-radius:10px;padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--txt);color:#0b0b0c;border:none;border-radius:10px;padding:10px 16px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
   .btn:hover{opacity:.9}
   .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line2)}
-  .btn.sm{padding:6px 12px;font-size:12px}
-  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line)}
-  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--faint);display:inline-flex;align-items:center;gap:10px}
+  .btn.ghost:hover{border-color:var(--txt);opacity:1}
+  .btn.sm{padding:7px 13px;font-size:12px}
+  .btn.block{width:100%}
+  /* hero */
+  .hero{padding:60px 0 30px}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);display:inline-flex;align-items:center;gap:10px}
   .eyebrow::before{content:"";width:22px;height:1px;background:var(--line2)}
-  h1{font-size:clamp(30px,5vw,50px);line-height:1.08;letter-spacing:-.02em;margin:16px 0 14px;font-weight:650}
-  .lead{color:var(--mut);font-size:17px;max-width:62ch}
-  .stats{display:flex;gap:34px;margin-top:26px;flex-wrap:wrap}
-  .stats .big{font-size:24px;font-weight:650}
-  .stats .lab{color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono)}
-  .filters{display:flex;gap:8px;flex-wrap:wrap;padding:26px 0 6px}
-  .chip{border:1px solid var(--line2);color:var(--mut);border-radius:20px;padding:6px 14px;font-size:12.5px;cursor:pointer;background:transparent}
+  h1{font-size:clamp(30px,5vw,50px);line-height:1.08;letter-spacing:-.022em;margin:16px 0 14px;font-weight:650}
+  .lead{color:var(--mut);font-size:17px;max-width:64ch}
+  .stats{display:flex;gap:40px;margin-top:28px;flex-wrap:wrap}
+  .stats .big{font-size:25px;font-weight:650;letter-spacing:-.01em}
+  .stats .lab{color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-top:2px}
+  /* toolbar */
+  .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:28px 0 6px;border-top:1px solid var(--line);margin-top:36px}
+  .search{flex:1;min-width:220px;display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line2);border-radius:11px;padding:0 13px}
+  .search input{flex:1;background:none;border:none;color:var(--txt);font-family:inherit;font-size:14px;padding:11px 0;outline:none}
+  .search svg{flex:none;opacity:.5}
+  select.sort{background:var(--panel);color:var(--txt);border:1px solid var(--line2);border-radius:11px;padding:11px 13px;font-family:inherit;font-size:13px;cursor:pointer}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 6px}
+  .chip{border:1px solid var(--line2);color:var(--mut);border-radius:20px;padding:6px 14px;font-size:12.5px;cursor:pointer;background:transparent;transition:.12s}
+  .chip:hover{border-color:var(--txt);color:var(--txt)}
   .chip.on{background:var(--txt);color:#0b0b0c;border-color:var(--txt);font-weight:600}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;padding:14px 0 60px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;transition:.15s}
-  .card:hover{border-color:var(--line2);transform:translateY(-2px)}
-  .card .ind{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
-  .card h3{font-size:18px;margin:6px 0 8px;letter-spacing:-.01em}
+  .count{color:var(--faint);font-size:12.5px;font-family:var(--mono);padding:10px 0}
+  /* grid + cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;padding:6px 0 64px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;cursor:pointer;transition:.15s;position:relative}
+  .card:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.35)}
+  .card .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .ind{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .live{display:inline-flex;align-items:center;gap:5px;color:var(--ok);font-size:10.5px;font-family:var(--mono)}
+  .live .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(63,185,80,.16)}
+  .card h3{font-size:18.5px;margin:9px 0 8px;letter-spacing:-.012em;line-height:1.25}
   .card .sum{color:var(--mut);font-size:13.5px;flex:1}
-  .price{margin:16px 0 4px}
-  .price .p{font-size:26px;font-weight:700;letter-spacing:-.01em}
-  .price .f{color:var(--faint);font-size:12px}
-  .chips{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0}
-  .tag{font-family:var(--mono);font-size:10.5px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:6px;padding:2px 7px}
-  .cardfoot{display:flex;gap:8px;margin-top:14px}
-  .verified{display:inline-flex;align-items:center;gap:5px;color:var(--ok);font-size:11.5px;font-family:var(--mono);margin-top:8px}
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-start;justify-content:center;z-index:40;padding:40px 16px;overflow:auto}
-  .modal{background:var(--panel);border:1px solid var(--line2);border-radius:18px;max-width:720px;width:100%;padding:28px}
-  .modal h2{font-size:24px;letter-spacing:-.01em}
-  .kv{display:grid;grid-template-columns:130px 1fr;gap:8px 14px;margin:18px 0}
-  .kv .k{color:var(--faint);font-size:12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em}
-  .sec{margin:18px 0}
-  .sec h4{font-size:12px;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:8px}
-  .sec ul{list-style:none;display:flex;flex-direction:column;gap:6px}
-  .sec li{padding-left:18px;position:relative;font-size:14px;color:var(--mut)}
-  .sec li::before{content:"→";position:absolute;left:0;color:var(--faint)}
-  footer{border-top:1px solid var(--line);color:var(--faint);font-size:13px;padding:28px 0;text-align:center}
-  .spin{text-align:center;color:var(--faint);padding:60px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin:13px 0 0}
+  .tag{font-family:var(--mono);font-size:10.5px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:6px;padding:3px 8px;white-space:nowrap}
+  .tag.more{color:var(--faint)}
+  .metrics{display:flex;gap:20px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+  .metrics .m .v{font-size:15px;font-weight:650}
+  .metrics .m .l{color:var(--faint);font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono)}
+  .priceRow{display:flex;align-items:baseline;justify-content:space-between;margin-top:16px}
+  .priceRow .p{font-size:25px;font-weight:700;letter-spacing:-.015em}
+  .priceRow .f{color:var(--faint);font-size:12px}
+  .cta-arrow{color:var(--faint);font-size:13px;font-family:var(--mono)}
+  .card:hover .cta-arrow{color:var(--txt)}
+  /* detail */
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--faint);padding:24px 0 4px}
+  .crumb a{color:var(--mut)}.crumb a:hover{color:var(--txt)}
+  .dhead{padding:6px 0 24px;border-bottom:1px solid var(--line)}
+  .dhead h1{font-size:clamp(26px,4vw,40px);margin:12px 0 12px}
+  .dhead .lead{font-size:16.5px}
+  .strip{display:flex;gap:0;flex-wrap:wrap;margin-top:26px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+  .strip .s{flex:1;min-width:120px;padding:16px 20px;border-right:1px solid var(--line)}
+  .strip .s:last-child{border-right:none}
+  .strip .v{font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .strip .l{color:var(--faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;font-family:var(--mono);margin-top:3px}
+  .cols{display:grid;grid-template-columns:1fr 340px;gap:44px;padding:34px 0 60px;align-items:start}
+  .block{margin-bottom:38px}
+  .block h2{font-size:19px;letter-spacing:-.01em;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+  .block h2::before{content:"";width:3px;height:16px;background:var(--txt);border-radius:2px}
+  .prose{color:var(--mut);font-size:15px}
+  /* included stack */
+  .stack{display:flex;flex-direction:column;gap:14px}
+  .sgroup{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px 18px}
+  .sgroup .gt{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);margin-bottom:11px;display:flex;align-items:center;gap:8px}
+  .sgroup .gt .n{color:var(--txt);background:var(--panel2);border:1px solid var(--line2);border-radius:20px;padding:1px 8px;font-size:10px}
+  .items{display:flex;flex-wrap:wrap;gap:7px}
+  .item{display:inline-flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:13px;color:var(--txt)}
+  .item svg{flex:none;opacity:.55}
+  /* value list */
+  .vlist{list-style:none;display:flex;flex-direction:column;gap:13px}
+  .vlist li{display:flex;gap:12px;font-size:14.5px;color:var(--mut)}
+  .vlist li svg{flex:none;margin-top:3px;color:var(--ok)}
+  /* steps */
+  .steps{list-style:none;counter-reset:st;display:flex;flex-direction:column;gap:2px}
+  .steps li{counter-increment:st;display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--mut)}
+  .steps li:last-child{border-bottom:none}
+  .steps li::before{content:counter(st,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--faint);flex:none;padding-top:2px}
+  /* faq */
+  .faq details{border-bottom:1px solid var(--line);padding:2px 0}
+  .faq summary{cursor:pointer;padding:15px 0;font-size:15px;font-weight:550;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";color:var(--faint);font-size:20px;font-weight:400;transition:.2s}
+  .faq details[open] summary::after{transform:rotate(45deg)}
+  .faq p{color:var(--mut);font-size:14px;padding:0 0 16px}
+  /* buy rail */
+  .rail{position:sticky;top:84px}
+  .buybox{background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  .buybox .pl{color:var(--faint);font-size:11px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em}
+  .buybox .pv{font-size:34px;font-weight:750;letter-spacing:-.02em;margin:3px 0 2px}
+  .buybox .pf{color:var(--mut);font-size:13px;margin-bottom:18px}
+  .trust{list-style:none;display:flex;flex-direction:column;gap:10px;margin:18px 0 6px;padding-top:18px;border-top:1px solid var(--line)}
+  .trust li{display:flex;gap:10px;font-size:13px;color:var(--mut)}
+  .trust li svg{flex:none;color:var(--ok)}
+  .railnote{color:var(--faint);font-size:11.5px;text-align:center;margin-top:12px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--gold);border:1px solid rgba(227,179,65,.3);background:rgba(227,179,65,.07);border-radius:7px;padding:4px 9px}
+  /* related */
+  .related{border-top:1px solid var(--line);padding:40px 0 0}
+  /* misc */
+  footer{border-top:1px solid var(--line);color:var(--faint);font-size:13px;padding:30px 0;text-align:center;margin-top:20px}
+  footer a{color:var(--mut)}
+  .spin{text-align:center;color:var(--faint);padding:80px 20px;font-family:var(--mono);font-size:13px}
+  .hide{display:none}
+  @media(max-width:820px){
+    .cols{grid-template-columns:1fr;gap:0}
+    .rail{position:static;order:-1;margin-bottom:30px}
+    .strip .s{min-width:calc(50% - 1px)}
+  }
 </style>
 </head>
 <body>
 <header><div class="wrap nav">
-  <a class="brand" href="https://soloceo.vn">
+  <a class="brand" href="/" data-link>
     <svg width="26" height="26" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="none" stroke="#f5f5f6" stroke-width="7"/><circle cx="50" cy="50" r="11" fill="#f5f5f6"/></svg>
     <div>SoloCEO<small>Sàn dự án · M&A</small></div>
   </a>
   <span class="sp"></span>
   <a class="btn ghost sm" href="https://soloceo.vn" target="_blank">soloceo.vn</a>
-  <a class="btn sm" href="mailto:info@fbgproperty.vn?subject=Quan tam du an SoloCEO">Liên hệ</a>
+  <a class="btn sm" href="mailto:info@fbgproperty.vn?subject=Quan tam san du an SoloCEO">Liên hệ</a>
 </div></header>
 
-<section class="hero"><div class="wrap">
-  <p class="eyebrow">Sàn M&A · Doanh nghiệp vận hành bằng AI</p>
-  <h1>Mua trọn một doanh nghiệp AI<br>vận hành sẵn.</h1>
-  <p class="lead">Mỗi dự án là một venture turnkey — mã nguồn, đội ngũ agent AI, nền tảng cộng đồng, cổng thanh toán — đóng gói và bàn giao. Nhận về là chạy, hoặc mua để bán lại.</p>
-  <div class="stats">
-    <div><div class="big" id="stCount">—</div><div class="lab">Dự án niêm yết</div></div>
-    <div><div class="big" id="stFrom">—</div><div class="lab">Giá từ</div></div>
-    <div><div class="big">Turnkey</div><div class="lab">Bàn giao trọn gói</div></div>
-  </div>
-</div></section>
+<main id="app"><div class="spin">Đang tải…</div></main>
 
-<div class="wrap">
-  <div class="filters" id="filters"></div>
-  <div class="grid" id="grid"><div class="spin">Đang tải dự án…</div></div>
-</div>
-
-<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
-<footer>© SoloCEO — Hệ điều hành cho doanh nghiệp một người · <a href="https://soloceo.vn">soloceo.vn</a> · info@fbgproperty.vn</footer>
+<footer><div class="wrap">© SoloCEO — Hệ điều hành cho doanh nghiệp một người · <a href="https://soloceo.vn">soloceo.vn</a> · info@fbgproperty.vn</div></footer>
 
 <script>
-const API="/api"; // nginx proxy → api.soloceo.vn/v1
-let ALL=[], FILTER="all";
-const vnd=n=>{n=Number(n)||0; if(n>=1e9)return (n/1e9).toFixed(n%1e9?1:0)+" tỷ"; if(n>=1e6)return Math.round(n/1e6)+" triệu"; return n.toLocaleString("vi-VN")+"đ";};
-const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const INDNAME={"du-lich":"Du lịch","fnb":"F&B","giao-duc":"Giáo dục","bat-dong-san":"Bất động sản","ban-le":"Bán lẻ","dich-vu":"Dịch vụ","khac":"Khác"};
+const API="/api"; // nginx same-origin proxy → api.soloceo.vn/v1
+let ALL=[], FILTER="all", SORT="new", Q="";
+const app=document.getElementById("app");
+
+const INDNAME={"du-lich":"Du lịch","fnb":"F&B","giao-duc":"Giáo dục","bat-dong-san":"Bất động sản","ban-le":"Bán lẻ","dich-vu":"Dịch vụ","thuong-mai":"Thương mại","cong-nghe":"Công nghệ","khac":"Khác"};
+const esc=s=>(s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const vnd=n=>{n=Number(n)||0; if(!n)return "Liên hệ"; if(n>=1e9)return (n/1e9).toFixed(n%1e9?1:0).replace(".",",")+" tỷ"; if(n>=1e6)return Math.round(n/1e6)+" triệu"; return n.toLocaleString("vi-VN")+"đ";};
+const clean=s=>String(s).replace(/\s*\(.*?\)\s*/g,"").trim();
+const indLabel=p=>INDNAME[p.industry]||p.industry||"Dự án";
+const icoCheck='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const icoBox='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>';
+
+function compGroups(p){
+  const c=p.components||{};
+  return [
+    ["Nền tảng & mã nguồn", c.containers],
+    ["Đội ngũ agent AI", c.agents],
+    ["Lớp dữ liệu dùng chung", c.dataLayer],
+    ["Nền tảng cộng đồng", c.communityPlatforms],
+    ["Tích hợp & thanh toán", c.integrations],
+  ].filter(g=>Array.isArray(g[1])&&g[1].length);
+}
+function compCount(p){ return compGroups(p).reduce((n,g)=>n+g[1].length,0); }
+function agentCount(p){ const a=(p.components||{}).agents; return Array.isArray(a)?a.length:0; }
+function topTags(p,n){
+  const c=p.components||{};
+  return [].concat(c.containers||[],c.agents||[],c.dataLayer||[]).map(clean).slice(0,n);
+}
+
+/* ---------- routing ---------- */
+function go(path){ history.pushState({},"",path); route(); window.scrollTo(0,0); }
+document.addEventListener("click",e=>{
+  const a=e.target.closest("a[data-link]");
+  if(a){ e.preventDefault(); go(a.getAttribute("href")); }
+});
+window.addEventListener("popstate",route);
 
 async function load(){
   try{
     const r=await fetch(API+"/marketplace/project-templates");
-    ALL=await r.json();
-    if(!Array.isArray(ALL)) ALL=[];
-    render();
-  }catch(e){
-    document.getElementById("grid").innerHTML='<div class="spin">Không tải được dữ liệu. Thử lại sau.</div>';
-  }
+    ALL=await r.json(); if(!Array.isArray(ALL)) ALL=[];
+  }catch(e){ ALL=null; }
+  route();
 }
-function render(){
-  document.getElementById("stCount").textContent=ALL.length;
-  const min=ALL.length?Math.min(...ALL.map(p=>Number(p.priceVnd)||0).filter(x=>x>0)):0;
-  document.getElementById("stFrom").textContent=min?vnd(min):"—";
-  // filters
+function route(){
+  const m=location.pathname.match(/^\/du-an\/([^\/]+)/);
+  if(m) renderDetail(decodeURIComponent(m[1]));
+  else renderList();
+}
+
+/* ---------- listing ---------- */
+function renderList(){
+  document.title="Sàn dự án SoloCEO — Mua doanh nghiệp AI vận hành sẵn";
+  if(ALL===null){ app.innerHTML='<div class="wrap"><div class="spin">Không tải được dữ liệu. Vui lòng thử lại sau.</div></div>'; return; }
+  const prices=ALL.map(p=>Number(p.priceVnd)||0).filter(x=>x>0);
+  const min=prices.length?Math.min(...prices):0;
+  app.innerHTML=`
+  <section class="hero"><div class="wrap">
+    <p class="eyebrow">Sàn M&A · Doanh nghiệp vận hành bằng AI</p>
+    <h1>Mua trọn một doanh nghiệp AI<br>vận hành sẵn.</h1>
+    <p class="lead">Mỗi dự án là một venture turnkey — mã nguồn, đội ngũ agent AI, nền tảng cộng đồng, cổng thanh toán — đóng gói và bàn giao. Nhận về là chạy, hoặc mua để bán lại.</p>
+    <div class="stats">
+      <div><div class="big">${ALL.length}</div><div class="lab">Dự án niêm yết</div></div>
+      <div><div class="big">${min?vnd(min):"—"}</div><div class="lab">Giá từ</div></div>
+      <div><div class="big">Turnkey</div><div class="lab">Bàn giao trọn gói</div></div>
+      <div><div class="big">5–10 ngày</div><div class="lab">Thời gian chuyển giao</div></div>
+    </div>
+    <div class="toolbar">
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="q" placeholder="Tìm theo tên, ngành, công nghệ…" value="${esc(Q)}">
+      </label>
+      <select class="sort" id="sort">
+        <option value="new">Mới nhất</option>
+        <option value="asc">Giá thấp → cao</option>
+        <option value="desc">Giá cao → thấp</option>
+      </select>
+    </div>
+    <div class="filters" id="filters"></div>
+  </div></section>
+  <div class="wrap">
+    <div class="count" id="count"></div>
+    <div class="grid" id="grid"></div>
+  </div>`;
+  document.getElementById("q").addEventListener("input",e=>{Q=e.target.value; paint();});
+  document.getElementById("sort").value=SORT;
+  document.getElementById("sort").addEventListener("change",e=>{SORT=e.target.value; paint();});
+  paint();
+}
+function paint(){
   const inds=[...new Set(ALL.map(p=>p.industry).filter(Boolean))];
   document.getElementById("filters").innerHTML=
     [`<span class="chip ${FILTER==='all'?'on':''}" onclick="setF('all')">Tất cả</span>`]
     .concat(inds.map(i=>`<span class="chip ${FILTER===i?'on':''}" onclick="setF('${i}')">${esc(INDNAME[i]||i)}</span>`)).join("");
-  const list=FILTER==="all"?ALL:ALL.filter(p=>p.industry===FILTER);
-  document.getElementById("grid").innerHTML=list.map(card).join("")||'<div class="spin">Chưa có dự án trong mục này.</div>';
+  let list=ALL.slice();
+  if(FILTER!=="all") list=list.filter(p=>p.industry===FILTER);
+  if(Q.trim()){ const q=Q.toLowerCase(); list=list.filter(p=>(p.name+" "+(p.summary||"")+" "+indLabel(p)+" "+topTags(p,20).join(" ")).toLowerCase().includes(q)); }
+  if(SORT==="asc") list.sort((a,b)=>(+a.priceVnd||0)-(+b.priceVnd||0));
+  else if(SORT==="desc") list.sort((a,b)=>(+b.priceVnd||0)-(+a.priceVnd||0));
+  else list.sort((a,b)=>new Date(b.publishedAt||b.createdAt||0)-new Date(a.publishedAt||a.createdAt||0));
+  document.getElementById("count").textContent=list.length+" dự án"+(FILTER!=="all"?" · "+(INDNAME[FILTER]||FILTER):"");
+  document.getElementById("grid").innerHTML=list.map(card).join("")||'<div class="spin">Chưa có dự án phù hợp.</div>';
 }
-function setF(f){ FILTER=f; render(); }
-function comps(p){ const c=p.components||{}; return [].concat(c.containers||[],c.agents||[],c.dataLayer||[]); }
+function setF(f){ FILTER=f; paint(); }
 function card(p){
-  const cs=comps(p).slice(0,5);
-  return `<div class="card">
-    <div class="ind">${esc(INDNAME[p.industry]||p.industry||"Dự án")}</div>
+  const tags=topTags(p,4), extra=compCount(p)-tags.length;
+  return `<a class="card" href="/du-an/${encodeURIComponent(p.slug)}" data-link>
+    <div class="top">
+      <span class="ind">${esc(indLabel(p))}</span>
+      ${p.demoUrl?'<span class="live"><span class="dot"></span>LIVE DEMO</span>':''}
+    </div>
     <h3>${esc(p.name)}</h3>
-    <div class="sum">${esc((p.summary||"").slice(0,150))}</div>
-    <div class="chips">${cs.map(x=>`<span class="tag">${esc(String(x).replace(/ \(.*/,''))}</span>`).join("")}</div>
-    <div class="price"><span class="p">${vnd(p.priceVnd)}</span> <span class="f">+ ${vnd(p.monthlyFeeVnd)}/tháng</span></div>
-    ${p.demoUrl?`<div class="verified">● Có bản demo trực tiếp</div>`:""}
-    <div class="cardfoot">
-      <button class="btn" onclick='detail("${p.slug}")'>Xem chi tiết</button>
-      ${p.demoUrl?`<a class="btn ghost" href="${esc(p.demoUrl)}" target="_blank" rel="noopener">Demo ↗</a>`:""}
-    </div></div>`;
-}
-async function detail(slug){
-  let p=ALL.find(x=>x.slug===slug);
-  try{ const r=await fetch(API+"/marketplace/project-templates/"+slug); const full=await r.json(); if(full&&full.slug)p=full; }catch{}
-  const c=p.components||{};
-  const grp=(title,arr)=>arr&&arr.length?`<div class="sec"><h4>${title}</h4><div class="chips">${arr.map(x=>`<span class="tag">${esc(x)}</span>`).join("")}</div></div>`:"";
-  const lst=(title,arr)=>arr&&arr.length?`<div class="sec"><h4>${title}</h4><ul>${arr.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"";
-  document.getElementById("modal").innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div><div class="ind" style="font-family:var(--mono);font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.12em">${esc(INDNAME[p.industry]||p.industry||"")}</div>
-        <h2>${esc(p.name)}</h2></div>
-      <button class="btn ghost sm" onclick="closeM()">Đóng</button>
+    <div class="sum">${esc((p.summary||"").slice(0,140))}${(p.summary||"").length>140?"…":""}</div>
+    <div class="chips">${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}${extra>0?`<span class="tag more">+${extra}</span>`:""}</div>
+    <div class="metrics">
+      <div class="m"><div class="v">${compCount(p)}</div><div class="l">Thành phần</div></div>
+      <div class="m"><div class="v">${agentCount(p)||"—"}</div><div class="l">Agent AI</div></div>
+      <div class="m"><div class="v">Turnkey</div><div class="l">Bàn giao</div></div>
     </div>
-    <p style="color:var(--mut);margin-top:10px">${esc(p.summary||"")}</p>
-    <div class="kv">
-      <div class="k">Giá bán</div><div style="font-size:22px;font-weight:700">${vnd(p.priceVnd)}</div>
-      <div class="k">Phí nền tảng</div><div>${vnd(p.monthlyFeeVnd)} / tháng</div>
-      ${p.demoUrl?`<div class="k">Demo</div><div><a href="${esc(p.demoUrl)}" target="_blank" style="color:#8ab4ff">${esc(p.demoUrl)} ↗</a></div>`:""}
+    <div class="priceRow">
+      <div><span class="p">${vnd(p.priceVnd)}</span> <span class="f">${Number(p.monthlyFeeVnd)?"+ "+vnd(p.monthlyFeeVnd)+"/th":""}</span></div>
+      <span class="cta-arrow">Chi tiết →</span>
     </div>
-    ${grp("Nền tảng / mã nguồn",c.containers)}
-    ${grp("Đội ngũ agent AI",c.agents)}
-    ${grp("Lớp dữ liệu",c.dataLayer)}
-    ${grp("Nền tảng cộng đồng",c.communityPlatforms)}
-    ${grp("Tích hợp",c.integrations)}
-    ${lst("Vì sao đáng mua",p.valueProps)}
-    ${lst("Các bước bàn giao",p.buildSteps)}
-    <div style="display:flex;gap:10px;margin-top:22px">
-      <a class="btn" href="mailto:info@fbgproperty.vn?subject=Dat mua du an: ${encodeURIComponent(p.name)}">Đặt mua / Liên hệ</a>
-      ${p.demoUrl?`<a class="btn ghost" href="${esc(p.demoUrl)}" target="_blank">Xem demo ↗</a>`:""}
-    </div>`;
-  document.getElementById("modalBg").style.display="flex";
+  </a>`;
 }
-function closeM(){ document.getElementById("modalBg").style.display="none"; }
-document.getElementById("modalBg").addEventListener("click",e=>{if(e.target.id==="modalBg")closeM();});
+
+/* ---------- detail ---------- */
+async function renderDetail(slug){
+  app.innerHTML='<div class="wrap"><div class="spin">Đang tải dự án…</div></div>';
+  let p=(ALL||[]).find(x=>x.slug===slug);
+  try{ const r=await fetch(API+"/marketplace/project-templates/"+encodeURIComponent(slug)); const full=await r.json(); if(full&&full.slug)p=full; }catch{}
+  if(!p){ app.innerHTML=`<div class="wrap"><div class="spin">Không tìm thấy dự án. <a data-link href="/" style="color:var(--txt);text-decoration:underline">← Về sàn dự án</a></div></div>`; return; }
+  document.title=p.name+" — Sàn dự án SoloCEO";
+  const md=document.querySelector('meta[name="description"]'); if(md&&p.summary) md.setAttribute("content",p.summary.slice(0,180));
+
+  const vp=Array.isArray(p.valueProps)?p.valueProps:[];
+  const bs=Array.isArray(p.buildSteps)?p.buildSteps:[];
+  const groups=compGroups(p);
+  const mailto=`mailto:info@fbgproperty.vn?subject=${encodeURIComponent("Đặt mua dự án: "+p.name)}&body=${encodeURIComponent("Tôi quan tâm tới dự án \""+p.name+"\" trên Sàn dự án SoloCEO. Vui lòng liên hệ tư vấn và báo giá chi tiết.")}`;
+
+  const stackHtml=groups.map(([t,arr])=>`
+    <div class="sgroup">
+      <div class="gt">${esc(t)} <span class="n">${arr.length}</span></div>
+      <div class="items">${arr.map(x=>`<span class="item">${icoBox}${esc(x)}</span>`).join("")}</div>
+    </div>`).join("");
+
+  const related=(ALL||[]).filter(x=>x.slug!==p.slug).sort((a,b)=>(a.industry===p.industry?-1:0)-(b.industry===p.industry?-1:0)).slice(0,3);
+
+  app.innerHTML=`
+  <div class="wrap">
+    <div class="crumb"><a href="/" data-link>Sàn dự án</a> &nbsp;/&nbsp; ${esc(indLabel(p))} &nbsp;/&nbsp; <span style="color:var(--txt)">${esc(p.name)}</span></div>
+    <div class="dhead">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span class="ind">${esc(indLabel(p))}</span>
+        ${p.demoUrl?'<span class="live"><span class="dot"></span>ĐANG CHẠY — LIVE DEMO</span>':''}
+      </div>
+      <h1>${esc(p.name)}</h1>
+      <p class="lead">${esc(p.summary||"")}</p>
+      <div class="strip">
+        <div class="s"><div class="v">${vnd(p.priceVnd)}</div><div class="l">Giá bàn giao</div></div>
+        <div class="s"><div class="v">${Number(p.monthlyFeeVnd)?vnd(p.monthlyFeeVnd):"—"}</div><div class="l">Phí vận hành/tháng</div></div>
+        <div class="s"><div class="v">${compCount(p)}</div><div class="l">Thành phần đóng gói</div></div>
+        <div class="s"><div class="v">${agentCount(p)||"—"}</div><div class="l">Agent AI</div></div>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div class="main">
+        <div class="block">
+          <h2>Tổng quan</h2>
+          <p class="prose">${esc(p.idea||p.summary||"")}</p>
+        </div>
+
+        <div class="block">
+          <h2>Trọn bộ bàn giao — có gì trong dự án</h2>
+          <div class="stack">${stackHtml||'<p class="prose">Đang cập nhật danh mục thành phần.</p>'}</div>
+        </div>
+
+        ${vp.length?`<div class="block">
+          <h2>Vì sao đáng mua</h2>
+          <ul class="vlist">${vp.map(v=>`<li>${icoCheck}<span>${esc(v)}</span></li>`).join("")}</ul>
+        </div>`:""}
+
+        ${bs.length?`<div class="block">
+          <h2>Quy trình bàn giao</h2>
+          <ol class="steps">${bs.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol>
+        </div>`:""}
+
+        <div class="block faq">
+          <h2>Câu hỏi thường gặp</h2>
+          <details><summary>Tôi nhận được gì khi mua?</summary><p>Toàn bộ mã nguồn và cấu hình hạ tầng (container), đội agent AI được huấn luyện sẵn, tên miền, dữ liệu mẫu và quyền sở hữu dự án được chuyển giao trên Coolify — sẵn sàng vận hành ngay.</p></details>
+          <details><summary>Bàn giao mất bao lâu?</summary><p>Thường 5–10 ngày làm việc: chuyển quyền sở hữu (org), chuyển Coolify project và bí mật hệ thống qua từng bước có checkpoint admin để đảm bảo an toàn.</p></details>
+          <details><summary>Sau bàn giao có được hỗ trợ không?</summary><p>Bao gồm 30 ngày hỗ trợ kỹ thuật. Có thể chọn gói vận hành hộ (managed) theo phí tháng để SoloCEO tiếp tục duy trì hạ tầng, AI và cập nhật.</p></details>
+          <details><summary>Phí vận hành hằng tháng gồm những gì?</summary><p>Hạ tầng máy chủ, cổng AI (LiteLLM/token), cổng thanh toán và các nền tảng cộng đồng đi kèm. Hiển thị minh bạch ở mục "Phí vận hành/tháng".</p></details>
+          <details><summary>Mua xong có bán lại được không?</summary><p>Có. Mọi dự án đủ điều kiện niêm yết lại trên Sàn M&A SoloCEO với doanh thu đã xác thực qua nền tảng — nền tảng để định giá và chuyển nhượng minh bạch.</p></details>
+        </div>
+      </div>
+
+      <aside class="rail">
+        <div class="buybox">
+          <div class="pl">Giá bàn giao trọn gói</div>
+          <div class="pv">${vnd(p.priceVnd)}</div>
+          <div class="pf">${Number(p.monthlyFeeVnd)?"+ "+vnd(p.monthlyFeeVnd)+" / tháng phí vận hành":"Phí vận hành: liên hệ"}</div>
+          <a class="btn block" href="${mailto}">Đặt mua / Nhận báo giá</a>
+          ${p.demoUrl?`<a class="btn ghost block" style="margin-top:10px" href="${esc(p.demoUrl)}" target="_blank" rel="noopener">Xem bản demo ↗</a>`:""}
+          <ul class="trust">
+            <li>${icoCheck}<span>Bàn giao turnkey — nhận là chạy</span></li>
+            <li>${icoCheck}<span>Chuyển giao quyền sở hữu đầy đủ</span></li>
+            <li>${icoCheck}<span>30 ngày hỗ trợ kỹ thuật</span></li>
+            <li>${icoCheck}<span>Doanh thu đo được qua nền tảng</span></li>
+          </ul>
+          <div class="badges"><span class="badge">◆ Đã thẩm định</span><span class="badge">⇄ Sàn M&A SoloCEO</span></div>
+          <div class="railnote">Escrow &amp; chuyển nhượng có admin SoloCEO giám sát từng bước.</div>
+        </div>
+      </aside>
+    </div>
+
+    ${related.length?`<div class="related">
+      <div class="block"><h2>Dự án khác trên sàn</h2>
+      <div class="grid">${related.map(card).join("")}</div></div>
+    </div>`:""}
+  </div>`;
+}
+
 load();
 </script>
 </body>
