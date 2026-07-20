@@ -648,6 +648,148 @@ ${body}
     }
   }
 
+  // ── 5e. Project Builder — "tạo dự án từ ý tưởng" → marketplace/M&A ───────
+  /** Catalog khối xây thật của SoloCEO để AI chọn (không bịa). */
+  private readonly PROJECT_BLOCKS = {
+    containers: [
+      "ERPNext (ERP/kế toán/kho)", "QloApps (đặt phòng/tour du lịch)",
+      "MagicAI hub (tạo ảnh/video/nội dung AI)", "Perfex CRM", "Academy LMS (khoá học)",
+      "WoWonder (mạng cộng đồng)", "Support Board (chat CSKH)", "LiveSmart (họp video)",
+      "PlayTube (video)", "WHMCS (bán PaaS/tên miền)", "Flame (media tin tức)",
+      "AffiliatePRO (tiếp thị liên kết)", "Medusa (thương mại)", "Twenty (CRM gọn)",
+      "Hermes Agent", "Claw3D (văn phòng 3D)", "OpenClaw (bảng điều khiển agent)",
+    ],
+    agents: [
+      "Trợ lý Điều hành", "Trợ lý Kinh doanh", "Trợ lý Marketing", "Trợ lý Nội dung",
+      "Trợ lý Vận hành", "Trợ lý Kế toán", "Trợ lý CSKH", "+ trợ lý chuyên ngành tuỳ dự án",
+    ],
+    communityPlatforms: [
+      "my (cộng đồng)", "crm", "edu (đào tạo)", "chat (CSKH)", "meeting (họp video)",
+      "platform (PaaS)", "video", "news (tin tức)", "hub (AI)", "aff (affiliate)",
+    ],
+    dataLayer: [
+      "langconnect (RAG API)", "pgvector (vector)", "dlt (nạp dữ liệu)", "Cube (metrics)",
+      "OpenTripMap/OSM (dữ liệu mở theo ngành)",
+    ],
+    integrations: ["PayOS (thanh toán VN)", "LiteLLM gateway", "MCP (crm/eco/marketplace)", "DeerFlow (agent điều phối)"],
+  };
+
+  async projectGenerate(idea: string, goal?: string) {
+    const blocks = JSON.stringify(this.PROJECT_BLOCKS, null, 0);
+    const system =
+      "Bạn là kiến trúc sư giải pháp của SoloCEO — hệ điều hành giúp một người dựng doanh nghiệp vận hành bằng AI. " +
+      "Từ Ý TƯỞNG của CEO, hãy TỔNG HỢP một 'mẫu dự án' bằng cách CHỌN các khối có sẵn trong CATALOG (không bịa khối ngoài catalog). " +
+      "Dự án sẽ được đóng gói bán trên Sàn M&A. TRẢ VỀ JSON hợp lệ, không giải thích.\n\nCATALOG:\n" +
+      blocks;
+    const user =
+      `Ý TƯỞNG: "${idea}"\n${goal ? `MỤC TIÊU: ${goal}\n` : ""}` +
+      `Trả JSON đúng khoá:\n{\n` +
+      `  "name": "tên dự án ngắn gọn, hấp dẫn",\n` +
+      `  "industry": "slug ngành: du-lich|fnb|giao-duc|bat-dong-san|ban-le|dich-vu|khac",\n` +
+      `  "summary": "2-3 câu mô tả dự án + giá trị cho khách cuối",\n` +
+      `  "components": {\n` +
+      `     "containers": ["chọn từ catalog.containers"],\n` +
+      `     "agents": ["chọn từ catalog.agents, có thể thêm trợ lý chuyên ngành"],\n` +
+      `     "communityPlatforms": ["chọn từ catalog.communityPlatforms"],\n` +
+      `     "dataLayer": ["chọn từ catalog.dataLayer"],\n` +
+      `     "integrations": ["chọn từ catalog.integrations"]\n` +
+      `  },\n` +
+      `  "valueProps": ["3-5 điểm vì sao dự án này đáng mua"],\n` +
+      `  "buildSteps": ["4-7 bước dựng dự án từ các khối trên"],\n` +
+      `  "priceVnd": số tiền bán gợi ý (VND, dự án turnkey thường 150-500 triệu),\n` +
+      `  "monthlyFeeVnd": phí nền tảng định kỳ gợi ý (VND/tháng)\n}`;
+    const raw = await this.llm(
+      [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      "soloceo-claude-fast",
+      2600,
+    );
+    const jsonStr = raw.replace(/^```(?:json)?/i, "").replace(/```\s*$/, "").trim();
+    let p: {
+      name?: string; industry?: string; summary?: string;
+      components?: object; valueProps?: string[]; buildSteps?: string[];
+      priceVnd?: number; monthlyFeeVnd?: number;
+    };
+    try {
+      const s = jsonStr.indexOf("{");
+      const e = jsonStr.lastIndexOf("}");
+      p = JSON.parse(jsonStr.slice(s, e + 1));
+    } catch {
+      throw new Error("AI trả về không phải JSON hợp lệ");
+    }
+    if (!p.name || !p.components) throw new Error("AI thiếu name/components");
+    let slug = this.slugify(p.name) || `du-an-${Date.now()}`;
+    if (await this.prisma.projectTemplate.findUnique({ where: { slug } }))
+      slug = `${slug}-${Date.now().toString(36)}`;
+    return this.prisma.projectTemplate.create({
+      data: {
+        name: p.name.slice(0, 200),
+        slug,
+        idea: idea.slice(0, 2000),
+        industry: p.industry,
+        summary: p.summary ?? "",
+        components: p.components as never,
+        valueProps: (p.valueProps ?? []) as never,
+        buildSteps: (p.buildSteps ?? []) as never,
+        priceVnd: Number(p.priceVnd) || 0,
+        monthlyFeeVnd: Number(p.monthlyFeeVnd) || 0,
+        status: "DRAFT",
+      },
+    });
+  }
+
+  projectList(status?: string) {
+    return this.prisma.projectTemplate.findMany({
+      where: status ? { status } : undefined,
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    });
+  }
+
+  projectUpdate(
+    id: string,
+    input: Partial<{
+      name: string; summary: string; industry: string; coverUrl: string;
+      demoUrl: string; priceVnd: number; monthlyFeeVnd: number; components: object;
+    }>,
+  ) {
+    const data: Record<string, unknown> = { ...input };
+    if (input.priceVnd != null) data.priceVnd = Number(input.priceVnd);
+    if (input.monthlyFeeVnd != null) data.monthlyFeeVnd = Number(input.monthlyFeeVnd);
+    return this.prisma.projectTemplate.update({ where: { id }, data: data as never });
+  }
+
+  projectPublish(id: string, publish: boolean) {
+    return this.prisma.projectTemplate.update({
+      where: { id },
+      data: { status: publish ? "PUBLISHED" : "DRAFT", publishedAt: publish ? new Date() : null },
+    });
+  }
+
+  projectDelete(id: string) {
+    return this.prisma.projectTemplate.delete({ where: { id } });
+  }
+
+  // Public cho marketplace.soloceo.vn
+  projectPublicList() {
+    return this.prisma.projectTemplate.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { publishedAt: "desc" },
+      take: 100,
+      select: {
+        id: true, name: true, slug: true, industry: true, summary: true,
+        components: true, valueProps: true, priceVnd: true, monthlyFeeVnd: true,
+        coverUrl: true, demoUrl: true, publishedAt: true,
+      },
+    });
+  }
+
+  projectPublicOne(slug: string) {
+    return this.prisma.projectTemplate.findFirst({ where: { slug, status: "PUBLISHED" } });
+  }
+
   // ── 6. Trợ lý AI (proxy DeerFlow gateway) ───────────────────────────────
   async agents() {
     const base = this.config.get<string>("DEERFLOW_PUBLIC_BASE") ?? "https://soloceo.vn";

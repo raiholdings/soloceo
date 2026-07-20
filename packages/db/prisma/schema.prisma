@@ -201,6 +201,29 @@ model News {
   @@index([status, publishedAt])
 }
 
+// Mẫu dự án (Project Builder) — admin "tạo dự án từ ý tưởng" → niêm yết marketplace/M&A
+model ProjectTemplate {
+  id            String    @id @default(uuid())
+  name          String
+  slug          String    @unique
+  idea          String // ý tưởng gốc admin nhập
+  industry      String? // du-lich|fnb|giao-duc|bat-dong-san|...
+  summary       String // mô tả ngắn
+  components    Json // { containers:[], agents:[], communityPlatforms:[], dataLayer:[], integrations:[] }
+  valueProps    Json? // điểm giá trị / vì sao mua
+  buildSteps    Json? // các bước dựng
+  priceVnd      Decimal   @default(0) @db.Decimal(18, 2) // giá bán venture (Sàn M&A)
+  monthlyFeeVnd Decimal   @default(0) @db.Decimal(18, 2) // phí nền tảng định kỳ
+  coverUrl      String?
+  demoUrl       String? // ví dụ https://openclawos.vn
+  status        String    @default("DRAFT") // DRAFT|PUBLISHED
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status, createdAt])
+}
+
 // Feed cộng đồng MVP
 model Post {
   id        String    @id @default(uuid())

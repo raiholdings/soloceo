@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -193,6 +194,52 @@ export class AdminEcosystemController {
     return this.eco.docsIndex();
   }
 
+  // Project Builder — tạo dự án từ ý tưởng
+  @Post("projects/generate")
+  @ApiOperation({ summary: "Sinh mẫu dự án từ ý tưởng (AI tổng hợp khối)" })
+  async projectGenerate(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: { idea: string; goal?: string },
+  ) {
+    if (!dto?.idea || dto.idea.trim().length < 5)
+      throw new BadRequestException("Cần nhập ý tưởng (>=5 ký tự)");
+    const p = await this.eco.projectGenerate(dto.idea, dto.goal);
+    await this.audit(user, "project.generate", p.id, { name: p.name });
+    return p;
+  }
+
+  @Get("projects")
+  @ApiOperation({ summary: "Danh sách mẫu dự án" })
+  projects(@Query("status") status?: string) {
+    return this.eco.projectList(status);
+  }
+
+  @Patch("projects/:id")
+  @ApiOperation({ summary: "Sửa mẫu dự án (giá, mô tả, demoUrl…)" })
+  projectUpdate(@Param("id") id: string, @Body() dto: Record<string, unknown>) {
+    return this.eco.projectUpdate(id, dto as never);
+  }
+
+  @Post("projects/:id/publish")
+  @ApiOperation({ summary: "Đăng/gỡ mẫu dự án lên marketplace" })
+  async projectPublish(
+    @CurrentUser() user: RequestUser,
+    @Param("id") id: string,
+    @Body() dto: PublishDto,
+  ) {
+    const p = await this.eco.projectPublish(id, dto.publish);
+    await this.audit(user, dto.publish ? "project.publish" : "project.unpublish", id);
+    return p;
+  }
+
+  @Delete("projects/:id")
+  @ApiOperation({ summary: "Xoá mẫu dự án" })
+  async projectDelete(@CurrentUser() user: RequestUser, @Param("id") id: string) {
+    await this.eco.projectDelete(id);
+    await this.audit(user, "project.delete", id);
+    return { deleted: true };
+  }
+
   // Trợ lý AI
   @Get("agents")
   @ApiOperation({ summary: "Danh sách trợ lý AI (proxy DeerFlow)" })
@@ -231,6 +278,27 @@ export class NewsPublicController {
   @ApiOperation({ summary: "Chi tiết một tin (public)" })
   one(@Param("slug") slug: string) {
     return this.eco.newsPublicOne(slug);
+  }
+}
+
+/** Public — mẫu dự án cho marketplace.soloceo.vn + Sàn M&A */
+@ApiTags("marketplace")
+@Controller("marketplace/project-templates")
+export class MarketplaceProjectsController {
+  constructor(private readonly eco: AdminEcosystemService) {}
+
+  @Public()
+  @Get()
+  @ApiOperation({ summary: "Mẫu dự án đã đăng (public)" })
+  list() {
+    return this.eco.projectPublicList();
+  }
+
+  @Public()
+  @Get(":slug")
+  @ApiOperation({ summary: "Chi tiết mẫu dự án (public)" })
+  one(@Param("slug") slug: string) {
+    return this.eco.projectPublicOne(slug);
   }
 }
 

@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoloCEO — Trung tâm quản trị</title>
+<style>
+  :root{
+    --bg:#0b0b0c; --panel:#131315; --panel2:#17171a; --line:#242427; --line2:#33333a;
+    --txt:#f5f5f6; --mut:#a0a0a8; --faint:#6b6b73; --accent:#f5f5f6;
+    --ok:#3fb950; --warn:#d29922; --bad:#f85149; --mono:'SF Mono',ui-monospace,Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .mono{font-family:var(--mono)}
+  /* ── login ── */
+  #login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:50}
+  #login .box{width:340px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px}
+  #login h1{font-size:16px;margin:14px 0 4px;font-weight:600}
+  #login p{color:var(--mut);font-size:12.5px;margin-bottom:18px}
+  input,textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;
+    padding:10px 12px;color:var(--txt);font-family:inherit;font-size:13.5px;outline:none}
+  input:focus,textarea:focus,select:focus{border-color:var(--faint)}
+  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--txt);color:#0b0b0c;border:none;border-radius:10px;
+    padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit}
+  .btn:hover{opacity:.9}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line2)}
+  .btn.sm{padding:5px 11px;font-size:12px;border-radius:8px}
+  .btn.bad{background:#3a1414;color:#ff9d95;border:1px solid #5a1e1e}
+  /* ── shell ── */
+  .app{display:none;grid-template-columns:230px 1fr;min-height:100vh}
+  .side{background:var(--panel);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;overflow:auto}
+  .brand{display:flex;align-items:center;gap:10px;padding:0 6px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .brand b{font-size:14px;font-weight:600;letter-spacing:.01em}
+  .brand small{display:block;color:var(--faint);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-family:var(--mono)}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;color:var(--mut);
+    cursor:pointer;font-size:13.5px;font-weight:500;user-select:none}
+  .nav a:hover{background:var(--panel2);color:var(--txt)}
+  .nav a.on{background:var(--panel2);color:var(--txt)}
+  .nav a .ic{width:17px;text-align:center;opacity:.85}
+  .nav a .badge{margin-left:auto;background:var(--bad);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;font-family:var(--mono)}
+  .side .foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);color:var(--faint);font-size:11px}
+  .main{padding:26px 30px;max-width:1180px}
+  .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .head h2{font-size:19px;font-weight:600}
+  .head .sub{color:var(--mut);font-size:12.5px;margin-top:2px}
+  /* ── cards / grid ── */
+  .grid{display:grid;gap:14px}
+  .g4{grid-template-columns:repeat(4,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:900px){.g4,.g3,.g2{grid-template-columns:repeat(2,1fr)}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .kpi .lab{color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-family:var(--mono)}
+  .kpi .big{font-size:26px;font-weight:650;margin-top:6px;letter-spacing:-.01em}
+  .kpi .big small{font-size:13px;color:var(--mut);font-weight:500}
+  /* ── table ── */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--faint);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+    padding:9px 10px;border-bottom:1px solid var(--line);font-family:var(--mono)}
+  td{padding:10px;border-bottom:1px solid var(--line)}
+  tr:hover td{background:var(--panel2)}
+  .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--mono)}
+  .t-ok{background:#0f2a16;color:#3fb950} .t-bad{background:#3a1414;color:#ff9d95}
+  .t-warn{background:#332701;color:#e3b341} .t-mut{background:#1f1f23;color:var(--mut)}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px}
+  .d-ok{background:var(--ok)} .d-bad{background:var(--bad)} .d-warn{background:var(--warn)}
+  .bar{height:6px;background:var(--line2);border-radius:6px;overflow:hidden;margin-top:5px}
+  .bar>i{display:block;height:100%;background:var(--txt)}
+  .bar.over>i{background:var(--bad)}
+  .muted{color:var(--mut)} .faint{color:var(--faint)}
+  .right{text-align:right} .center{text-align:center}
+  .toast{position:fixed;bottom:20px;right:20px;background:var(--panel2);border:1px solid var(--line2);
+    padding:11px 16px;border-radius:10px;font-size:13px;z-index:60;opacity:0;transition:.2s;transform:translateY(8px)}
+  .toast.show{opacity:1;transform:none}
+  .toast.err{border-color:#5a1e1e;color:#ff9d95}
+  .sec-title{font-size:12px;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;
+    font-family:var(--mono);margin:24px 0 10px}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:55;padding:20px}
+  .modal{background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:22px;width:560px;max-width:100%;max-height:90vh;overflow:auto}
+  .modal h3{font-size:15px;margin-bottom:14px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;color:var(--mut);margin-bottom:5px}
+  .row{display:flex;gap:8px;align-items:center}
+  .spin{color:var(--faint);padding:30px;text-align:center}
+  .logo{width:30px;height:30px;flex:0 0 auto}
+  .plat-grp{margin-bottom:6px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="box">
+    <svg class="logo" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="none" stroke="#f5f5f6" stroke-width="7"/><circle cx="50" cy="50" r="11" fill="#f5f5f6"/></svg>
+    <h1>Trung tâm quản trị SoloCEO</h1>
+    <p>Nhập mã quản trị (Admin Token) để vào bảng điều khiển hệ sinh thái.</p>
+    <div class="field"><input id="tokenInput" type="password" placeholder="Admin Token" autocomplete="off"></div>
+    <button class="btn" style="width:100%;justify-content:center" onclick="doLogin()">Đăng nhập</button>
+    <p id="loginErr" style="color:#ff9d95;margin-top:12px;display:none">Mã không đúng hoặc API không phản hồi.</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <aside class="side">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="none" stroke="#f5f5f6" stroke-width="7"/><circle cx="50" cy="50" r="11" fill="#f5f5f6"/></svg>
+      <div><b>SoloCEO</b><small>Admin</small></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot">
+      <div id="apiState">API: —</div>
+      <a onclick="logout()" style="cursor:pointer;display:inline-block;margin-top:8px" class="muted">↪ Đăng xuất</a>
+    </div>
+  </aside>
+  <main class="main" id="view"><div class="spin">Đang tải…</div></main>
+</div>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "https://api.soloceo.vn/v1";
+const TK = () => localStorage.getItem("soloceo_admin_token") || "";
+let CACHE = {};
+
+const NAV = [
+  {k:"overview", ic:"◎", t:"Tổng quan"},
+  {k:"users",    ic:"⚇", t:"Người dùng & gói"},
+  {k:"revenue",  ic:"₫", t:"Doanh thu"},
+  {k:"ai",       ic:"✦", t:"Chi phí & ngân sách AI"},
+  {k:"health",   ic:"♥", t:"Sức khoẻ nền tảng"},
+  {k:"infra",    ic:"▤", t:"Hạ tầng & Coolify"},
+  {k:"agents",   ic:"◈", t:"Trợ lý AI"},
+  {k:"news",     ic:"✎", t:"Tin tức"},
+  {k:"docs",     ic:"❒", t:"Tài liệu"},
+  {k:"projects", ic:"◆", t:"Tạo dự án"},
+  {k:"mna",      ic:"⇄", t:"Sàn M&A"},
+  {k:"audit",    ic:"❑", t:"Nhật ký quản trị"},
+];
+
+// ── api helper ──
+async function api(path, opts={}){
+  const res = await fetch(API+path, {
+    ...opts,
+    headers:{ "X-Admin-Token":TK(), "Content-Type":"application/json", ...(opts.headers||{}) },
+  });
+  if(res.status===401||res.status===403){ logout(); throw new Error("unauth"); }
+  const txt = await res.text();
+  let data; try{ data = txt?JSON.parse(txt):null; }catch{ data = txt; }
+  if(!res.ok) throw new Error((data&&data.message)||("HTTP "+res.status));
+  return data;
+}
+function toast(msg, err){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.className="toast show"+(err?" err":"");
+  setTimeout(()=>t.className="toast",2600);
+}
+const vnd = n => (Number(n)||0).toLocaleString("vi-VN")+"₫";
+const usd = n => "$"+(Number(n)||0).toFixed(2);
+const esc = s => (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dt = s => s? new Date(s).toLocaleDateString("vi-VN")+" "+new Date(s).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}) : "—";
+const day = s => s? new Date(s).toLocaleDateString("vi-VN") : "—";
+
+// ── login ──
+async function doLogin(){
+  const v=document.getElementById("tokenInput").value.trim();
+  if(!v) return;
+  localStorage.setItem("soloceo_admin_token",v);
+  try{
+    await api("/admin/overview");
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="grid";
+    document.getElementById("apiState").textContent="API: đã kết nối ✓";
+    renderNav(); go("overview");
+  }catch(e){
+    localStorage.removeItem("soloceo_admin_token");
+    document.getElementById("loginErr").style.display="block";
+  }
+}
+function logout(){ localStorage.removeItem("soloceo_admin_token"); location.reload(); }
+document.getElementById("tokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+
+// ── nav ──
+let current="overview";
+function renderNav(){
+  document.getElementById("nav").innerHTML = NAV.map(n=>
+    `<a data-k="${n.k}" onclick="go('${n.k}')" class="${n.k===current?'on':''}"><span class="ic">${n.ic}</span>${n.t}<span class="badge" id="badge-${n.k}" style="display:none"></span></a>`
+  ).join("");
+}
+function setBadge(k,n){
+  const b=document.getElementById("badge-"+k); if(!b)return;
+  if(n>0){ b.textContent=n; b.style.display="inline-block"; } else b.style.display="none";
+}
+function go(k){
+  current=k; renderNav();
+  document.getElementById("view").innerHTML='<div class="spin">Đang tải…</div>';
+  ({overview:vOverview,users:vUsers,revenue:vRevenue,ai:vAi,health:vHealth,infra:vInfra,agents:vAgents,news:vNews,docs:vDocs,projects:vProjects,mna:vMna,audit:vAudit}[k])();
+}
+const H=(title,sub,extra="")=>`<div class="head"><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div><div>${extra}</div></div>`;
+const V=html=>{document.getElementById("view").innerHTML=html;};
+const errBox=e=>V(`<div class="card" style="border-color:#5a1e1e"><b style="color:#ff9d95">Lỗi tải dữ liệu</b><p class="muted" style="margin-top:6px">${esc(e.message)}</p></div>`);
+
+// ── modal ──
+function modal(html){ document.getElementById("modal").innerHTML=html; document.getElementById("modalBg").style.display="flex"; }
+function closeModal(){ document.getElementById("modalBg").style.display="none"; }
+document.getElementById("modalBg").addEventListener("click",e=>{if(e.target.id==="modalBg")closeModal();});
+
+// ════════ VIEWS ════════
+async function vOverview(){
+  try{
+    const o = await api("/admin/overview");
+    CACHE.overview=o;
+    const orgTot=Object.values(o.orgs||{}).reduce((a,b)=>a+b,0);
+    const venTot=Object.values(o.ventures||{}).reduce((a,b)=>a+b,0);
+    setBadge("mna",o.pendingListings);
+    V(H("Tổng quan hệ sinh thái","Cập nhật theo thời gian thực từ API lõi")+
+    `<div class="grid g4">
+      <div class="card kpi"><div class="lab">CEO / Org</div><div class="big">${orgTot}</div><div class="faint" style="font-size:11px;margin-top:4px">Hoạt động: ${o.orgs?.ACTIVE||0} · Khoá: ${o.orgs?.SUSPENDED||0}</div></div>
+      <div class="card kpi"><div class="lab">Doanh nghiệp</div><div class="big">${venTot}</div><div class="faint" style="font-size:11px;margin-top:4px">LIVE: ${o.ventures?.LIVE||0}</div></div>
+      <div class="card kpi"><div class="lab">Doanh thu 30 ngày</div><div class="big">${vnd(o.revenue30d)}</div></div>
+      <div class="card kpi"><div class="lab">Chờ phê duyệt</div><div class="big">${(o.pendingApprovals||0)+(o.pendingListings||0)}</div><div class="faint" style="font-size:11px;margin-top:4px">HITL: ${o.pendingApprovals||0} · M&A: ${o.pendingListings||0}</div></div>
+    </div>
+    <div class="sec-title">Ứng dụng đã cài (theo trạng thái)</div>
+    <div class="grid g4">${Object.entries(o.installs||{}).map(([k,v])=>`<div class="card kpi"><div class="lab">${k}</div><div class="big">${v}</div></div>`).join("")||'<div class="muted">—</div>'}</div>
+    <div class="sec-title">Truy cập nhanh</div>
+    <div class="grid g3">
+      <div class="card" style="cursor:pointer" onclick="go('health')"><b>♥ Sức khoẻ nền tảng</b><p class="muted" style="margin-top:5px;font-size:12.5px">Kiểm tra 10 dịch vụ đang chạy</p></div>
+      <div class="card" style="cursor:pointer" onclick="go('ai')"><b>✦ Ngân sách AI</b><p class="muted" style="margin-top:5px;font-size:12.5px">Chi phí & biên lãi từng khách</p></div>
+      <div class="card" style="cursor:pointer" onclick="go('news')"><b>✎ Đăng tin mới</b><p class="muted" style="margin-top:5px;font-size:12.5px">Thông báo tới cộng đồng</p></div>
+    </div>`);
+    loadHealthBadge();
+  }catch(e){ errBox(e); }
+}
+async function loadHealthBadge(){
+  try{ const h=await api("/admin/eco/health"); const down=h.filter(x=>!x.up).length; setBadge("health",down); }catch{}
+}
+
+async function vUsers(){
+  try{
+    const u = await api("/admin/eco/users"); CACHE.users=u;
+    V(H("Người dùng & gói cước",`${u.length} tài khoản CEO`)+
+    `<div class="card" style="padding:0;overflow:auto"><table>
+      <thead><tr><th>Tên / Org</th><th>Gói</th><th>Trạng thái</th><th>DN</th><th class="right">DT 30 ngày</th><th>Hạn gói</th><th class="right">Thao tác</th></tr></thead>
+      <tbody>${u.map(o=>`<tr>
+        <td><b>${esc(o.name)}</b><div class="faint mono" style="font-size:10.5px">${esc(o.id.slice(0,8))}</div></td>
+        <td><span class="tag t-mut">${o.plan}</span></td>
+        <td>${o.status==="ACTIVE"?'<span class="tag t-ok">ACTIVE</span>':o.status==="SUSPENDED"?'<span class="tag t-bad">SUSPENDED</span>':'<span class="tag t-warn">'+o.status+'</span>'}</td>
+        <td>${o.ventures}</td>
+        <td class="right">${vnd(o.revenue30dVnd)}</td>
+        <td class="faint" style="font-size:12px">${o.subscription?day(o.subscription.currentPeriodEnd):"—"}</td>
+        <td class="right">
+          <button class="btn ghost sm" onclick='planModal(${JSON.stringify(o).replace(/'/g,"&#39;")})'>Gói</button>
+          ${o.status==="ACTIVE"
+            ? `<button class="btn ghost sm" onclick="suspendOrg('${o.id}')">Khoá</button>`
+            : `<button class="btn ghost sm" onclick="activateOrg('${o.id}')">Mở</button>`}
+        </td></tr>`).join("")}</tbody></table></div>`);
+  }catch(e){ errBox(e); }
+}
+function planModal(o){
+  modal(`<h3>Quản lý gói — ${esc(o.name)}</h3>
+    <div class="field"><label>Đổi gói cước</label>
+      <select id="mPlan"><option ${o.plan==='STARTER'?'selected':''}>STARTER</option><option ${o.plan==='GROWTH'?'selected':''}>GROWTH</option><option ${o.plan==='SCALE'?'selected':''}>SCALE</option></select></div>
+    <div class="row"><button class="btn" onclick="changePlan('${o.id}')">Lưu gói</button>
+      <span class="faint" style="margin:0 8px">hoặc</span>
+      <input id="mDays" type="number" placeholder="số ngày" style="width:110px" value="30">
+      <button class="btn ghost" onclick="extendOrg('${o.id}')">Gia hạn</button></div>
+    <div style="margin-top:16px;text-align:right"><button class="btn ghost" onclick="closeModal()">Đóng</button></div>`);
+}
+async function changePlan(id){
+  try{ await api(`/admin/eco/users/${id}/plan`,{method:"PATCH",body:JSON.stringify({plan:document.getElementById("mPlan").value})});
+    toast("Đã đổi gói"); closeModal(); vUsers(); }catch(e){ toast(e.message,true); }
+}
+async function extendOrg(id){
+  const d=parseInt(document.getElementById("mDays").value||"0");
+  try{ await api(`/admin/eco/users/${id}/extend`,{method:"POST",body:JSON.stringify({days:d})});
+    toast("Đã gia hạn "+d+" ngày"); closeModal(); vUsers(); }catch(e){ toast(e.message,true); }
+}
+async function suspendOrg(id){ try{ await api(`/admin/orgs/${id}/suspend`,{method:"PATCH"}); toast("Đã khoá org"); vUsers(); }catch(e){toast(e.message,true);} }
+async function activateOrg(id){ try{ await api(`/admin/orgs/${id}/activate`,{method:"PATCH"}); toast("Đã mở lại org"); vUsers(); }catch(e){toast(e.message,true);} }
+
+async function vRevenue(){
+  try{
+    const [o,u] = await Promise.all([ api("/admin/overview"), api("/admin/eco/users") ]);
+    const top=[...u].sort((a,b)=>b.revenue30dVnd-a.revenue30dVnd).slice(0,15);
+    const totalRev=u.reduce((s,x)=>s+x.revenue30dVnd,0);
+    V(H("Doanh thu","Tổng hợp từ sổ cái giao dịch đã xác thực")+
+    `<div class="grid g3">
+      <div class="card kpi"><div class="lab">DT 30 ngày (verified)</div><div class="big">${vnd(o.revenue30d)}</div></div>
+      <div class="card kpi"><div class="lab">Tổng theo khách</div><div class="big">${vnd(totalRev)}</div></div>
+      <div class="card kpi"><div class="lab">Khách có DT</div><div class="big">${u.filter(x=>x.revenue30dVnd>0).length}<small> / ${u.length}</small></div></div>
+    </div>
+    <div class="sec-title">Top khách theo doanh thu 30 ngày</div>
+    <div class="card" style="padding:0"><table><thead><tr><th>Khách</th><th>Gói</th><th class="right">DT 30 ngày</th></tr></thead>
+    <tbody>${top.map(x=>`<tr><td>${esc(x.name)}</td><td><span class="tag t-mut">${x.plan}</span></td><td class="right">${vnd(x.revenue30dVnd)}</td></tr>`).join("")}</tbody></table></div>`);
+  }catch(e){ errBox(e); }
+}
+
+async function vAi(){
+  try{
+    const d = await api("/admin/eco/ai-budget");
+    setBadge("ai", d.overBudget);
+    V(H("Chi phí & ngân sách AI",`Tháng ${d.month} · tỷ giá ${d.usdToVnd.toLocaleString("vi-VN")}₫/USD`)+
+    `<div class="grid g4">
+      <div class="card kpi"><div class="lab">Tổng chi AI</div><div class="big">${usd(d.totalSpentUsd)}</div><div class="faint" style="font-size:11px;margin-top:4px">${vnd(d.totalSpentVnd)}</div></div>
+      <div class="card kpi"><div class="lab">Vượt ngân sách</div><div class="big" style="${d.overBudget?'color:#ff9d95':''}">${d.overBudget}</div></div>
+      <div class="card kpi"><div class="lab">Khách đang lỗ</div><div class="big" style="${d.losingCount?'color:#ff9d95':''}">${d.losingCount}</div></div>
+      <div class="card kpi"><div class="lab">Số khách</div><div class="big">${d.rows.length}</div></div>
+    </div>
+    <div class="sec-title">Chi tiết theo khách</div>
+    <div class="card" style="padding:0;overflow:auto"><table>
+      <thead><tr><th>Khách</th><th>Gói</th><th class="right">Đã chi</th><th style="width:180px">Ngân sách</th><th class="right">Giá gói</th><th class="right">Biên lãi</th></tr></thead>
+      <tbody>${d.rows.map(r=>`<tr>
+        <td><b>${esc(r.name)}</b></td><td><span class="tag t-mut">${r.plan}</span></td>
+        <td class="right">${usd(r.spentUsd)}</td>
+        <td><div class="row" style="gap:8px"><span class="mono faint" style="font-size:11px;width:38px">${r.budgetPct}%</span>
+          <div class="bar ${r.budgetPct>=100?'over':''}" style="flex:1"><i style="width:${Math.min(100,r.budgetPct)}%"></i></div></div></td>
+        <td class="right faint">${vnd(r.priceVnd)}</td>
+        <td class="right" style="${r.losing?'color:#ff9d95':'color:#3fb950'}">${vnd(r.marginVnd)}</td>
+      </tr>`).join("")||'<tr><td colspan=6 class="muted center" style="padding:24px">Chưa có dữ liệu chi phí tháng này</td></tr>'}</tbody></table></div>`);
+  }catch(e){ errBox(e); }
+}
+
+async function vHealth(){
+  try{
+    const h = await api("/admin/eco/health");
+    const down=h.filter(x=>!x.up).length; setBadge("health",down);
+    const grp={"cong-dong":"Nền tảng cộng đồng","loi":"Lõi hệ điều hành","ha-tang":"Hạ tầng"};
+    let html=H("Sức khoẻ nền tảng", down? `${down} dịch vụ đang có vấn đề`:"Tất cả dịch vụ đang chạy",
+      `<button class="btn ghost sm" onclick="vHealth()">↻ Kiểm tra lại</button>`);
+    for(const g of Object.keys(grp)){
+      const rows=h.filter(x=>x.group===g); if(!rows.length)continue;
+      html+=`<div class="sec-title">${grp[g]}</div><div class="grid g2">`+
+      rows.map(x=>`<div class="card"><div class="row" style="justify-content:space-between">
+        <div><span class="dot ${x.up?'d-ok':'d-bad'}"></span><b>${esc(x.name)}</b>
+          <div class="faint mono" style="font-size:11px;margin-top:3px">${esc(x.url)}</div></div>
+        <div class="right"><span class="tag ${x.up?'t-ok':'t-bad'}">${x.up?('HTTP '+x.httpStatus):'DOWN'}</span>
+          <div class="faint" style="font-size:11px;margin-top:4px">${x.ms!=null?x.ms+'ms':''}</div></div>
+      </div></div>`).join("")+`</div>`;
+    }
+    V(html);
+  }catch(e){ errBox(e); }
+}
+
+async function vInfra(){
+  try{
+    const d = await api("/admin/eco/infra");
+    let html=H("Hạ tầng & Coolify", d.note? "Ghi chú: "+esc(d.note):`${d.servers.length} máy chủ`);
+    if(d.note && !d.servers.length){
+      html+=`<div class="card" style="border-color:#332701"><b class="mono" style="color:#e3b341">⚠ Chưa lấy được dữ liệu Coolify</b>
+        <p class="muted" style="margin-top:6px">${esc(d.note)}</p>
+        <p class="faint" style="margin-top:6px;font-size:12px">Cần cấu hình COOLIFY_BASE_URL + COOLIFY_API_TOKEN cho api-core (token có quyền đọc).</p></div>`;
+    } else {
+      html+=`<div class="grid g2">`+d.servers.map(s=>`<div class="card">
+        <div class="row" style="justify-content:space-between"><b>${esc(s.name||s.uuid||"server")}</b>
+        <span class="tag ${s.reachable===false?'t-bad':'t-ok'}">${s.reachable===false?'unreachable':'ok'}</span></div>
+        <div class="faint mono" style="font-size:11.5px;margin-top:6px">${esc(s.ip||"")}</div>
+        <div class="muted" style="font-size:11.5px;margin-top:4px">${esc(s.uuid||"")}</div></div>`).join("")+`</div>`;
+      if(d.resources && d.resources.length){
+        html+=`<div class="sec-title">Tài nguyên (${d.resources.length})</div>
+        <div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Tên</th><th>Loại</th><th>Trạng thái</th></tr></thead>
+        <tbody>${d.resources.slice(0,80).map(r=>`<tr><td>${esc(r.name||r.uuid||"—")}</td><td class="faint">${esc(r.type||r.fqdn||"")}</td><td>${esc(r.status||"")}</td></tr>`).join("")}</tbody></table></div>`;
+      }
+    }
+    V(html);
+  }catch(e){ errBox(e); }
+}
+
+async function vAgents(){
+  try{
+    const d = await api("/admin/eco/agents");
+    let html=H("Trợ lý AI",`${(d.agents||[]).length} trợ lý mặc định (proxy DeerFlow)`);
+    if(d.note) html+=`<div class="card" style="border-color:#332701;margin-bottom:14px"><span class="mono muted">${esc(d.note)}</span></div>`;
+    html+=`<div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Tên</th><th>Mô tả</th><th class="right">Trạng thái</th></tr></thead>
+      <tbody>${(d.agents||[]).map(a=>`<tr>
+        <td><b>${esc(a.name)}</b></td>
+        <td class="muted" style="font-size:12.5px;max-width:520px">${esc((a.description||"").slice(0,140))}</td>
+        <td class="right">${a.enabled!==false
+          ? `<button class="btn ghost sm" onclick="toggleAgent('${esc(a.name)}',false)"><span class="dot d-ok"></span>Bật</button>`
+          : `<button class="btn ghost sm" onclick="toggleAgent('${esc(a.name)}',true)"><span class="dot d-bad"></span>Tắt</button>`}</td>
+      </tr>`).join("")||'<tr><td colspan=3 class="muted center" style="padding:24px">Chưa lấy được danh sách</td></tr>'}</tbody></table></div>`;
+    V(html);
+  }catch(e){ errBox(e); }
+}
+async function toggleAgent(name,enabled){
+  try{ const r=await api(`/admin/eco/agents/${encodeURIComponent(name)}`,{method:"PATCH",body:JSON.stringify({enabled})});
+    if(r.ok===false){ toast(r.note||"Gateway chưa hỗ trợ",true); } else { toast(enabled?"Đã bật":"Đã tắt"); vAgents(); }
+  }catch(e){ toast(e.message,true); }
+}
+
+async function vNews(){
+  try{
+    const [list,stats] = await Promise.all([ api("/admin/eco/news"), api("/admin/eco/news/ai-stats").catch(()=>null) ]);
+    CACHE.news=list;
+    V(H("Tin tức",`${list.length} tin`,
+      `<button class="btn ghost" onclick="aiWrite(this)">✦ Viết bằng AI ngay</button> <button class="btn" onclick="newsModal()">+ Viết tin</button>`)+
+    (stats?`<div class="grid g4" style="margin-bottom:16px">
+      <div class="card kpi"><div class="lab">Cây viết AI</div><div class="big">${stats.aiCount}<small> bài</small></div><div class="faint" style="font-size:11px;margin-top:4px">${esc(stats.cadence)}</div></div>
+      <div class="card kpi"><div class="lab">Đã đăng</div><div class="big">${stats.published}</div></div>
+      <div class="card kpi"><div class="lab">Tổng tin</div><div class="big">${stats.total}</div></div>
+      <div class="card"><div class="lab" style="color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-family:var(--mono)">Bài AI mới nhất</div>
+        <div style="font-size:13px;margin-top:8px">${stats.latest?esc(stats.latest.title):'<span class="muted">chưa có</span>'}</div>
+        <a href="https://soloceo.vn/tin-tuc" target="_blank" rel="noopener" style="font-size:12px;color:#8ab4ff;display:inline-block;margin-top:6px">Xem trang Tin tức công khai →</a></div>
+    </div>`:"")+
+    `<div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Tiêu đề</th><th>Mục</th><th>Trạng thái</th><th>Ngày</th><th class="right">Thao tác</th></tr></thead>
+      <tbody>${list.map(n=>`<tr>
+        <td><b>${esc(n.title)}</b><div class="faint mono" style="font-size:10.5px">/${esc(n.slug)}</div></td>
+        <td class="faint">${esc(n.category)}</td>
+        <td>${n.status==="PUBLISHED"?'<span class="tag t-ok">ĐÃ ĐĂNG</span>':'<span class="tag t-mut">NHÁP</span>'}</td>
+        <td class="faint" style="font-size:12px">${day(n.publishedAt||n.createdAt)}</td>
+        <td class="right">
+          ${n.status==="PUBLISHED"?`<a class="btn ghost sm" href="https://soloceo.vn/tin-tuc/${esc(n.slug)}" target="_blank" rel="noopener">Xem</a>`:""}
+          <button class="btn ghost sm" onclick='newsModal(${JSON.stringify(n).replace(/'/g,"&#39;")})'>Sửa</button>
+          ${n.status==="PUBLISHED"
+            ? `<button class="btn ghost sm" onclick="newsPublish('${n.id}',false)">Gỡ</button>`
+            : `<button class="btn sm" onclick="newsPublish('${n.id}',true)">Đăng</button>`}
+        </td></tr>`).join("")||'<tr><td colspan=5 class="muted center" style="padding:24px">Chưa có tin nào</td></tr>'}</tbody></table></div>`);
+  }catch(e){ errBox(e); }
+}
+function newsModal(n){
+  n=n||{};
+  modal(`<h3>${n.id?"Sửa tin":"Viết tin mới"}</h3>
+    <div class="field"><label>Tiêu đề</label><input id="nTitle" value="${esc(n.title||"")}"></div>
+    <div class="field"><label>Mục</label>
+      <select id="nCat">${["thong-bao","san-pham","cong-dong","doi-tac"].map(c=>`<option ${n.category===c?'selected':''}>${c}</option>`).join("")}</select></div>
+    <div class="field"><label>Tóm tắt</label><input id="nExcerpt" value="${esc(n.excerpt||"")}"></div>
+    <div class="field"><label>Ảnh bìa (URL)</label><input id="nCover" value="${esc(n.coverUrl||"")}"></div>
+    <div class="field"><label>Nội dung (markdown)</label><textarea id="nBody" rows="8">${esc(n.body||"")}</textarea></div>
+    <div class="row" style="justify-content:flex-end"><button class="btn ghost" onclick="closeModal()">Huỷ</button>
+      <button class="btn" onclick="saveNews('${n.id||""}')">Lưu</button></div>`);
+}
+async function saveNews(id){
+  const b={ title:document.getElementById("nTitle").value.trim(), category:document.getElementById("nCat").value,
+    excerpt:document.getElementById("nExcerpt").value, coverUrl:document.getElementById("nCover").value,
+    body:document.getElementById("nBody").value };
+  if(!b.title||!b.body){ toast("Cần tiêu đề & nội dung",true); return; }
+  try{
+    if(id) await api(`/admin/eco/news/${id}`,{method:"PATCH",body:JSON.stringify(b)});
+    else await api(`/admin/eco/news`,{method:"POST",body:JSON.stringify(b)});
+    toast("Đã lưu tin"); closeModal(); vNews();
+  }catch(e){ toast(e.message,true); }
+}
+async function newsPublish(id,pub){ try{ await api(`/admin/eco/news/${id}/publish`,{method:"POST",body:JSON.stringify({publish:pub})}); toast(pub?"Đã đăng":"Đã gỡ"); vNews(); }catch(e){toast(e.message,true);} }
+async function aiWrite(btn){
+  const old=btn.textContent; btn.textContent="✦ Đang viết…"; btn.disabled=true;
+  try{ const r=await api("/admin/eco/news/ai-generate",{method:"POST",body:JSON.stringify({})});
+    toast("AI đã viết & đăng: "+(r.title||"").slice(0,40)); vNews();
+  }catch(e){ toast("Lỗi viết AI: "+e.message,true); btn.textContent=old; btn.disabled=false; }
+}
+
+async function vDocs(){
+  try{
+    const d = await api("/admin/eco/docs");
+    let html=H("Tài liệu",`Đồng bộ từ soloceo.vn/en/docs · ${d.items.length} mục`,
+      `<a class="btn ghost" href="${esc(d.base)}" target="_blank" rel="noopener">Mở trang docs →</a>`);
+    if(d.note) html+=`<div class="card" style="border-color:#332701;margin-bottom:14px"><span class="mono muted">${esc(d.note)}</span></div>`;
+    html+=`<div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Tiêu đề</th><th>Đường dẫn</th><th class="right">Mở</th></tr></thead>
+      <tbody>${d.items.map(i=>`<tr>
+        <td><b>${esc(i.title)}</b></td>
+        <td class="faint mono" style="font-size:11.5px">${esc(i.url.replace('https://soloceo.vn',''))}</td>
+        <td class="right"><a class="btn ghost sm" href="${esc(i.url)}" target="_blank" rel="noopener">Xem</a></td>
+      </tr>`).join("")||'<tr><td colspan=3 class="muted center" style="padding:24px">Chưa lấy được tài liệu</td></tr>'}</tbody></table></div>`;
+    V(html);
+  }catch(e){ errBox(e); }
+}
+
+async function vProjects(){
+  try{
+    const list = await api("/admin/eco/projects"); CACHE.projects=list;
+    V(H("Tạo dự án từ ý tưởng","Gõ ý tưởng → AI tổng hợp mã nguồn + agent + nền tảng → mẫu dự án bán trên Sàn M&A")+
+    `<div class="card" style="margin-bottom:16px">
+      <div class="field"><label>Ý tưởng dự án</label>
+        <textarea id="pIdea" rows="3" placeholder="VD: Nền tảng công nghệ du lịch bằng AI — agent tự lên lịch trình, đặt phòng/tour, tư vấn điểm đến 24/7…"></textarea></div>
+      <div class="field"><label>Mục tiêu (tuỳ chọn)</label>
+        <input id="pGoal" placeholder="VD: bán turnkey cho CEO ngành du lịch"></div>
+      <button class="btn" onclick="genProject(this)">✦ Sinh dự án bằng AI</button>
+    </div>
+    <div class="sec-title">Mẫu dự án (${list.length})</div>
+    <div class="grid g2" id="pGrid">${list.map(projCard).join("")||'<div class="muted">Chưa có mẫu dự án — gõ ý tưởng ở trên để sinh.</div>'}</div>`);
+  }catch(e){ errBox(e); }
+}
+function projCard(p){
+  const c=p.components||{}; const chips=(arr)=>(arr||[]).map(x=>`<span class="tag t-mut" style="margin:2px">${esc(x)}</span>`).join("");
+  return `<div class="card">
+    <div class="row" style="justify-content:space-between"><b style="font-size:15px">${esc(p.name)}</b>
+      ${p.status==="PUBLISHED"?'<span class="tag t-ok">ĐÃ ĐĂNG</span>':'<span class="tag t-mut">NHÁP</span>'}</div>
+    <div class="faint" style="font-size:12px;margin:4px 0">${esc(p.industry||"")} · ${esc((p.summary||"").slice(0,110))}</div>
+    <div style="margin:8px 0"><span class="big" style="font-size:20px">${vnd(p.priceVnd)}</span> <span class="faint" style="font-size:12px">+ ${vnd(p.monthlyFeeVnd)}/th</span></div>
+    <div style="font-size:11px;line-height:1.9">
+      ${c.containers?('<b class="faint">Nền tảng:</b> '+chips(c.containers)):''}
+      ${c.agents?('<br><b class="faint">Agent:</b> '+chips(c.agents)):''}
+      ${c.dataLayer?('<br><b class="faint">Dữ liệu:</b> '+chips(c.dataLayer)):''}
+    </div>
+    <div class="row" style="margin-top:12px;flex-wrap:wrap">
+      <button class="btn ghost sm" onclick='projEdit(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Sửa giá/demo</button>
+      ${p.demoUrl?`<a class="btn ghost sm" href="${esc(p.demoUrl)}" target="_blank" rel="noopener">Demo</a>`:""}
+      ${p.status==="PUBLISHED"
+        ? `<button class="btn ghost sm" onclick="projPublish('${p.id}',false)">Gỡ</button>`
+        : `<button class="btn sm" onclick="projPublish('${p.id}',true)">Đăng M&A</button>`}
+      <button class="btn bad sm" onclick="projDelete('${p.id}')">Xoá</button>
+    </div></div>`;
+}
+async function genProject(btn){
+  const idea=document.getElementById("pIdea").value.trim();
+  const goal=document.getElementById("pGoal").value.trim();
+  if(idea.length<5){ toast("Nhập ý tưởng dài hơn",true); return; }
+  const old=btn.textContent; btn.textContent="✦ Đang tổng hợp…"; btn.disabled=true;
+  try{ const p=await api("/admin/eco/projects/generate",{method:"POST",body:JSON.stringify({idea,goal})});
+    toast("Đã sinh dự án: "+(p.name||"").slice(0,40)); vProjects();
+  }catch(e){ toast("Lỗi: "+e.message,true); btn.textContent=old; btn.disabled=false; }
+}
+function projEdit(p){
+  modal(`<h3>Sửa dự án — ${esc(p.name)}</h3>
+    <div class="field"><label>Giá bán (VND)</label><input id="epPrice" type="number" value="${Number(p.priceVnd)||0}"></div>
+    <div class="field"><label>Phí nền tảng/tháng (VND)</label><input id="epFee" type="number" value="${Number(p.monthlyFeeVnd)||0}"></div>
+    <div class="field"><label>Demo URL</label><input id="epDemo" value="${esc(p.demoUrl||"")}"></div>
+    <div class="row" style="justify-content:flex-end"><button class="btn ghost" onclick="closeModal()">Huỷ</button>
+      <button class="btn" onclick="projSave('${p.id}')">Lưu</button></div>`);
+}
+async function projSave(id){
+  const b={ priceVnd:parseInt(document.getElementById("epPrice").value||"0"),
+    monthlyFeeVnd:parseInt(document.getElementById("epFee").value||"0"),
+    demoUrl:document.getElementById("epDemo").value.trim() };
+  try{ await api(`/admin/eco/projects/${id}`,{method:"PATCH",body:JSON.stringify(b)}); toast("Đã lưu"); closeModal(); vProjects(); }catch(e){toast(e.message,true);}
+}
+async function projPublish(id,pub){ try{ await api(`/admin/eco/projects/${id}/publish`,{method:"POST",body:JSON.stringify({publish:pub})}); toast(pub?"Đã đăng lên Sàn M&A":"Đã gỡ"); vProjects(); }catch(e){toast(e.message,true);} }
+async function projDelete(id){ try{ await api(`/admin/eco/projects/${id}`,{method:"DELETE"}); toast("Đã xoá"); vProjects(); }catch(e){toast(e.message,true);} }
+
+async function vMna(){
+  try{
+    const list = await api("/admin/listings/pending"); setBadge("mna",list.length);
+    V(H("Sàn M&A — chờ duyệt",`${list.length} listing chờ (SLA 24h)`)+
+    `<div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Doanh nghiệp</th><th>Chủ</th><th class="right">Giá chào</th><th class="right">TTM DT</th><th class="right">Thao tác</th></tr></thead>
+      <tbody>${list.map(l=>`<tr>
+        <td><b>${esc(l.venture?.name||"—")}</b></td>
+        <td class="faint">${esc(l.venture?.org?.name||"")}</td>
+        <td class="right">${vnd(l.askPrice)}</td>
+        <td class="right faint">${l.ttmRevenue?vnd(l.ttmRevenue):"—"}</td>
+        <td class="right"><button class="btn sm" onclick="approveListing('${l.id}')">Duyệt → LIVE</button></td>
+      </tr>`).join("")||'<tr><td colspan=5 class="muted center" style="padding:24px">Không có listing chờ duyệt</td></tr>'}</tbody></table></div>`);
+  }catch(e){ errBox(e); }
+}
+async function approveListing(id){ try{ await api(`/admin/listings/${id}/approve`,{method:"POST"}); toast("Đã duyệt listing"); vMna(); }catch(e){toast(e.message,true);} }
+
+async function vAudit(){
+  try{
+    const list = await api("/admin/actions");
+    V(H("Nhật ký quản trị","100 hành động gần nhất")+
+    `<div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Thời gian</th><th>Quản trị viên</th><th>Hành động</th><th>Đối tượng</th></tr></thead>
+      <tbody>${list.map(a=>`<tr>
+        <td class="faint" style="font-size:12px">${dt(a.createdAt)}</td>
+        <td class="mono" style="font-size:12px">${esc(a.adminUser)}</td>
+        <td><span class="tag t-mut">${esc(a.action)}</span></td>
+        <td class="faint mono" style="font-size:11px">${esc((a.targetId||"").slice(0,12))}</td>
+      </tr>`).join("")||'<tr><td colspan=4 class="muted center" style="padding:24px">Chưa có hành động</td></tr>'}</tbody></table></div>`);
+  }catch(e){ errBox(e); }
+}
+
+// ── boot ──
+if(TK()){
+  api("/admin/overview").then(()=>{
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="grid";
+    document.getElementById("apiState").textContent="API: đã kết nối ✓";
+    renderNav(); go("overview");
+  }).catch(()=>{ /* stay on login */ });
+}
+</script>
+</body>
+</html>

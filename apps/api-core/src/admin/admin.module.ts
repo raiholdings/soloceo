@@ -3,6 +3,7 @@ import { StoreModule } from "../store/store.module";
 import { AdminController } from "./admin.controller";
 import {
   AdminEcosystemController,
+  MarketplaceProjectsController,
   NewsPageController,
   NewsPublicController,
 } from "./admin-eco.controller";
@@ -15,6 +16,7 @@ import { AdminEcosystemService } from "./admin-eco.service";
     AdminEcosystemController,
     NewsPublicController,
     NewsPageController,
+    MarketplaceProjectsController,
   ],
   providers: [AdminEcosystemService],
 })
