@@ -28,6 +28,24 @@ export class AuthGuard implements CanActivate {
     if (isPublic) return true;
 
     const request = context.switchToHttp().getRequest();
+
+    // ── Đường admin-token: console admin native gửi header X-Admin-Token ──
+    // khớp env ADMIN_TOKEN → coi như platform_admin (không cần Supabase JWT).
+    // Fail-closed: chỉ bật khi ADMIN_TOKEN được cấu hình và khớp tuyệt đối.
+    const adminToken = this.config.get<string>("ADMIN_TOKEN");
+    const sentAdminToken = request.headers["x-admin-token"] as
+      | string
+      | undefined;
+    if (adminToken && sentAdminToken && sentAdminToken === adminToken) {
+      request.user = {
+        userId: "platform-admin",
+        email: null,
+        orgId: null,
+        isPlatformAdmin: true,
+      } satisfies RequestUser;
+      return true;
+    }
+
     const header: string | undefined = request.headers["authorization"];
     // access_token query param: dành cho SSE (EventSource không set được header)
     const token = header?.startsWith("Bearer ")

@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [soloceo-mvp, hoan-thien-v2]
+  pull_request:
+    branches: [soloceo-mvp]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Prisma generate + validate
+        run: |
+          pnpm --filter @soloceo/db exec prisma generate
+          pnpm --filter @soloceo/db exec prisma validate
+      - name: Build shared + db + api-core
+        run: |
+          pnpm --filter @soloceo/shared build
+          pnpm --filter @soloceo/db build
+          pnpm --filter @soloceo/api-core build

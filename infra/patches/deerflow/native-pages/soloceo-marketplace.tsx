@@ -16,7 +16,6 @@ import {
   Rocket,
   ShoppingBag,
   Store,
-  Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WorkspaceBody, WorkspaceContainer, WorkspaceHeader } from "@/components/workspace/workspace-container";
@@ -70,7 +69,6 @@ export function SoloceoMarketplace() {
   const [ventureId, setVentureId] = useState<string>("");
   const [installs, setInstalls] = useState<Install[]>([]);
   const [busyKey, setBusyKey] = useState<string | null>(null);
-  const [confirmKey, setConfirmKey] = useState<string | null>(null); // gỡ 2 bước
   const [notice, setNotice] = useState<{ kind: "ok" | "warn" | "err"; text: string; upgrade?: boolean } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -148,19 +146,8 @@ export function SoloceoMarketplace() {
     } finally { setBusyKey(null); }
   }
 
-  async function doRemove(app: CatalogApp, install: Install) {
-    if (busyKey) return;
-    if (confirmKey !== app.key) { setConfirmKey(app.key); return; } // bước 1: hỏi
-    setBusyKey(app.key); setConfirmKey(null); setNotice(null);
-    try {
-      await soloceoApi(`/installs/${install.id}?confirm=true`, { method: "DELETE" });
-      // backend yêu cầu 2 lần gọi: lần 1 không confirm trả hướng dẫn — gọi thẳng confirm=true sau khi CEO đã bấm xác nhận trên UI
-      setNotice({ kind: "ok", text: `Đang gỡ "${app.name}"…` });
-      await loadInstalls(ventureId);
-    } catch (e) {
-      setNotice({ kind: "err", text: `Gỡ "${app.name}" thất bại: ${(e as Error).message}` });
-    } finally { setBusyKey(null); }
-  }
+  // Gỡ ứng dụng đã chuyển hẳn về Admin Console (admin.soloceo.vn) — CEO không
+  // còn thao tác phá huỷ này trong workspace. Hàm doRemove/nút "Gỡ" đã bỏ.
 
   const grouped = useMemo(() => {
     const g = new Map<string, CatalogApp[]>();
@@ -276,11 +263,8 @@ export function SoloceoMarketplace() {
                                     Mở ứng dụng <ExternalLink className="h-3.5 w-3.5" />
                                   </a>
                                 )}
-                                <button onClick={() => void doRemove(app, inst)} disabled={busyKey === app.key}
-                                  className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm ${confirmKey === app.key ? "border-red-400 bg-red-50 text-red-700 dark:bg-red-950/40" : "hover:bg-muted"}`}>
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                  {confirmKey === app.key ? "Bấm lần nữa để gỡ" : "Gỡ"}
-                                </button>
+                                {/* Nút "Gỡ" đã bỏ khỏi workspace: gỡ ứng dụng là hành động
+                                    phá huỷ dữ liệu — chỉ Admin thực hiện qua admin.soloceo.vn. */}
                               </>
                             ) : transitional ? (
                               <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">

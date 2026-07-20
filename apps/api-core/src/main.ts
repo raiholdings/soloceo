@@ -17,6 +17,7 @@ async function bootstrap() {
           "https://soloceo.vn",
           "https://www.soloceo.vn",
           "https://app.soloceo.vn", // landing + onboarding (web-community)
+          "https://admin.soloceo.vn", // Admin Console native (control-plane)
           // C8 (v2 cleanup): platform.soloceo.vn (OS Shell 3D) đã gỡ khỏi core
           // (cụm sang openclawos.vn). Bỏ khỏi CORS whitelist.
           // "https://platform.soloceo.vn",
