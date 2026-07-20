@@ -529,18 +529,44 @@ async function projDelete(id){ try{ await api(`/admin/eco/projects/${id}`,{metho
 
 async function vMna(){
   try{
-    const list = await api("/admin/listings/pending"); setBadge("mna",list.length);
-    V(H("Sàn M&A — chờ duyệt",`${list.length} listing chờ (SLA 24h)`)+
-    `<div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Doanh nghiệp</th><th>Chủ</th><th class="right">Giá chào</th><th class="right">TTM DT</th><th class="right">Thao tác</th></tr></thead>
-      <tbody>${list.map(l=>`<tr>
+    const [pending, projects] = await Promise.all([
+      api("/admin/listings/pending").catch(()=>[]),
+      api("/admin/eco/projects").catch(()=>[])
+    ]);
+    const pub = projects.filter(p=>p.status==="PUBLISHED");
+    const draft = projects.filter(p=>p.status!=="PUBLISHED");
+    setBadge("mna", pending.length);
+    V(H("Sàn M&A", `Đồng bộ với marketplace.soloceo.vn · ${pub.length} dự án đang bán · ${pending.length} venture chờ duyệt`)+
+    `<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px">
+       <div class="sec-title" style="margin:0">Đang bán trên Sàn (${pub.length})</div>
+       <a class="btn ghost sm" href="https://marketplace.soloceo.vn" target="_blank" rel="noopener">Mở marketplace.soloceo.vn ↗</a>
+     </div>
+     <div class="grid g2">${pub.map(mnaCard).join("")||'<div class="muted">Chưa có dự án nào đăng bán. Vào tab <b>Tạo dự án</b> → sinh mẫu → bấm “Đăng M&A”.</div>'}</div>
+     ${draft.length?`<div class="faint" style="font-size:12px;margin:12px 2px 0">+ ${draft.length} mẫu nháp chưa đăng (ở tab Tạo dự án).</div>`:''}
+     <div class="sec-title" style="margin-top:28px">Venture chờ duyệt niêm yết — HITL (SLA 24h)</div>
+     <div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Doanh nghiệp</th><th>Chủ</th><th class="right">Giá chào</th><th class="right">TTM DT</th><th class="right">Thao tác</th></tr></thead>
+      <tbody>${pending.map(l=>`<tr>
         <td><b>${esc(l.venture?.name||"—")}</b></td>
         <td class="faint">${esc(l.venture?.org?.name||"")}</td>
         <td class="right">${vnd(l.askPrice)}</td>
         <td class="right faint">${l.ttmRevenue?vnd(l.ttmRevenue):"—"}</td>
         <td class="right"><button class="btn sm" onclick="approveListing('${l.id}')">Duyệt → LIVE</button></td>
-      </tr>`).join("")||'<tr><td colspan=5 class="muted center" style="padding:24px">Không có listing chờ duyệt</td></tr>'}</tbody></table></div>`);
+      </tr>`).join("")||'<tr><td colspan=5 class="muted center" style="padding:24px">Không có venture chờ duyệt</td></tr>'}</tbody></table></div>`);
   }catch(e){ errBox(e); }
 }
+function mnaCard(p){
+  const url="https://marketplace.soloceo.vn/du-an/"+encodeURIComponent(p.slug);
+  return `<div class="card">
+    <div class="row" style="justify-content:space-between"><b style="font-size:15px">${esc(p.name)}</b><span class="tag t-ok">● ĐANG BÁN</span></div>
+    <div class="faint" style="font-size:12px;margin:4px 0">${esc(p.industry||"")} · ${esc((p.summary||"").slice(0,100))}</div>
+    <div style="margin:8px 0"><span class="big" style="font-size:20px">${vnd(p.priceVnd)}</span> <span class="faint" style="font-size:12px">+ ${vnd(p.monthlyFeeVnd)}/th</span></div>
+    <div class="row" style="margin-top:10px;flex-wrap:wrap">
+      <a class="btn sm" href="${url}" target="_blank" rel="noopener">Xem trên Sàn ↗</a>
+      <button class="btn ghost sm" onclick='projEdit(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Sửa giá/demo</button>
+      <button class="btn bad sm" onclick="mnaUnpublish('${p.id}')">Gỡ khỏi Sàn</button>
+    </div></div>`;
+}
+async function mnaUnpublish(id){ try{ await api(`/admin/eco/projects/${id}/publish`,{method:"POST",body:JSON.stringify({publish:false})}); toast("Đã gỡ khỏi Sàn"); vMna(); }catch(e){toast(e.message,true);} }
 async function approveListing(id){ try{ await api(`/admin/listings/${id}/approve`,{method:"POST"}); toast("Đã duyệt listing"); vMna(); }catch(e){toast(e.message,true);} }
 
 async function vAudit(){
