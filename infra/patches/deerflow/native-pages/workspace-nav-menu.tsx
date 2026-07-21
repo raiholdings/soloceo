@@ -1,19 +1,14 @@
 "use client";
 
 import {
-  Award,
-  BookUser,
-  Building2,
   ChevronsUpDown,
   CreditCard,
   InfoIcon,
   Settings2Icon,
   SettingsIcon,
-  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getSoloceoAuth } from "@/components/workspace/soloceo-api";
 
 import {
   DropdownMenu,
@@ -60,13 +55,11 @@ export function WorkspaceNavMenu() {
     "appearance" | "memory" | "tools" | "skills" | "notification" | "about"
   >("appearance");
   const [mounted, setMounted] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const { open: isSidebarOpen } = useSidebar();
   const { t } = useI18n();
 
   useEffect(() => {
     setMounted(true);
-    getSoloceoAuth().then((a) => setIsAdmin(a.platformAdmin === true)).catch(() => setIsAdmin(false));
   }, []);
 
   return (
@@ -104,39 +97,12 @@ export function WorkspaceNavMenu() {
                     {t.common.settings}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  {/* SoloCEO: link cũ deerflow.tech/github/mailto ĐÃ BỎ — thay bằng khu doanh nghiệp */}
-                  <Link href="/workspace/doanh-nghiep">
-                    <DropdownMenuItem>
-                      <Building2 />
-                      Doanh nghiệp của tôi
-                    </DropdownMenuItem>
-                  </Link>
                   <Link href="/workspace/goi-cuoc">
                     <DropdownMenuItem>
                       <CreditCard />
                       Gói cước
                     </DropdownMenuItem>
                   </Link>
-                  <Link href="/workspace/solo-ceo-dien-hinh">
-                    <DropdownMenuItem>
-                      <Award />
-                      Solo CEO điển hình
-                    </DropdownMenuItem>
-                  </Link>
-                  <Link href="/workspace/danh-ba">
-                    <DropdownMenuItem>
-                      <BookUser />
-                      Danh bạ
-                    </DropdownMenuItem>
-                  </Link>
-                  {isAdmin && (
-                    <Link href="/workspace/admin">
-                      <DropdownMenuItem>
-                        <ShieldCheck />
-                        Quản trị hệ thống
-                      </DropdownMenuItem>
-                    </Link>
-                  )}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
