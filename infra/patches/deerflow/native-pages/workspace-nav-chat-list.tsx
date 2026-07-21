@@ -1,6 +1,6 @@
 "use client";
 
-import { BotIcon, CalendarClock, Lightbulb, Filter as FunnelIcon, MessageCircle, MessagesSquare, ShieldCheck, ShoppingBag, Store, Users, Video, VideoIcon, Workflow } from "lucide-react";
+import { BotIcon, CalendarClock, GraduationCap, LayoutDashboard, LayoutGrid, MessageCircle, MessagesSquare, Users, Video, VideoIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -26,13 +26,14 @@ export function WorkspaceNavChatList() {
     <SidebarGroup className="pt-1">
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton isActive={pathname === "/workspace/chats"} asChild>
+          <SidebarMenuButton isActive={pathname === "/workspace/chats" || pathname.startsWith("/workspace/chats/")} asChild>
             <Link className="text-muted-foreground" href="/workspace/chats">
               <MessagesSquare />
               <span>{t.sidebar.chats}</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
+        {/* Trợ lý AI — gộp Mô hình KD / Phễu bán hàng / Thị trường vào đây (có bộ lọc nhóm) */}
         <SidebarMenuItem>
           {agentsEnabled ? (
             <SidebarMenuButton
@@ -67,56 +68,7 @@ export function WorkspaceNavChatList() {
             </Tooltip>
           )}
         </SidebarMenuItem>
-        {/* Chợ ứng dụng — CEO mua nền tảng/tài nguyên, provision lên node PaaS */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/cho-ung-dung")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/cho-ung-dung">
-              <ShoppingBag />
-              <span>Chợ ứng dụng</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* Mô hình kinh doanh — thư viện mô hình đóng gói trọn, đội AI thực thi */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/mo-hinh-kinh-doanh")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/mo-hinh-kinh-doanh">
-              <Lightbulb />
-              <span>Mô hình kinh doanh</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* Phễu bán hàng — thư viện khung phễu, đội AI thi công từng khâu */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/pheu-ban-hang")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/pheu-ban-hang">
-              <FunnelIcon />
-              <span>Phễu bán hàng</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* Thị trường — hub kết nối ~50 nền tảng ra thị trường (đa kênh) */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/thi-truong")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/thi-truong">
-              <Store />
-              <span>Thị trường</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* Quản trị & Doanh nghiệp của tôi ĐÃ CHUYỂN vào menu "Settings and more"
-            (theo yêu cầu — không để ở nav chính). isAdmin vẫn dùng cho menu đó. */}
+        {/* Việc theo lịch — ngay sau Trợ lý AI */}
         <SidebarMenuItem>
           <SidebarMenuButton
             isActive={pathname.startsWith("/workspace/scheduled-tasks")}
@@ -131,26 +83,48 @@ export function WorkspaceNavChatList() {
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
-        {/* --- Nền tảng phục vụ Solo CEO (SoloCEO OS v2) --- */}
+        {/* Nền tảng — cổng dịch vụ PaaS + tên miền (platform.soloceo.vn / WHMCS), thay Chợ ứng dụng */}
         <SidebarMenuItem>
           <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/quy-trinh")}
+            isActive={pathname.startsWith("/workspace/nen-tang")}
             asChild
           >
-            <Link className="text-muted-foreground" href="/workspace/quy-trinh">
-              <Workflow />
-              <span>Quy trình</span>
+            <Link className="text-muted-foreground" href="/workspace/nen-tang">
+              <LayoutGrid />
+              <span>Nền tảng</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
+        {/* CRM — Perfex SaaS tại crm.soloceo.vn (nhúng workspace) */}
         <SidebarMenuItem>
           <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/phe-duyet")}
+            isActive={pathname.startsWith("/workspace/crm")}
             asChild
           >
-            <Link className="text-muted-foreground" href="/workspace/phe-duyet">
-              <ShieldCheck />
-              <span>Phê duyệt</span>
+            <Link className="text-muted-foreground" href="/workspace/crm">
+              <LayoutDashboard />
+              <span>CRM</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        {/* Chat đa kênh — Support Board SaaS tại chat.soloceo.vn (nhúng workspace) */}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            isActive={pathname === "/workspace/chat" || pathname.startsWith("/workspace/chat/")}
+            asChild
+          >
+            <Link className="text-muted-foreground" href="/workspace/chat">
+              <MessagesSquare />
+              <span>Chat đa kênh</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        {/* Đào tạo (LMS) — Academy tại edu.soloceo.vn */}
+        <SidebarMenuItem>
+          <SidebarMenuButton isActive={pathname.startsWith("/workspace/dao-tao")} asChild>
+            <Link className="text-muted-foreground" href="/workspace/dao-tao">
+              <GraduationCap />
+              <span>Đào tạo</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
