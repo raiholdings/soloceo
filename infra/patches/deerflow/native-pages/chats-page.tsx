@@ -34,6 +34,7 @@ import { TokenUsageIndicator } from "@/components/workspace/token-usage-indicato
 import { useActiveGoal } from "@/components/workspace/use-active-goal";
 import { Welcome } from "@/components/workspace/welcome";
 import { KICKOFF_KEY } from "@/components/workspace/soloceo-kickoff";
+import { soloceoApi } from "@/components/workspace/soloceo-api";
 import { SoloceoProjectTemplates } from "@/components/workspace/soloceo-project-templates";
 import { useI18n } from "@/core/i18n/hooks";
 import {
@@ -200,15 +201,27 @@ export default function ChatPage() {
       // bỏ qua
     }
     let text = "";
+    let projectId: string | undefined;
+    let projectName: string | undefined;
     try {
-      text = (JSON.parse(raw) as { text?: string }).text ?? "";
+      const parsed = JSON.parse(raw) as { text?: string; projectId?: string; projectName?: string };
+      text = parsed.text ?? "";
+      projectId = parsed.projectId;
+      projectName = parsed.projectName;
     } catch {
       text = raw;
     }
     if (!text.trim()) return;
     setIsWelcomeMode(false);
     handleSubmit({ text, files: [] });
-  }, [isNewThread, isMock, handleSubmit]);
+    // Gắn cuộc trò chuyện vào dự án (nếu bắt đầu từ 1 dự án)
+    if (projectId && threadId && threadId !== "new") {
+      void soloceoApi(`/projects/${projectId}/threads`, {
+        method: "POST",
+        body: JSON.stringify({ threadId, title: projectName }),
+      }).catch(() => {});
+    }
+  }, [isNewThread, isMock, handleSubmit, threadId]);
   const handleSubmitHumanInput = useCallback(
     async (request: HumanInputRequest, response: HumanInputResponse) => {
       let sent = false;

@@ -149,3 +149,19 @@ export function startTemplateKickoff(t: ProjectTemplate) {
   }
   window.location.assign("/workspace/chats/new");
 }
+
+/** Bắt đầu 1 cuộc trò chuyện thuộc dự án — nạp bối cảnh + gắn projectId để chat ghi vào dự án. */
+export function startProjectChat(project: { id: string; name: string; instructions?: string | null }) {
+  const ctx = project.instructions
+    ? `Bối cảnh dự án "${project.name}": ${project.instructions}\n\nHãy ghi nhớ bối cảnh này cho cả cuộc trò chuyện, rồi hỏi tôi hôm nay cần làm gì cho dự án.`
+    : `Đây là cuộc trò chuyện thuộc dự án "${project.name}". Hãy hỏi tôi hôm nay cần làm gì cho dự án.`;
+  try {
+    sessionStorage.setItem(
+      KICKOFF_KEY,
+      JSON.stringify({ text: ctx, projectId: project.id, projectName: project.name }),
+    );
+  } catch {
+    /* bỏ qua */
+  }
+  window.location.assign("/workspace/chats/new");
+}
