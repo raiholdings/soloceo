@@ -224,6 +224,36 @@ model ProjectTemplate {
   @@index([status, createdAt])
 }
 
+// Dự án của CEO — folder nhẹ kiểu ChatGPT/Claude Projects: gom các cuộc trò chuyện
+// + ngữ cảnh (instructions) dùng chung, có thể liên kết CRM/marketplace/doanh thu.
+model Project {
+  id           String          @id @default(uuid())
+  orgId        String // Org của CEO (từ JWT) — mọi truy vấn scope theo org
+  name         String
+  description  String?
+  instructions String? // ngữ cảnh dùng chung cho mọi chat trong dự án
+  color        String? // màu nhãn (tuỳ chọn)
+  links        Json? // { crm?:bool, marketplace?:bool, revenue?:bool }
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  threads      ProjectThread[]
+
+  @@index([orgId, createdAt])
+}
+
+// Liên kết 1 cuộc trò chuyện (DeerFlow thread) vào 1 dự án.
+model ProjectThread {
+  id        String   @id @default(uuid())
+  projectId String
+  threadId  String // id thread của DeerFlow
+  title     String?
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, threadId])
+  @@index([projectId, createdAt])
+}
+
 // Doanh nghiệp/ý tưởng CEO tự tạo ở workspace (/workspace/bat-dau) — ghi lại
 // mỗi lần onboarding để Admin theo dõi TẤT CẢ dự án CEO đã tạo (kèm điểm đánh giá AI).
 model CeoProject {

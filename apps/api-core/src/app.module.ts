@@ -8,6 +8,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
 import { OrgsModule } from "./orgs/orgs.module";
 import { VenturesModule } from "./ventures/ventures.module";
+import { ProjectsModule } from "./projects/projects.module";
 import { DirectoryModule } from "./directory/directory.module";
 import { OidcModule } from "./oidc/oidc.module";
 import { ConciergeModule } from "./concierge/concierge.module";
@@ -39,6 +40,7 @@ import { ChannelsModule } from "./channels/channels.module";
     HealthModule,
     OrgsModule,
     VenturesModule,
+    ProjectsModule,
     DirectoryModule,
     StoreModule,
     DomainsModule,
