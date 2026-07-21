@@ -327,7 +327,7 @@ export default function ChatPage() {
               </div>
             </header>
             <main className="flex min-h-0 max-w-full grow flex-col">
-              <div className="flex min-h-0 flex-1 justify-center">
+              <div className={cn("min-h-0 justify-center", isWelcomeMode ? "hidden" : "flex flex-1")}>
                 <MessageList
                   className={cn("size-full", !isWelcomeMode && "pt-10")}
                   testId="main-message-list"
@@ -365,16 +365,16 @@ export default function ChatPage() {
               <div
                 className={cn(
                   "right-0 bottom-0 left-0 z-30 flex justify-center px-3 sm:px-4",
-                  isWelcomeMode ? "absolute" : "relative shrink-0 pb-4",
+                  isWelcomeMode ? "relative min-h-0 flex-1 items-start overflow-y-auto pt-8 pb-6" : "relative shrink-0 pb-4",
                 )}
               >
                 <div
                   className={cn(
                     "relative w-full",
                     isWelcomeMode &&
-                      "-translate-y-[calc(50vh-48px)] sm:-translate-y-[calc(50vh-96px)]",
+                      "",
                     isWelcomeMode
-                      ? "max-w-(--container-width-sm)"
+                      ? "max-w-(--container-width-md)"
                       : "max-w-(--container-width-md)",
                   )}
                 >
@@ -406,7 +406,7 @@ export default function ChatPage() {
                     <InputBox
                       className={cn(
                         "bg-background/5 w-full",
-                        isWelcomeMode && "-translate-y-2 sm:-translate-y-4",
+                        isWelcomeMode && "",
                       )}
                       isWelcomeMode={isWelcomeMode}
                       threadId={threadId}
@@ -443,7 +443,7 @@ export default function ChatPage() {
                       aria-hidden="true"
                       className={cn(
                         "bg-background/5 h-32 w-full rounded-2xl",
-                        isWelcomeMode && "-translate-y-2 sm:-translate-y-4",
+                        isWelcomeMode && "",
                       )}
                     />
                   )}
