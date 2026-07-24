@@ -17,7 +17,7 @@ export interface PlatformProbe {
   key: string;
   name: string;
   url: string;
-  group: "cong-dong" | "loi" | "ha-tang";
+  group: "cong-dong" | "loi" | "ha-tang" | "du-lieu";
   up: boolean;
   httpStatus: number | null;
   ms: number | null;
@@ -75,6 +75,12 @@ export class AdminEcosystemService {
       { key: "web", name: "Trang chủ SoloCEO", url: "https://soloceo.vn", group: "ha-tang" },
       { key: "api", name: "API lõi", url: "https://api.soloceo.vn/v1/health", group: "ha-tang" },
       { key: "llm", name: "LLM Gateway (LiteLLM)", url: "https://llm.soloceo.vn/health/liveliness", group: "ha-tang" },
+      // ── Lớp dữ liệu (data layer riêng của OS) ──
+      { key: "supabase", name: "Supabase — nền tảng dữ liệu", url: "https://supabase.soloceo.vn", group: "du-lieu" },
+      { key: "netdata", name: "Netdata — giám sát hạ tầng", url: "https://netdata.soloceo.vn", group: "du-lieu" },
+      { key: "jitsu", name: "Jitsu — thu thập sự kiện/CDP", url: "https://jitsu.soloceo.vn", group: "du-lieu" },
+      { key: "openmetadata", name: "OpenMetadata — quản trị/catalog dữ liệu", url: "https://openmetadata.soloceo.vn", group: "du-lieu" },
+      { key: "bigdata", name: "BigData — bộ não thứ 2 (dataset + startup)", url: "https://bigdata.soloceo.vn", group: "du-lieu" },
     ];
   }
 
