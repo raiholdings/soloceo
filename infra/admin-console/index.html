@@ -352,13 +352,13 @@ async function vCatalog(){
     CACHE.catalog = d;
     const opts = ['<option value="">Tất cả danh mục ('+d.total+')</option>']
       .concat(d.categories.map(c=>`<option value="${esc(c)}">${esc(c)} (${d.items.filter(x=>x.category===c).length})</option>`)).join("");
-    V(H("Danh mục nền tảng", `Toàn bộ ${d.total} nền tảng hệ sinh thái — giới thiệu, AI, tài khoản đăng nhập`,
-      `<button class="btn ghost sm" onclick="catExport()">⇩ Xuất CSV</button>`)+
+    V(H("Danh mục nền tảng", `${d.total} nền tảng · <b style="color:${d.source==='whmcs'?'#3fb950':'#e3b341'}">${d.source==='whmcs'?'đồng bộ LIVE từ WHMCS':'dữ liệu tĩnh (WHMCS tạm không kết nối)'}</b> — cùng nguồn với workspace /nen-tang`,
+      `<button class="btn ghost sm" onclick="vCatalog()">↻ Đồng bộ lại</button> <button class="btn ghost sm" onclick="catExport()">⇩ Xuất CSV</button>`)+
     `<div class="grid g4">
-      <div class="card kpi"><div class="lab">Tổng nền tảng</div><div class="big">${d.total}</div></div>
+      <div class="card kpi"><div class="lab">Tổng nền tảng</div><div class="big">${d.total}</div><div class="faint" style="font-size:11px;margin-top:4px">${d.categories.length} danh mục</div></div>
       <div class="card kpi"><div class="lab">Đã cài (LIVE)</div><div class="big" style="color:#3fb950">${d.installed}</div><div class="faint" style="font-size:11px;margin-top:4px">Chưa cài: ${d.total-d.installed}</div></div>
       <div class="card kpi"><div class="lab">Dùng AI (OmniRoute)</div><div class="big" style="color:#e3b341">${d.withAI}</div></div>
-      <div class="card kpi"><div class="lab">Danh mục</div><div class="big">${d.categories.length}</div></div>
+      <div class="card kpi"><div class="lab">TK CEO đang dùng</div><div class="big" style="color:#6ea8fe">${d.totalAccounts||0}</div><div class="faint" style="font-size:11px;margin-top:4px">dịch vụ active (WHMCS)</div></div>
     </div>
     <div class="card" style="border-color:#33270a;background:rgba(227,179,65,.06);margin-top:14px">
       <b style="color:#e3b341">🔑 Tài khoản demo dùng chung</b>
@@ -375,7 +375,7 @@ async function vCatalog(){
       <label class="faint" style="font-size:12.5px;display:flex;align-items:center;gap:5px"><input type="checkbox" id="catPw" ${CAT_SHOW_PW?'checked':''} onchange="CAT_SHOW_PW=this.checked;catRender()"/> Hiện mật khẩu</label>
     </div>
     <div class="card" style="padding:0;overflow:auto">
-      <table><thead><tr><th style="width:26%">Nền tảng</th><th>Danh mục</th><th>AI</th><th>Demo</th><th>Tài khoản</th><th>Mật khẩu</th><th>Trạng thái</th></tr></thead>
+      <table><thead><tr><th style="width:24%">Nền tảng</th><th>Danh mục</th><th>AI</th><th>Demo</th><th>Tài khoản</th><th>Mật khẩu</th><th>TK dùng</th><th>Trạng thái</th></tr></thead>
       <tbody id="catBody"></tbody></table>
     </div>`);
     catRender();
@@ -402,13 +402,14 @@ function catRender(){
     <td>${x.demoUrl?`<a href="${esc(x.demoUrl)}" target="_blank" class="mono" style="font-size:11.5px">mở ↗</a>`:'<span class="faint">—</span>'}</td>
     <td class="mono" style="font-size:11.5px">${x.account?esc(x.account):'<span class="faint">—</span>'}</td>
     <td class="mono" style="font-size:11.5px">${x.password?(CAT_SHOW_PW?esc(x.password):'••••••••'):'<span class="faint">—</span>'}</td>
+    <td style="text-align:center">${x.accounts>0?`<b style="color:#6ea8fe">${x.accounts}</b>`:'<span class="faint">0</span>'}</td>
     <td>${x.installed?'<span class="tag t-ok">Đã cài</span>':`<span class="tag t-bad" title="${esc(x.reason)}">Chưa cài</span>`}</td>
-  </tr>`).join("") : '<tr><td colspan="7" class="muted" style="padding:24px;text-align:center">Không có nền tảng khớp bộ lọc</td></tr>';
+  </tr>`).join("") : '<tr><td colspan="8" class="muted" style="padding:24px;text-align:center">Không có nền tảng khớp bộ lọc</td></tr>';
 }
 function catExport(){
   const rows=catFiltered();
-  const head=["Tên","Danh mục","Giới thiệu","Demo","Dùng AI","Tài khoản","Mật khẩu","Đã cài","Lý do"];
-  const csv=[head.join(",")].concat(rows.map(x=>[x.name,x.category,x.description,x.demoUrl,x.usesAI?"OmniRoute":"Không",x.account,x.password,x.installed?"Đã cài":"Chưa cài",x.reason].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","))).join("\n");
+  const head=["Tên","Danh mục","Giới thiệu","Demo","Dùng AI","Tài khoản","Mật khẩu","TK đang dùng","Đã cài","Lý do"];
+  const csv=[head.join(",")].concat(rows.map(x=>[x.name,x.category,x.description,x.demoUrl,x.usesAI?"OmniRoute":"Không",x.account,x.password,x.accounts||0,x.installed?"Đã cài":"Chưa cài",x.reason].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","))).join("\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}));
   a.download="danh-muc-nen-tang-soloceo.csv"; a.click(); toast("Đã xuất CSV "+rows.length+" nền tảng");
 }
