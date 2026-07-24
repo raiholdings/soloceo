@@ -327,7 +327,7 @@ async function vHealth(){
   try{
     const h = await api("/admin/eco/health");
     const down=h.filter(x=>!x.up).length; setBadge("health",down);
-    const grp={"cong-dong":"Nền tảng cộng đồng","loi":"Lõi hệ điều hành","ha-tang":"Hạ tầng"};
+    const grp={"cong-dong":"Nền tảng cộng đồng","loi":"Lõi hệ điều hành","ha-tang":"Hạ tầng","du-lieu":"Lớp dữ liệu (Data Layer)"};
     let html=H("Sức khoẻ nền tảng", down? `${down} dịch vụ đang có vấn đề`:"Tất cả dịch vụ đang chạy",
       `<button class="btn ghost sm" onclick="vHealth()">↻ Kiểm tra lại</button>`);
     for(const g of Object.keys(grp)){
