@@ -110,20 +110,68 @@ export class AdminEcosystemService {
   }
 
   /**
-   * Danh mục nền tảng đầy đủ (dữ liệu tĩnh, KHÔNG probe) — tên, giới thiệu,
-   * có dùng AI (OmniRoute) không, tài khoản + mật khẩu demo, đã cài chưa.
-   * Trả kèm thống kê tổng hợp + danh sách danh mục để UI lọc.
+   * Danh mục nền tảng — ĐỒNG BỘ LIVE từ WHMCS (platform.soloceo.vn/paas-catalog.php,
+   * cùng nguồn với workspace /nen-tang) làm dữ liệu chuẩn: tên, giới thiệu, danh mục,
+   * demoUrl, số tài khoản CEO đang dùng (accounts). Overlay thêm từ dữ liệu tĩnh:
+   * có dùng AI (OmniRoute) không + tài khoản/mật khẩu demo. Mật khẩu CHỈ trả ở đây
+   * (endpoint admin X-Admin-Token), KHÔNG có trong paas-catalog.php public.
+   * Nếu không lấy được WHMCS → fallback dữ liệu tĩnh.
    */
-  catalog(): {
+  async catalog(): Promise<{
     total: number;
     installed: number;
     withAI: number;
+    totalAccounts: number;
     categories: string[];
     account: string;
     password: string;
-    items: PlatformCatalogEntry[];
-  } {
-    const items = PLATFORM_CATALOG;
+    source: "whmcs" | "static";
+    items: (PlatformCatalogEntry & { accounts: number })[];
+  }> {
+    const DEFAULT_ACCOUNT = "soloceo.vn@gmail.com";
+    const DEFAULT_PASSWORD = "Soloceo@123";
+    const overlay = new Map(PLATFORM_CATALOG.map((p) => [p.name.toLowerCase(), p]));
+    let items: (PlatformCatalogEntry & { accounts: number })[] = [];
+    let source: "whmcs" | "static" = "whmcs";
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 8000);
+      const res = await fetch("https://platform.soloceo.vn/paas-catalog.php", {
+        signal: ctrl.signal,
+        headers: { "user-agent": "SoloCEO-Admin-Catalog" },
+      });
+      clearTimeout(t);
+      const data = (await res.json()) as {
+        platforms?: Array<{
+          name: string;
+          category?: string;
+          description?: string;
+          demoUrl?: string | null;
+          accounts?: number;
+        }>;
+      };
+      const list = data.platforms ?? [];
+      if (!list.length) throw new Error("catalog rỗng");
+      items = list.map((p) => {
+        const o = overlay.get(String(p.name || "").toLowerCase());
+        const installed = !!p.demoUrl;
+        return {
+          name: p.name,
+          category: p.category ?? o?.category ?? "",
+          description: p.description ?? o?.description ?? "",
+          demoUrl: p.demoUrl ?? "",
+          usesAI: o?.usesAI ?? false,
+          account: installed ? o?.account || DEFAULT_ACCOUNT : "",
+          password: installed ? o?.password || DEFAULT_PASSWORD : "",
+          installed,
+          reason: o?.reason ?? "",
+          accounts: Number(p.accounts ?? 0),
+        };
+      });
+    } catch {
+      source = "static";
+      items = PLATFORM_CATALOG.map((p) => ({ ...p, accounts: 0 }));
+    }
     const categories = [...new Set(items.map((p) => p.category))].sort((a, b) =>
       a.localeCompare(b, "vi"),
     );
@@ -131,9 +179,11 @@ export class AdminEcosystemService {
       total: items.length,
       installed: items.filter((p) => p.installed).length,
       withAI: items.filter((p) => p.usesAI).length,
+      totalAccounts: items.reduce((a, p) => a + p.accounts, 0),
       categories,
-      account: "soloceo.vn@gmail.com",
-      password: "Soloceo@123",
+      account: DEFAULT_ACCOUNT,
+      password: DEFAULT_PASSWORD,
+      source,
       items,
     };
   }
