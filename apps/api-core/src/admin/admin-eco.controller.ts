@@ -83,6 +83,13 @@ export class AdminEcosystemController {
     return this.eco.health();
   }
 
+  // Danh mục nền tảng đầy đủ (dữ liệu tĩnh — tên, giới thiệu, AI, tài khoản/mật khẩu)
+  @Get("catalog")
+  @ApiOperation({ summary: "Danh mục toàn bộ nền tảng + tài khoản demo (dữ liệu tĩnh)" })
+  catalog() {
+    return this.eco.catalog();
+  }
+
   // Hạ tầng & Coolify
   @Get("infra")
   @ApiOperation({ summary: "Hạ tầng: servers + resources từ Coolify" })

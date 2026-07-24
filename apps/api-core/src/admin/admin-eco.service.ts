@@ -11,6 +11,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "../prisma/prisma.service";
+import { PLATFORM_CATALOG, type PlatformCatalogEntry } from "./platform-catalog.data";
 
 export interface PlatformProbe {
   key: string;
@@ -106,6 +107,35 @@ export class AdminEcosystemService {
         }
       }),
     );
+  }
+
+  /**
+   * Danh mục nền tảng đầy đủ (dữ liệu tĩnh, KHÔNG probe) — tên, giới thiệu,
+   * có dùng AI (OmniRoute) không, tài khoản + mật khẩu demo, đã cài chưa.
+   * Trả kèm thống kê tổng hợp + danh sách danh mục để UI lọc.
+   */
+  catalog(): {
+    total: number;
+    installed: number;
+    withAI: number;
+    categories: string[];
+    account: string;
+    password: string;
+    items: PlatformCatalogEntry[];
+  } {
+    const items = PLATFORM_CATALOG;
+    const categories = [...new Set(items.map((p) => p.category))].sort((a, b) =>
+      a.localeCompare(b, "vi"),
+    );
+    return {
+      total: items.length,
+      installed: items.filter((p) => p.installed).length,
+      withAI: items.filter((p) => p.usesAI).length,
+      categories,
+      account: "soloceo.vn@gmail.com",
+      password: "Soloceo@123",
+      items,
+    };
   }
 
   // ── 2. Hạ tầng & Coolify ────────────────────────────────────────────────

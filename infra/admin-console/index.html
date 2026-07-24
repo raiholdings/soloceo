@@ -131,6 +131,7 @@ const NAV = [
   {k:"revenue",  ic:"₫", t:"Doanh thu"},
   {k:"ai",       ic:"✦", t:"Chi phí & ngân sách AI"},
   {k:"health",   ic:"♥", t:"Sức khoẻ nền tảng"},
+  {k:"catalog",  ic:"▦", t:"Danh mục nền tảng"},
   {k:"infra",    ic:"▤", t:"Hạ tầng & Coolify"},
   {k:"agents",   ic:"◈", t:"Trợ lý AI"},
   {k:"news",     ic:"✎", t:"Tin tức"},
@@ -196,7 +197,7 @@ function setBadge(k,n){
 function go(k){
   current=k; renderNav();
   document.getElementById("view").innerHTML='<div class="spin">Đang tải…</div>';
-  ({overview:vOverview,users:vUsers,revenue:vRevenue,ai:vAi,health:vHealth,infra:vInfra,agents:vAgents,news:vNews,docs:vDocs,projects:vProjects,mna:vMna,audit:vAudit}[k])();
+  ({overview:vOverview,users:vUsers,revenue:vRevenue,ai:vAi,health:vHealth,catalog:vCatalog,infra:vInfra,agents:vAgents,news:vNews,docs:vDocs,projects:vProjects,mna:vMna,audit:vAudit}[k])();
 }
 const H=(title,sub,extra="")=>`<div class="head"><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div><div>${extra}</div></div>`;
 const V=html=>{document.getElementById("view").innerHTML=html;};
@@ -341,6 +342,75 @@ async function vHealth(){
     }
     V(html);
   }catch(e){ errBox(e); }
+}
+
+// ── Danh mục nền tảng (toàn bộ hệ sinh thái) ──
+let CAT_SHOW_PW = true;
+async function vCatalog(){
+  try{
+    const d = await api("/admin/eco/catalog");
+    CACHE.catalog = d;
+    const opts = ['<option value="">Tất cả danh mục ('+d.total+')</option>']
+      .concat(d.categories.map(c=>`<option value="${esc(c)}">${esc(c)} (${d.items.filter(x=>x.category===c).length})</option>`)).join("");
+    V(H("Danh mục nền tảng", `Toàn bộ ${d.total} nền tảng hệ sinh thái — giới thiệu, AI, tài khoản đăng nhập`,
+      `<button class="btn ghost sm" onclick="catExport()">⇩ Xuất CSV</button>`)+
+    `<div class="grid g4">
+      <div class="card kpi"><div class="lab">Tổng nền tảng</div><div class="big">${d.total}</div></div>
+      <div class="card kpi"><div class="lab">Đã cài (LIVE)</div><div class="big" style="color:#3fb950">${d.installed}</div><div class="faint" style="font-size:11px;margin-top:4px">Chưa cài: ${d.total-d.installed}</div></div>
+      <div class="card kpi"><div class="lab">Dùng AI (OmniRoute)</div><div class="big" style="color:#e3b341">${d.withAI}</div></div>
+      <div class="card kpi"><div class="lab">Danh mục</div><div class="big">${d.categories.length}</div></div>
+    </div>
+    <div class="card" style="border-color:#33270a;background:rgba(227,179,65,.06);margin-top:14px">
+      <b style="color:#e3b341">🔑 Tài khoản demo dùng chung</b>
+      <div class="mono" style="margin-top:6px;font-size:13px">Tài khoản: <b>${esc(d.account)}</b> &nbsp;·&nbsp; Mật khẩu: <b>${esc(d.password)}</b>
+      <button class="btn ghost sm" style="margin-left:8px" onclick="navigator.clipboard.writeText('${esc(d.account)}');toast('Đã copy tài khoản')">copy</button>
+      <button class="btn ghost sm" onclick="navigator.clipboard.writeText('${esc(d.password)}');toast('Đã copy mật khẩu')">copy mật khẩu</button></div>
+      <div class="faint" style="font-size:11.5px;margin-top:6px">Nền tảng dùng AI lấy khoá riêng từ OmniRoute.soloceo.vn. Trang này chỉ hiện trong admin (bảo mật bằng token).</div>
+    </div>
+    <div class="row" style="gap:10px;margin:14px 0 4px;flex-wrap:wrap">
+      <select id="catCat" onchange="catRender()" class="inp" style="max-width:280px">${opts}</select>
+      <input id="catQ" oninput="catRender()" class="inp" placeholder="Tìm tên / mô tả…" style="max-width:240px"/>
+      <label class="faint" style="font-size:12.5px;display:flex;align-items:center;gap:5px"><input type="checkbox" id="catAI" onchange="catRender()"/> Chỉ dùng AI</label>
+      <label class="faint" style="font-size:12.5px;display:flex;align-items:center;gap:5px"><input type="checkbox" id="catInst" onchange="catRender()"/> Chỉ đã cài</label>
+      <label class="faint" style="font-size:12.5px;display:flex;align-items:center;gap:5px"><input type="checkbox" id="catPw" ${CAT_SHOW_PW?'checked':''} onchange="CAT_SHOW_PW=this.checked;catRender()"/> Hiện mật khẩu</label>
+    </div>
+    <div class="card" style="padding:0;overflow:auto">
+      <table><thead><tr><th style="width:26%">Nền tảng</th><th>Danh mục</th><th>AI</th><th>Demo</th><th>Tài khoản</th><th>Mật khẩu</th><th>Trạng thái</th></tr></thead>
+      <tbody id="catBody"></tbody></table>
+    </div>`);
+    catRender();
+  }catch(e){ errBox(e); }
+}
+function catFiltered(){
+  const d=CACHE.catalog; if(!d)return [];
+  const cat=(document.getElementById("catCat")||{}).value||"";
+  const q=((document.getElementById("catQ")||{}).value||"").toLowerCase().trim();
+  const ai=(document.getElementById("catAI")||{}).checked;
+  const inst=(document.getElementById("catInst")||{}).checked;
+  return d.items.filter(x=>
+    (!cat||x.category===cat) &&
+    (!ai||x.usesAI) && (!inst||x.installed) &&
+    (!q||x.name.toLowerCase().includes(q)||(x.description||"").toLowerCase().includes(q)));
+}
+function catRender(){
+  const rows=catFiltered();
+  const body=document.getElementById("catBody"); if(!body)return;
+  body.innerHTML = rows.length? rows.map(x=>`<tr>
+    <td><b>${esc(x.name)}</b><div class="faint" style="font-size:11.5px;margin-top:2px">${esc(x.description)}</div></td>
+    <td class="faint" style="font-size:12px">${esc(x.category)}</td>
+    <td>${x.usesAI?'<span class="tag" style="background:rgba(227,179,65,.15);color:#e3b341">OmniRoute</span>':'<span class="faint">—</span>'}</td>
+    <td>${x.demoUrl?`<a href="${esc(x.demoUrl)}" target="_blank" class="mono" style="font-size:11.5px">mở ↗</a>`:'<span class="faint">—</span>'}</td>
+    <td class="mono" style="font-size:11.5px">${x.account?esc(x.account):'<span class="faint">—</span>'}</td>
+    <td class="mono" style="font-size:11.5px">${x.password?(CAT_SHOW_PW?esc(x.password):'••••••••'):'<span class="faint">—</span>'}</td>
+    <td>${x.installed?'<span class="tag t-ok">Đã cài</span>':`<span class="tag t-bad" title="${esc(x.reason)}">Chưa cài</span>`}</td>
+  </tr>`).join("") : '<tr><td colspan="7" class="muted" style="padding:24px;text-align:center">Không có nền tảng khớp bộ lọc</td></tr>';
+}
+function catExport(){
+  const rows=catFiltered();
+  const head=["Tên","Danh mục","Giới thiệu","Demo","Dùng AI","Tài khoản","Mật khẩu","Đã cài","Lý do"];
+  const csv=[head.join(",")].concat(rows.map(x=>[x.name,x.category,x.description,x.demoUrl,x.usesAI?"OmniRoute":"Không",x.account,x.password,x.installed?"Đã cài":"Chưa cài",x.reason].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","))).join("\n");
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}));
+  a.download="danh-muc-nen-tang-soloceo.csv"; a.click(); toast("Đã xuất CSV "+rows.length+" nền tảng");
 }
 
 async function vInfra(){
