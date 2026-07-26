@@ -57,18 +57,23 @@ ON CONFLICT(type,ext_key) DO UPDATE SET
  year=excluded.year,updated_at=excluded.updated_at"""
 
 
-def sparql(q, thu=3):
+def sparql(q, thu=5):
+    """Máy chủ SPARQL của Wikidata chặn tốc độ (429) và ngắt truy vấn nặng (504).
+    Phải lùi thời gian theo cấp số nhân, nếu không sẽ mất phần lớn dữ liệu."""
     u = EP + "?format=json&query=" + urllib.parse.quote(q)
     for i in range(thu):
         try:
             rq = urllib.request.Request(u, headers={"User-Agent": UA, "Accept": "application/sparql-results+json"})
-            with urllib.request.urlopen(rq, timeout=180) as r:
+            with urllib.request.urlopen(rq, timeout=300) as r:
                 return json.loads(r.read().decode("utf-8"))["results"]["bindings"]
         except Exception as e:
+            ma = getattr(e, "code", 0)
             if i == thu - 1:
                 print("    bỏ qua: %s" % str(e)[:90], flush=True)
                 return []
-            time.sleep(5 * (i + 1))
+            cho = 60 if ma == 429 else 15 * (i + 1)
+            print("    chờ %ds rồi thử lại (%s)" % (cho, str(e)[:50]), flush=True)
+            time.sleep(cho)
 
 
 def main():
@@ -76,8 +81,11 @@ def main():
     con.execute("PRAGMA journal_mode=WAL")
     now = datetime.now(timezone.utc).isoformat()
     tong = 0
+    chi = set(filter(None, os.environ.get("CHI_NHOM", "").split(",")))  # lọc nhóm khi chạy lại
     for typ, cat, nen, where, tran in NHOM:
-        buoc = 8000
+        if chi and typ not in chi:
+            continue
+        buoc = 3000  # trang nhỏ để truy vấn không vượt hạn mức 60 giây
         for off in range(0, tran, buoc):
             q = """SELECT ?x ?xLabel ?xDesc ?nam WHERE {
   %s
@@ -113,7 +121,7 @@ def main():
             print("  %-16s +%-5d (tổng %d)" % (typ, len(rows), tong), flush=True)
             if len(b) < buoc:
                 break
-            time.sleep(1)
+            time.sleep(4)
     print("XONG Wikidata Việt Nam mở rộng: %d bản ghi" % tong, flush=True)
     con.close()
 
