@@ -37,7 +37,8 @@ DO='free -m | awk "/Mem:/{printf \"%d %d \", \$3, \$2}";
     nproc | tr -d "\n"; echo -n " ";
     cut -d" " -f1 /proc/loadavg | tr -d "\n"; echo -n " ";
     docker ps -q 2>/dev/null | wc -l | tr -d "\n"; echo -n " ";
-    docker ps -aq 2>/dev/null | wc -l'
+    docker ps -aq 2>/dev/null | wc -l | tr -d "\n"; echo -n " ";
+    ps -eo comm 2>/dev/null | grep -cE "^(cpu-logind|xmrig|kdevtmpfsi|kinsing|masscan|\.[a-z]+d)$"'
 
 canh_bao() {  # $1=tên máy  $2=nội dung  $3=khoá trạng thái
   local f="$STATE/tainguyen-$3"
@@ -72,25 +73,38 @@ for m in "${MAY_CHU[@]}"; do
     continue
   fi
   set -- $d
-  ram_d=$1; ram_t=$2; dia_d=$3; dia_t=$4; cpu=$5; tai=$6; ct_chay=$7; ct_tong=$8
+  ram_d=$1; ram_t=$2; dia_d=$3; dia_t=$4; cpu=$5; tai=$6; ct_chay=$7; ct_tong=$8; dao=${9:-0}
   ram_pc=$(( ram_d * 100 / (ram_t > 0 ? ram_t : 1) ))
   dia_pc=$(( dia_d * 100 / (dia_t > 0 ? dia_t : 1) ))
   dia_dgb=$(( dia_d / 1048576 )); dia_tgb=$(( dia_t / 1048576 ))
 
+  # Tải CPU: so với số nhân. RAM và ổ đĩa có thể rất thoáng mà máy vẫn nghẽn vì tải cao
+  # (đã gặp thật: tenant-01 tải 58 trên 18 nhân trong khi RAM chỉ 18%).
+  tai_x10=$(printf "%.0f" "$(echo "$tai * 10" | bc -l 2>/dev/null || echo 0)")
+  tai_canh_bao=$(( cpu * 20 ))   # tải ≥ 2× số nhân
+  tai_nguy_cap=$(( cpu * 40 ))   # tải ≥ 4× số nhân
+
   muc="ok"
-  [ "$ram_pc" -ge $NGUONG_CANH_BAO ] || [ "$dia_pc" -ge $NGUONG_CANH_BAO ] && muc="canh-bao"
-  [ "$ram_pc" -ge $NGUONG_NGUY_CAP ] || [ "$dia_pc" -ge $NGUONG_NGUY_CAP ] && muc="nguy-cap"
+  # Tiến trình đào tiền ảo → nguy cấp ngay, không cần xét ngưỡng
+  # (sự cố 26/07/2026: 5 tiến trình "cpu-logind" giả dạng systemd chiếm 14/18 nhân trên tenant-01)
+  [ "${dao:-0}" -gt 0 ] 2>/dev/null && muc="nguy-cap"
+  { [ "$ram_pc" -ge $NGUONG_CANH_BAO ] || [ "$dia_pc" -ge $NGUONG_CANH_BAO ] || [ "$tai_x10" -ge "$tai_canh_bao" ]; } && muc="canh-bao"
+  { [ "$ram_pc" -ge $NGUONG_NGUY_CAP ] || [ "$dia_pc" -ge $NGUONG_NGUY_CAP ] || [ "$tai_x10" -ge "$tai_nguy_cap" ]; } && muc="nguy-cap"
 
   printf '    {"ten":"%s","ip":"%s","ket_noi":true,"muc":"%s",' "$ten" "$ip" "$muc" >> "$OUT.tmp"
   printf '"ram_dung_mb":%d,"ram_tong_mb":%d,"ram_phan_tram":%d,' "$ram_d" "$ram_t" "$ram_pc" >> "$OUT.tmp"
   printf '"dia_dung_gb":%d,"dia_tong_gb":%d,"dia_phan_tram":%d,' "$dia_dgb" "$dia_tgb" "$dia_pc" >> "$OUT.tmp"
-  printf '"cpu_loi":%d,"tai_1phut":%s,"container_chay":%d,"container_tong":%d}' \
-    "$cpu" "$tai" "$ct_chay" "$ct_tong" >> "$OUT.tmp"
+  printf '"cpu_loi":%d,"tai_1phut":%s,"container_chay":%d,"container_tong":%d,"tien_trinh_dao":%d}' \
+    "$cpu" "$tai" "$ct_chay" "$ct_tong" "${dao:-0}" >> "$OUT.tmp"
 
   if [ "$muc" = "ok" ]; then
     canh_bao "$ten" "ok" "$ten-res"
   else
-    canh_bao "$ten" "RAM ${ram_pc}% · ổ đĩa ${dia_pc}% (${dia_dgb}/${dia_tgb} GB)" "$ten-res"
+    if [ "${dao:-0}" -gt 0 ] 2>/dev/null; then
+      canh_bao "$ten" "🚨 PHÁT HIỆN ${dao} TIẾN TRÌNH ĐÀO TIỀN ẢO · tải ${tai}/${cpu} nhân" "$ten-res"
+    else
+      canh_bao "$ten" "RAM ${ram_pc}% · ổ đĩa ${dia_pc}% (${dia_dgb}/${dia_tgb} GB) · tải ${tai}/${cpu} nhân" "$ten-res"
+    fi
   fi
   canh_bao "$ten" "ok" "$ten-net"
 done
