@@ -152,8 +152,17 @@ export class OidcService {
     this.pending.delete(key);
     if (!req) throw new BadRequestException("Phiên đăng nhập hết hạn");
     const user = await this.wowonder.getUserFromCode(wowCode);
+    // Danh tính ổn định của CEO. WoWonder có thể trả user_id hoặc id tuỳ endpoint;
+    // nếu thiếu cả hai thì KHÔNG phát hành token — sub rỗng sẽ khiến mọi CEO
+    // trùng danh tính và dùng chung một tài khoản workspace.
+    const subject = user.user_id ?? user.id ?? user.username;
+    if (!subject) {
+      throw new BadRequestException(
+        "Không xác định được danh tính tài khoản từ my.soloceo.vn",
+      );
+    }
     const claims: OidcClaims = {
-      sub: String(user.user_id),
+      sub: String(subject),
       email: user.email || `${user.username}@users.soloceo.vn`,
       name:
         [user.first_name, user.last_name].filter(Boolean).join(" ") ||
@@ -185,10 +194,16 @@ export class OidcService {
       throw new BadRequestException("client_id không khớp");
     }
     const now = Math.floor(Date.now() / 1000);
+    // Chốt chặn cuối: sub rỗng/"undefined" sẽ làm mọi CEO trùng danh tính ở phía
+    // workspace (họ sẽ khớp chung một tài khoản). Thà từ chối còn hơn gộp nhầm.
+    const sub = issued.claims.sub;
+    if (!sub || sub === "undefined" || sub === "null") {
+      throw new BadRequestException("Danh tính đăng nhập không hợp lệ");
+    }
     const idToken = jwt.sign(
       {
         iss: this.issuer(),
-        sub: issued.claims.sub,
+        sub,
         aud: issued.clientId,
         iat: now,
         exp: now + 3600,
