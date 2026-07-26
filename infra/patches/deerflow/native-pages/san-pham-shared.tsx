@@ -1,7 +1,7 @@
 // Khung dùng chung cho 3 trang sản phẩm (dữ liệu · xưởng kiểm chứng · sàn).
 // Ba trang này kể một câu chuyện nối tiếp nhau nên dùng chung bố cục để người đọc
 // nhận ra ngay chúng là ba khâu của cùng một dây chuyền, không phải ba thứ rời rạc.
-import { SoloceoNav } from "@/components/landing/soloceo-nav";
+import { SiteHeader } from "@/components/landing/soloceo-nav";
 
 export type Khoi = { nhan: string; so: string; chu_thich: string };
 export type Buoc = { ten: string; mo_ta: string };
@@ -42,7 +42,7 @@ export function KhungSanPham({
 }) {
   return (
     <div className="min-h-screen bg-[#0b0b0c] text-[#e6e6e6]">
-      <SoloceoNav />
+      <SiteHeader />
       <main className="mx-auto max-w-5xl px-5 pb-24 pt-16">
         <div className="mb-3 text-center font-mono text-[11px] tracking-[.18em] text-[#e3b341] uppercase">
           {nhan}
