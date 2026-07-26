@@ -377,17 +377,15 @@ export default function ChatPage() {
               <div
                 className={cn(
                   "right-0 bottom-0 left-0 z-30 flex justify-center px-3 sm:px-4",
-                  isWelcomeMode ? "relative min-h-0 flex-1 items-start overflow-y-auto pt-8 pb-6" : "relative shrink-0 pb-4",
+                  isWelcomeMode ? "relative min-h-0 flex-1 items-start overflow-y-auto py-8" : "relative shrink-0 pb-4",
                 )}
               >
                 <div
                   className={cn(
-                    "relative w-full",
-                    isWelcomeMode &&
-                      "",
-                    isWelcomeMode
-                      ? "max-w-(--container-width-md)"
-                      : "max-w-(--container-width-md)",
+                    "relative w-full max-w-(--container-width-md)",
+                    // Màn chào: căn giữa theo chiều dọc bằng my-auto — cân đối thị giác
+                    // mà vẫn cuộn được khi gallery mẫu mở ra bên dưới ô chat.
+                    isWelcomeMode && "my-auto",
                   )}
                 >
                   {(hasGoal || hasTodos) && (

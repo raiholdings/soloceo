@@ -76,3 +76,18 @@ Ngoài vòng tự động, **Solo CEO tự khởi tạo ý tưởng** qua `POST 
 
 Không sửa trực tiếp `/opt/...` trên máy chủ; nếu buộc phải xử lý sự cố nóng thì
 đồng bộ ngược về repo ngay sau đó.
+
+## 6. Hạ tầng dữ liệu workspace (cập nhật 26/07/2026)
+
+Tài khoản và hội thoại workspace đã chuyển từ SQLite sang **PostgreSQL** trong hệ thống
+dữ liệu riêng của SoloCEO (`supabase-db`, CSDL `deerflow`, tenant-02).
+
+| Hạng mục | Chi tiết |
+|---|---|
+| Vì sao chuyển | SQLite khoá ghi tuần tự, không sao lưu nóng an toàn, không phục hồi theo thời điểm, hỏng file mất sạch — không hợp hệ nhiều CEO |
+| Cấu hình | `infra/deerflow/config.yaml` → `database.backend: postgres`; biến `DEERFLOW_DATABASE_URL` trong `.env` + compose |
+| Điều kiện | image phải build với `UV_EXTRAS=postgres` (driver `asyncpg`) |
+| Đã chuyển | 1 tài khoản · 22 hội thoại · 1.366 checkpoint · 30 lượt chạy (29 MB) |
+| Sao lưu | `infra/deerflow/backup-deerflow-pg.sh` — cron 03:25 hằng đêm, giữ 14 bản, cảnh báo nếu dump lỗi |
+| Đường lùi | SQLite cũ còn nguyên tại `/opt/deerflow/backend/.deer-flow/data/deerflow.db*` — đổi `backend: sqlite` là quay lại |
+| Script di trú | `infra/deerflow/migrate-sqlite-to-postgres.py` + `migrate-checkpoints.py` (ép kiểu thời gian/JSON/bool, lọc ký tự NUL) |

@@ -53,9 +53,9 @@ Lỗi nằm ở chỗ mọi người **được cấp cùng một danh tính**.
 
 | Dữ liệu | Nơi lưu |
 |---|---|
-| Tài khoản + hội thoại workspace | **SQLite** `deerflow.db` trên tenant-02, gắn ngoài tại `/opt/deerflow/backend/.deer-flow/` (bền vững qua rebuild) |
+| Tài khoản + hội thoại workspace | **PostgreSQL** — CSDL `deerflow` trong hệ thống dữ liệu SoloCEO (`supabase-db`, tenant-02). Chuyển từ SQLite ngày 26/07/2026; SQLite cũ giữ làm bản lùi |
 | Tài khoản cộng đồng (CEO gốc) | **MariaDB** WoWonder trên tenant-01 |
 | Nghiệp vụ nền tảng (org, venture, giao dịch) | **PostgreSQL** của api-core trên core-01 |
 | CRM từng CEO | **MariaDB** Perfex trên tenant-03 (mỗi CEO một cơ sở dữ liệu) |
 | Bộ não thứ 2 | **SQLite** `bigdata.db` trên tenant-03 (volume `bigdata-data-v3`) |
-| Supabase (`supabase.soloceo.vn`) | Có chạy, thuộc **lớp dữ liệu dùng chung** — workspace **không** dùng để lưu tài khoản/hội thoại |
+| `supabase.soloceo.vn` | **Hệ thống dữ liệu riêng của SoloCEO** (tự vận hành, không phải dịch vụ ngoài) — PostgreSQL 17.6, nay là nơi lưu tài khoản + hội thoại workspace |
