@@ -40,5 +40,5 @@ EOF
 
 echo "▸ Kiểm tra dịch vụ"
 curl -s --max-time 20 https://bigdata.soloceo.vn/api/engine \
-  | python3 -c 'import sys,json; d=json.load(sys.stdin); print("  bản ghi:", f"{d[\"tong_ban_ghi\"]:,}", "| kho độc quyền:", d.get("doc_quyen"))'
+  | python3 -c 'import sys,json; d=json.load(sys.stdin); print("  bản ghi:", format(d["tong_ban_ghi"], ",d"), "| kho độc quyền:", d.get("doc_quyen"))'
 echo "✓ Xong"
