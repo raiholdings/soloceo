@@ -40,6 +40,23 @@ const PLAN_PRICE_VND: Record<string, number> = {
 
 const USD_TO_VND = 26_000;
 
+export interface TaiNguyenMay {
+  ten: string;
+  ip: string;
+  ket_noi: boolean;
+  muc?: "ok" | "canh-bao" | "nguy-cap";
+  ram_dung_mb?: number;
+  ram_tong_mb?: number;
+  ram_phan_tram?: number;
+  dia_dung_gb?: number;
+  dia_tong_gb?: number;
+  dia_phan_tram?: number;
+  cpu_loi?: number;
+  tai_1phut?: number;
+  container_chay?: number;
+  container_tong?: number;
+}
+
 @Injectable()
 export class AdminEcosystemService {
   private readonly log = new Logger(AdminEcosystemService.name);
@@ -206,11 +223,55 @@ export class AdminEcosystemService {
     return (await res.json()) as T;
   }
 
+  /**
+   * Số liệu tài nguyên từng máy chủ (RAM · ổ đĩa · CPU · tải · container).
+   *
+   * Coolify API KHÔNG trả các chỉ số này, nên script `infra/monitor/thu-thap-tai-nguyen.sh`
+   * chạy trên core-01 (nơi giữ khoá SSH của Coolify) hỏi từng node mỗi 5 phút rồi ghi ra
+   * JSON công khai. Ở đây chỉ đọc lại và ghép vào danh sách máy chủ.
+   */
+  private async taiNguyen(): Promise<Record<string, TaiNguyenMay>> {
+    const url =
+      this.config.get<string>("MONITOR_METRICS_URL") ||
+      "https://status.app.soloceo.vn/tai-nguyen.json";
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) return {};
+      const d = (await res.json()) as { may_chu?: TaiNguyenMay[] };
+      const map: Record<string, TaiNguyenMay> = {};
+      for (const m of d.may_chu || []) {
+        if (m.ten) map[m.ten] = m;
+        if (m.ip && m.ip !== "local") map[m.ip] = m;
+      }
+      return map;
+    } catch {
+      return {}; // thiếu số liệu thì trang vẫn hiện, chỉ không có phần tài nguyên
+    }
+  }
+
   async infra(): Promise<{
-    servers: Array<{ uuid?: string; name?: string; ip?: string; reachable?: boolean; settings?: unknown }>;
+    servers: Array<{
+      uuid?: string;
+      name?: string;
+      ip?: string;
+      reachable?: boolean;
+      settings?: unknown;
+      tai_nguyen?: TaiNguyenMay;
+    }>;
     resources: unknown[];
+    canh_bao: string[];
     note?: string;
   }> {
+    const [tn] = await Promise.all([this.taiNguyen()]);
+    const canh_bao: string[] = [];
+    for (const m of Object.values(tn)) {
+      if (m.ip === "local") continue; // tránh đếm trùng (mỗi máy có 2 khoá: tên và IP)
+      if (m.ket_noi === false) canh_bao.push(`${m.ten}: không kết nối được`);
+      else if (m.muc && m.muc !== "ok")
+        canh_bao.push(
+          `${m.ten}: RAM ${m.ram_phan_tram}% · ổ đĩa ${m.dia_phan_tram}% (${m.dia_dung_gb}/${m.dia_tong_gb} GB)`,
+        );
+    }
     try {
       const servers = await this.coolify<
         Array<{ uuid?: string; name?: string; ip?: string; settings?: unknown }>
@@ -221,9 +282,13 @@ export class AdminEcosystemService {
       } catch {
         /* resources optional */
       }
-      return { servers, resources };
+      const kem = servers.map((s) => ({
+        ...s,
+        tai_nguyen: tn[s.name || ""] || tn[s.ip || ""] || undefined,
+      }));
+      return { servers: kem, resources, canh_bao };
     } catch (e) {
-      return { servers: [], resources: [], note: (e as Error).message };
+      return { servers: [], resources: [], canh_bao, note: (e as Error).message };
     }
   }
 

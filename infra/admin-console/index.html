@@ -423,11 +423,38 @@ async function vInfra(){
         <p class="muted" style="margin-top:6px">${esc(d.note)}</p>
         <p class="faint" style="margin-top:6px;font-size:12px">Cần cấu hình COOLIFY_BASE_URL + COOLIFY_API_TOKEN cho api-core (token có quyền đọc).</p></div>`;
     } else {
-      html+=`<div class="grid g2">`+d.servers.map(s=>`<div class="card">
+      if(d.canh_bao && d.canh_bao.length){
+        html+=`<div class="card" style="border-color:#5c2b2b;background:#1b0f0f;margin-bottom:14px">
+          <b style="color:#f85149">⚠ Cảnh báo tài nguyên</b>
+          <ul style="margin:8px 0 0 18px;padding:0">${d.canh_bao.map(c=>`<li class="mono" style="font-size:12.5px">${esc(c)}</li>`).join("")}</ul>
+          <p class="faint" style="margin-top:8px;font-size:11.5px">Ngưỡng: cảnh báo từ 80%, nguy cấp từ 90%. Cảnh báo cũng gửi Telegram khi đổi trạng thái.</p></div>`;
+      }
+      const thanh=(nhan,pc,chi_tiet)=>{
+        if(pc==null) return "";
+        const mau = pc>=90?"#f85149":(pc>=80?"#e3b341":"#3fb950");
+        return `<div style="margin-top:8px">
+          <div class="row" style="justify-content:space-between;font-size:11.5px">
+            <span class="muted">${nhan}</span><span class="mono" style="color:${mau}">${pc}% · ${esc(chi_tiet)}</span></div>
+          <div style="height:6px;background:#1a1a1c;border-radius:3px;margin-top:3px;overflow:hidden">
+            <div style="height:100%;width:${Math.min(pc,100)}%;background:${mau}"></div></div></div>`;
+      };
+      html+=`<div class="grid g2">`+d.servers.map(s=>{
+        const t=s.tai_nguyen;
+        const chuaDo = !t ? `<div class="faint" style="font-size:11.5px;margin-top:8px">Chưa có số liệu tài nguyên — kiểm tra cron <span class="mono">thu-thap-tai-nguyen.sh</span> trên core-01.</div>` : "";
+        const khongNoi = (t && t.ket_noi===false) ? `<div style="color:#f85149;font-size:12px;margin-top:8px">Không kết nối được để đo</div>` : "";
+        const doDac = (t && t.ket_noi!==false) ? (
+          thanh("RAM", t.ram_phan_tram, `${(t.ram_dung_mb/1024).toFixed(1)}/${(t.ram_tong_mb/1024).toFixed(0)} GB`) +
+          thanh("Ổ đĩa", t.dia_phan_tram, `${t.dia_dung_gb}/${t.dia_tong_gb} GB`) +
+          `<div class="faint mono" style="font-size:11px;margin-top:8px">${t.cpu_loi} nhân · tải ${t.tai_1phut} · ${t.container_chay}/${t.container_tong} container</div>`
+        ) : "";
+        const mucTag = (t && t.ket_noi!==false && t.muc && t.muc!=="ok") ? `<span class="tag t-bad">${t.muc==="nguy-cap"?"nguy cấp":"cảnh báo"}</span> ` : "";
+        return `<div class="card">
         <div class="row" style="justify-content:space-between"><b>${esc(s.name||s.uuid||"server")}</b>
-        <span class="tag ${s.reachable===false?'t-bad':'t-ok'}">${s.reachable===false?'unreachable':'ok'}</span></div>
+        <span>${mucTag}<span class="tag ${s.reachable===false?'t-bad':'t-ok'}">${s.reachable===false?'unreachable':'ok'}</span></span></div>
         <div class="faint mono" style="font-size:11.5px;margin-top:6px">${esc(s.ip||"")}</div>
-        <div class="muted" style="font-size:11.5px;margin-top:4px">${esc(s.uuid||"")}</div></div>`).join("")+`</div>`;
+        ${doDac}${khongNoi}${chuaDo}
+        <div class="muted mono" style="font-size:10.5px;margin-top:8px;opacity:.55">${esc(s.uuid||"")}</div></div>`;
+      }).join("")+`</div>`;
       if(d.resources && d.resources.length){
         html+=`<div class="sec-title">Tài nguyên (${d.resources.length})</div>
         <div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Tên</th><th>Loại</th><th>Trạng thái</th></tr></thead>
