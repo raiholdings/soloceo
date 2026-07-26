@@ -38,7 +38,10 @@ CREATE VIRTUAL TABLE IF NOT EXISTS items_fts USING fts5(
 );
 `);
 // FTS external-content: dựng lại toàn bộ (nhanh, đúng sau upsert/delete)
-function rebuildFts(){try{db.exec("INSERT INTO items_fts(items_fts) VALUES('rebuild')");}catch(e){console.error("FTS rebuild lỗi",e.message);}}
+function rebuildFts(){try{db.exec("INSERT INTO items_fts(items_fts) VALUES('rebuild')");
+  try{const n=db.prepare("SELECT COALESCE(max(id),0) n FROM items").get().n;
+    db.prepare("INSERT INTO fts_moc(id,rowid_max) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET rowid_max=excluded.rowid_max").run(n);}catch(e){}
+}catch(e){console.error("FTS rebuild lỗi",e.message);}}
 
 // ---------- HELPERS ----------
 async function fetchText(u,opt={}){const r=await fetch(u,{headers:{"user-agent":UA,...(opt.headers||{})}});if(!r.ok)throw new Error(u.slice(0,60)+" "+r.status);return r.text();}
@@ -285,7 +288,7 @@ function runSearch({q="",type="",year="",category="",outcome="",region="",limit=
   if(category){where.push("i.category=?");args.push(category);}
   if(outcome){where.push("i.outcome=?");args.push(outcome);}
   if(region){where.push("i.region=?");args.push(region);}
-  const order=(q&&q.trim())?" ORDER BY i.top DESC, i.score DESC, rank":" ORDER BY i.top DESC, i.score DESC,(i.year IS NOT NULL) DESC,i.year DESC";
+  const order=(q&&q.trim())?" ORDER BY i.top DESC, bm25(items_fts, 12.0, 2.0, 6.0, 1.5, 1.5, 2.0, 1.0), i.score DESC":" ORDER BY i.top DESC, i.score DESC,(i.year IS NOT NULL) DESC,i.year DESC";
   return db.prepare(base+(where.length?" AND "+where.join(" AND "):"")+order+` LIMIT ${lim}`).all(...args);
 }
 app.get("/api/search",(req,res)=>{try{const r=runSearch(req.query);res.json({count:r.length,results:r});}catch(e){res.status(400).json({error:e.message});}});
@@ -777,6 +780,34 @@ app.post("/api/admin/import",express.json({limit:"25mb"}),(req,res)=>{
   res.json({ok:true,nhan:ok,tong:db.prepare("SELECT count(*) n FROM items").get().n});
 });
 // ═══════ HẾT ĐỒNG BỘ SOLOCEO ═══════
+
+// Bù chỉ mục toàn văn cho bản ghi mới.
+// FTS5 kiểu external-content KHÔNG tự cập nhật khi bộ nạp ghi thẳng vào bảng items,
+// nên dữ liệu mới nạp sẽ không tìm được cho tới lần dựng lại toàn bộ. Mốc `fts_moc`
+// cho phép chỉ nạp phần mới — vài giây thay vì hơn một phút.
+db.exec(`CREATE TABLE IF NOT EXISTS fts_moc (id INTEGER PRIMARY KEY CHECK(id=1), rowid_max INTEGER NOT NULL)`);
+// Khởi tạo mốc = id lớn nhất hiện có. Nếu để mặc định 0 thì lần bù đầu tiên sẽ nạp
+// LẠI toàn bộ bảng vào chỉ mục, sinh bản ghi trùng trong FTS.
+try{
+  if(!db.prepare("SELECT 1 FROM fts_moc WHERE id=1").get()){
+    const n=db.prepare("SELECT COALESCE(max(id),0) n FROM items").get().n;
+    db.prepare("INSERT INTO fts_moc(id,rowid_max) VALUES(1,?)").run(n);
+  }
+}catch(e){}
+function buChiMuc(){
+  const moc = db.prepare("SELECT rowid_max FROM fts_moc WHERE id=1").get();
+  const tu = moc ? moc.rowid_max : 0;
+  const den = db.prepare("SELECT COALESCE(max(id),0) n FROM items").get().n;
+  if (den <= tu) return {them:0, moc:den};
+  db.prepare(`INSERT INTO items_fts(rowid,name,description,oneliner,category,subcategory,tags,region)
+     SELECT id,name,description,oneliner,category,subcategory,tags,region FROM items WHERE id>? AND id<=?`).run(tu, den);
+  db.prepare("INSERT INTO fts_moc(id,rowid_max) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET rowid_max=excluded.rowid_max").run(den);
+  return {them: den - tu, moc: den};
+}
+app.get("/api/admin/fts-bosung",(req,res)=>{
+  if((req.query.token||"")!==REFRESH_TOKEN) return res.status(403).json({error:"token sai"});
+  try{ res.json(buChiMuc()); }catch(e){ res.status(500).json({error:e.message}); }
+});
 
 // ═══════════ KHO TÀI LIỆU MARKDOWN (thu thập bằng Crawl4AI) ═══════════
 // Mỗi tài liệu là một bài viết công khai đã chuẩn hoá sang Markdown tiếng Việt,

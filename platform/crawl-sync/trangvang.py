@@ -135,6 +135,7 @@ def main():
         raise SystemExit("Thiếu CRAWL4AI_API_TOKEN")
     con = sqlite3.connect(DB, timeout=180)
     con.execute("PRAGMA journal_mode=WAL")
+    con.execute("PRAGMA busy_timeout=900000")  # chờ tới 15 phút: lúc dựng lại chỉ mục toàn văn CSDL bị khoá ghi
     con.executescript(SCHEMA)
     now = datetime.now(timezone.utc).isoformat()
     A = jwt()
@@ -173,6 +174,13 @@ def main():
     con_lai = con.execute("SELECT count(*) FROM tv_nganh WHERE da_lay=0").fetchone()[0]
     print("XONG: thêm %d doanh nghiệp. Còn %d ngành chưa lấy." % (tong, con_lai), flush=True)
     con.close()
+    try:
+        tok = os.environ.get("REFRESH_TOKEN", "")
+        if tok:
+            r = json.loads(lay("https://bigdata.soloceo.vn/api/admin/fts-bosung?token=" + tok, timeout=300))
+            print("bù chỉ mục toàn văn: +%s bản ghi" % r.get("them"), flush=True)
+    except Exception as e:
+        print("chưa bù được chỉ mục: %s" % str(e)[:70], flush=True)
 
 
 if __name__ == "__main__":

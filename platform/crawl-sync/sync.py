@@ -154,6 +154,7 @@ def tom_tat_tu(md, n=400):
 def main():
     con = sqlite3.connect(DB, timeout=180)
     con.execute("PRAGMA journal_mode=WAL")
+    con.execute("PRAGMA busy_timeout=900000")  # chờ tới 15 phút: lúc dựng lại chỉ mục toàn văn CSDL bị khoá ghi
     con.executescript(SCHEMA)
     now = datetime.now(timezone.utc).isoformat()
     A = jwt()
@@ -203,6 +204,13 @@ def main():
     n = con.execute("SELECT count(*) FROM tai_lieu").fetchone()[0]
     print("XONG: thêm %d tài liệu mới, bỏ qua %d đã có. Tổng kho: %d" % (tong_moi, tong_bo, n), flush=True)
     con.close()
+    try:
+        tok = os.environ.get("REFRESH_TOKEN", "")
+        if tok:
+            r = json.loads(lay("https://bigdata.soloceo.vn/api/admin/fts-bosung?token=" + tok, timeout=300))
+            print("bù chỉ mục toàn văn: +%s bản ghi" % r.get("them"), flush=True)
+    except Exception as e:
+        print("chưa bù được chỉ mục: %s" % str(e)[:70], flush=True)
 
 
 if __name__ == "__main__":
