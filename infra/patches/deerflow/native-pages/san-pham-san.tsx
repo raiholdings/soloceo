@@ -3,7 +3,6 @@
 // thì trang này lặp lại đúng cái sai mà xưởng kiểm chứng sinh ra để sửa.
 import { KhungSanPham, Muc, TheBuoc, NutMo } from "@/components/landing/san-pham-shared";
 
-export const revalidate = 600;
 
 const SAN = "https://marketplace.soloceo.vn";
 const API = "https://api.soloceo.vn";

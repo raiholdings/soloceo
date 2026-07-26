@@ -2,7 +2,6 @@
 // Thông điệp trung tâm: đây là cái CỔNG. Trước khi có nó, sàn đầy "dự án mẫu" chỉ có mô tả.
 import { KhungSanPham, Muc, TheBuoc, NutMo } from "@/components/landing/san-pham-shared";
 
-export const revalidate = 300;
 
 const XUONG = "https://sandbox.soloceo.vn";
 

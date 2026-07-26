@@ -3,7 +3,6 @@
 // thì chính nó phản bội thông điệp "dữ liệu thật, cập nhật liên tục".
 import { KhungSanPham, Muc, TheBuoc, NutMo } from "@/components/landing/san-pham-shared";
 
-export const revalidate = 600;
 
 const BIGDATA = "https://bigdata.soloceo.vn";
 
