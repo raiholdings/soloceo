@@ -90,6 +90,39 @@ chạy trong container `python:3.12-slim` gắn volume `bigdata-data-v3`.
 
 Sau `hoan_tat.py`, gọi `/api/admin/build-graph?token=…` để dựng lại mạng tri thức.
 
+## 4c. Thu thập tự động bằng Crawl4AI (`platform/crawl-sync/`)
+
+`crawl.soloceo.vn` (Crawl4AI 0.9.2, tenant-03) là **cỗ máy thu thập chung** của Data Engine.
+Trước đây mỗi nguồn phải viết một hàm nạp riêng; từ nay bất kỳ nguồn nào có RSS chỉ cần
+thêm một dòng vào `nguon.json`.
+
+```
+nguon.json (5 nhóm · 27 nguồn)  →  RSS  →  Crawl4AI /md  →  Markdown tiếng Việt
+        →  bảng tai_lieu (toàn văn, gom theo nguồn)  +  items type `tai-lieu` (vào tìm kiếm & đồ thị)
+```
+
+| Nhóm | Phục vụ bước nào của Engine |
+|---|---|
+| `chinh-sach` | rủi ro & tuân thủ trong mô hình kinh doanh |
+| `thi-truong` | phát hiện vấn đề (tín hiệu cầu, giá, cạnh tranh) |
+| `cong-nghe` | kho giải pháp |
+| `khoi-nghiep` | kho mô hình kinh doanh |
+| `so-lieu-mo` | định cỡ thị trường |
+
+API: `/api/tai-lieu/nguon` (cây nguồn + số lượng) · `/api/tai-lieu?nguon=&nhom=&q=` · `/api/tai-lieu/:id` (toàn văn).
+Lịch: cron `15 */3` nhóm Việt Nam, `45 */6` nhóm quốc tế (`/opt/crawl-sync/chay.sh`).
+
+**Xác thực Crawl4AI:** `security.enabled: true` mà `api_token` rỗng thì server chặn mọi truy vấn
+và `/token` cũng tắt. Cần đủ ba thứ: `api_token` trong `config.yml`, biến `SECRET_KEY`, và
+`GUNICORN_BIND=0.0.0.0:11235` (mặc định chỉ nghe loopback nên container khác không gọi được).
+`/token` nhận `{"email","api_token"}` và **kiểm tra bản ghi MX của tên miền email** — `soloceo.vn`
+chưa có MX nên phải dùng email khác.
+
+**Chuẩn hoá Markdown:** `platform/bigdata/ingest/chuan_hoa_markdown.py` viết lại mô tả của mọi
+bản ghi theo một khuôn Markdown tiếng Việt (tên · định danh · lĩnh vực/khu vực/năm/nguồn/giấy phép ·
+nội dung gốc). Dựng từ chính các trường đã có, **không gọi AI** — với ~900 nghìn bản ghi thì
+gọi AI vừa không khả thi vừa dễ sinh nội dung bịa.
+
 ## 5. Quy trình thay đổi từ nay
 
 1. Sửa mã trong repo (`platform/bigdata/`, `infra/patches/deerflow/native-pages/`).
