@@ -31,6 +31,8 @@ CREATE INDEX IF NOT EXISTS idx_type ON items(type);
 CREATE INDEX IF NOT EXISTS idx_year ON items(year);
 CREATE INDEX IF NOT EXISTS idx_cat ON items(category);
 CREATE INDEX IF NOT EXISTS idx_out ON items(outcome);
+CREATE INDEX IF NOT EXISTS idx_source ON items(source);
+CREATE INDEX IF NOT EXISTS idx_region ON items(region);
 CREATE VIRTUAL TABLE IF NOT EXISTS items_fts USING fts5(
   name, description, oneliner, category, subcategory, tags, region, content='items', content_rowid='id'
 );
@@ -328,6 +330,9 @@ const ENGINE_STAGES=[
   {ma:"kiem-chung",ten:"10. Kiểm chứng cộng đồng",mo_ta:"Solo CEO chấm sao 1-5 + bấm \"Tôi thực thi\". Xếp hạng theo điểm × lượng vote và số CEO thực thi — ý tưởng tốt nổi lên, phản hồi quay lại tinh chỉnh xưởng đúc (bước 7)."},
 ];
 app.get("/api/engine",(req,res)=>{
+  try{ res.json(demCache("engine",120,()=>tinhEngine())); }catch(e){ res.status(500).json({error:e.message}); }
+});
+function tinhEngine(){
   const g=q=>db.prepare(q).get().n;
   const total=g("SELECT count(*) n FROM items");
   const bySource=db.prepare("SELECT source,count(*) n FROM items GROUP BY source ORDER BY n DESC").all()
@@ -348,7 +353,7 @@ app.get("/api/engine",(req,res)=>{
     nganh:g("SELECT count(DISTINCT category) n FROM items WHERE category!='' AND category!='Khác'"),
     loai:db.prepare("SELECT count(DISTINCT type) n FROM items").get().n,
   };
-  res.json({
+  return {
     ten:"SoloCEO Data Engine",
     khau_hieu:"Thu thập → Chuẩn hóa → Làm giàu → Đánh giá → Phục vụ → Lặp → Vấn đề → Cơ hội → Đúc ý tưởng → Kiểm chứng",
     phuong_phap:ENGINE_STAGES, tong_ban_ghi:total, nguon:bySource, chat_luong:quality, do_phu:coverage,
@@ -359,9 +364,9 @@ app.get("/api/engine",(req,res)=>{
         y_tuong:c("SELECT count(*) n FROM ideas"),y_tuong_ceo:c("SELECT count(*) n FROM ideas WHERE nguon='ceo'"),
         canh_mang:c("SELECT count(*) n FROM edges")};})(),
     cap_nhat:{hang_gio:["Tin tức","Công nghệ"],hang_ngay:["Startup","Doanh nghiệp 57 quốc gia","Nhà sáng lập/CEO","Dataset"]},
-    phuc_vu_os:["/api/search — tra cứu toàn văn","/api/item/:id — hồ sơ chi tiết + README/Wikipedia","/api/ask — AI phân tích ý tưởng vs startup","/api/engine — metrics pipeline"],
-  });
-});
+    phuc_vu_os:["/api/search — tra cứu toàn văn","/api/item/:id — hồ sơ chi tiết + README/Wikipedia","/api/ask — AI phân tích ý tưởng vs startup","/api/engine — metrics pipeline","/api/tai-lieu — kho tài liệu Markdown theo nguồn"],
+  };
+}
 
 // Trang chi tiết 1 item (click ra page chi tiết) — kèm README (GitHub) / trích Wikipedia + item liên quan
 const detailCache=new Map();
@@ -393,16 +398,32 @@ app.get("/api/item/:id",async(req,res)=>{
   res.json({item:it,related,rich,richType});
 });
 
+
+// Bộ nhớ đệm ngắn cho các truy vấn tổng hợp quét toàn bảng.
+// Với ~1 triệu dòng và tiến trình nạp chạy song song, không có nó thì
+// /api/stats và /api/engine mất hàng chục giây mỗi lần gọi.
+const _dem = new Map();
+function demCache(khoa, giay, tinh){
+  const c = _dem.get(khoa);
+  const nay = Date.now();
+  if (c && nay - c.luc < giay * 1000) return c.gt;
+  const gt = tinh();
+  _dem.set(khoa, {luc: nay, gt});
+  return gt;
+}
 app.get("/api/stats",(req,res)=>{
+  try{ res.json(demCache("stats",120,()=>tinhStats())); }catch(e){ res.status(500).json({error:e.message}); }
+});
+function tinhStats(){
   const g=q=>db.prepare(q).get().n;
   const byType=Object.fromEntries(db.prepare(`SELECT type,count(*) n FROM items GROUP BY type`).all().map(r=>[r.type,r.n]));
   const y=db.prepare(`SELECT min(year) a,max(year) b FROM items WHERE year IS NOT NULL`).get();
   const out=Object.fromEntries(db.prepare(`SELECT outcome,count(*) n FROM items WHERE type='startup' GROUP BY outcome`).all().map(r=>[r.outcome,r.n]));
-  res.json({total:g("SELECT count(*) n FROM items"),byType,
+  return {total:g("SELECT count(*) n FROM items"),byType,
     datasets:byType.dataset||0,startups:byType.startup||0,founders:byType.founder||0,ceos:byType.ceo||0,
     technology:byType.technology||0,news:byType.news||0,companies:byType.company||0,
-    yearFrom:y.a,yearTo:y.b,thanhcong:out["thanh-cong"]||0,donghoatdong:out["dang-hoat-dong"]||0,dongcua:out["dong-cua"]||0});
-});
+    yearFrom:y.a,yearTo:y.b,thanhcong:out["thanh-cong"]||0,donghoatdong:out["dang-hoat-dong"]||0,dongcua:out["dong-cua"]||0};
+}
 app.get("/api/facets",(req,res)=>{
   const inds=db.prepare(`SELECT DISTINCT category FROM items WHERE type='startup' AND category!='' ORDER BY category`).all().map(r=>r.category);
   const cats=db.prepare(`SELECT DISTINCT category FROM items WHERE type='dataset' AND category!='' ORDER BY category`).all().map(r=>r.category);
