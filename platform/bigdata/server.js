@@ -297,9 +297,15 @@ const SOURCE_META={
   hackernews:{ten:"Hacker News API",license:"Công khai",loai:"tin tức"},
   devto:{ten:"dev.to API",license:"Công khai (CC-BY)",loai:"tin tức"},
   "awesome-datasets":{ten:"awesome-public-datasets",license:"MIT (danh mục)",loai:"dataset"},
+  // Lớp dữ liệu Việt Nam — ghi nhận nguồn là điều kiện bắt buộc của ODbL và CC BY-SA
+  "osm-vietnam":{ten:"OpenStreetMap Việt Nam (bản trích Geofabrik)",license:"ODbL 1.0 — © những người đóng góp OpenStreetMap",loai:"cơ sở kinh doanh / địa điểm / đường phố"},
+  "geonames-vn":{ten:"GeoNames Việt Nam",license:"CC BY 4.0",loai:"địa danh"},
+  "wikidata-vn":{ten:"Wikidata (lớp Việt Nam mở rộng)",license:"CC0 (miền công cộng)",loai:"doanh nghiệp / tổ chức / hạ tầng"},
+  "wikipedia-vi":{ten:"Wikipedia tiếng Việt",license:"CC BY-SA 4.0",loai:"tri thức tiếng Việt"},
+  openalex:{ten:"OpenAlex",license:"CC0 (miền công cộng)",loai:"nghiên cứu / tổ chức khoa học"},
 };
 const ENGINE_STAGES=[
-  {ma:"thu-thap",ten:"1. Thu thập",mo_ta:"Kết nối nhiều nguồn mở (YC, Wikidata, GitHub, Hacker News, dev.to, DN 57 quốc gia). Cập nhật hàng giờ (tin tức/công nghệ) + full hàng ngày."},
+  {ma:"thu-thap",ten:"1. Thu thập",mo_ta:"Kết nối nhiều nguồn mở. Lớp Việt Nam: OpenStreetMap (cơ sở kinh doanh, địa điểm, đường phố), GeoNames (địa danh có toạ độ), Wikidata VN (doanh nghiệp, tổ chức, hạ tầng), Wikipedia tiếng Việt (tri thức), OpenAlex (nghiên cứu và tổ chức khoa học). Lớp quốc tế: YC, GitHub, Hacker News, dev.to, DN 57 quốc gia. Cập nhật hàng giờ (tin tức/công nghệ) + full hàng ngày."},
   {ma:"chuan-hoa",ten:"2. Chuẩn hóa",mo_ta:"Đưa mọi nguồn về 1 lược đồ chung (items): loại · tên · mô tả · ngành (taxonomy) · quốc gia · năm · nguồn · khóa duy nhất. Upsert theo (type, ext_key) chống trùng; ngành dịch tiếng Việt."},
   {ma:"lam-giau",ten:"3. Làm giàu (AI)",mo_ta:"Bổ sung bằng AI/nguồn phụ: dịch tiếng Việt (LLM), README GitHub, trích Wikipedia, phân loại thành/bại startup, oneliner. Human-in-the-loop khi cần."},
   {ma:"danh-gia",ten:"4. Đánh giá chất lượng",mo_ta:"Chấm điểm mỗi bản ghi theo độ đầy đủ (có mô tả/URL/ngành/quốc gia) + độ tươi (updated_at) + độ tin cậy nguồn. Gắn provenance + giấy phép."},

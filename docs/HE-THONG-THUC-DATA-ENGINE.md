@@ -16,10 +16,16 @@ Mục đích: **chấm dứt vá tay trên máy chủ** — mọi thay đổi t�
 ## 2. Luồng dữ liệu (một vòng khép kín)
 
 ```
-Nguồn mở (Wikidata · GitHub · YC · HN · World Bank · GeoNames · Nobel · OpenFlights · NASDAQ/NYSE)
+Lớp Việt Nam (26/07/2026):
+  OpenStreetMap VN — cơ sở kinh doanh, địa điểm, đường phố  (ODbL, © OSM contributors)
+  GeoNames VN      — địa danh có toạ độ                      (CC BY 4.0)
+  Wikidata VN      — doanh nghiệp, tổ chức, hạ tầng, sự kiện (CC0)
+  Wikipedia tiếng Việt — tri thức nền                        (CC BY-SA 4.0)
+  OpenAlex         — nghiên cứu & tổ chức khoa học có yếu tố VN (CC0)
+Lớp quốc tế: YC · GitHub · Hacker News · dev.to · World Bank · Nobel · OpenFlights · NASDAQ/NYSE
         │  ingest hàng giờ + full hằng ngày
         ▼
-items (133K+ bản ghi)  ──►  edges (345K+ liên kết, mạng tri thức)
+items  ──►  edges (mạng tri thức)
         │
         ├─► [7] phát hiện VẤN ĐỀ      (JTBD · POV · 5 Whys · tần suất×mức độ)
         ├─► đúc lại GIẢI PHÁP          ← technology / startup thật
@@ -66,6 +72,23 @@ Ngoài vòng tự động, **Solo CEO tự khởi tạo ý tưởng** qua `POST 
 - **Pháp lý:** lập doanh nghiệp / hoá đơn / thuế chỉ soạn thảo và hướng dẫn; phát hành hoá đơn
   qua nhà cung cấp được cấp phép, nộp hồ sơ bằng chữ ký số của chính CEO.
 - **Dữ liệu cá nhân:** không thu thập PII để chào hàng (Nghị định 13/2023/NĐ-CP).
+
+## 4b. Nạp dữ liệu quy mô lớn (`platform/bigdata/ingest/`)
+
+Các bộ nạp ghi **thẳng vào SQLite** (nhanh hơn nhiều so với gọi HTTP `/api/admin/import`),
+chạy trong container `python:3.12-slim` gắn volume `bigdata-data-v3`.
+
+| Tệp | Nguồn | Ghi chú |
+|---|---|---|
+| `osm_vietnam.py` | `vietnam-latest.osm.pbf` (Geofabrik) | cần `libexpat1 libbz2-1.0 zlib1g` trước khi `pip install osmium` |
+| `osm_vietnam_duongpho.py` | cùng tệp .pbf | lượt 2: đường có tên |
+| `geonames_vn.py` | `VN.zip` GeoNames | |
+| `wikidata_vn.py` | SPARQL Wikidata | máy chủ chặn tốc độ: trang 3000, nghỉ 4s, gặp 429 chờ 60s; `CHI_NHOM=` để chạy lại từng nhóm |
+| `viwiki.py` | `viwiki-latest-pages-articles.xml.bz2` | đọc theo luồng, bỏ trang đổi hướng, lấy đoạn mở đầu |
+| `openalex_vn.py` | api.openalex.org | phân trang bằng cursor |
+| `hoan_tat.py` | — | **bắt buộc chạy cuối**: dựng lại FTS5 (external-content không tự cập nhật khi ghi thẳng SQLite) |
+
+Sau `hoan_tat.py`, gọi `/api/admin/build-graph?token=…` để dựng lại mạng tri thức.
 
 ## 5. Quy trình thay đổi từ nay
 
