@@ -36,6 +36,9 @@ type KetQua = {
   doi_chieu?: Record<string, string>; bmc?: Record<string, string>;
   lo_trinh?: { giai_doan?: string; viec?: string[]; muc_tieu?: string }[];
   soloceo_stack?: string[]; luu?: string; error?: string;
+  // Có mẫu sẵn trong kho: trả tức thì, không qua suy luận. Phải nói rõ cho CEO biết đây là
+  // mẫu đã đúc từ trước chứ không phải bản riêng vừa nghĩ cho họ — nhận nhầm là mất tin.
+  tuc_thi?: boolean; diem?: number; khac?: { id: number; ten: string }[];
 };
 
 export function SoloceoIdeaComposer({ className, dark = false, tenMacDinh = "" }:
@@ -107,21 +110,35 @@ export function SoloceoIdeaComposer({ className, dark = false, tenMacDinh = "" }
 
       {kq ? (
         <div className="mt-5 space-y-4 text-left">
+          {kq.tuc_thi ? (
+            <div className="rounded-xl border border-[#3fb950]/40 bg-[#3fb950]/10 px-3 py-2 text-[12.5px] text-[#3fb950]">
+              ⚡ Kho đã có mẫu khớp {kq.diem}% — hiện ngay, không cần chờ đúc lại.
+              {kq.khac?.length ? (
+                <span className={cn("ml-1", muted)}>
+                  Mẫu gần khác: {kq.khac.map((k) => k.ten).join(" · ")}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
           <div>
             <div className={cn("text-[19px] font-bold", dark && "text-[#f5f5f6]")}>⭐ {kq.ten}</div>
             {kq.tom_tat ? <div className={cn("mt-1 text-[14px]", muted)}>{kq.tom_tat}</div> : null}
           </div>
-          <div>
-            <div className={cn("mb-2 text-[13px] font-semibold", dark && "text-[#f5f5f6]")}>🔍 Đối chiếu qua Data Engine</div>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {Object.entries(DOI_LBL).map(([k, l]) => (
-                <div key={k} className={card}>
-                  <div className={cn("text-[12px] font-semibold", dark && "text-[#f5f5f6]")}>{l}</div>
-                  <div className={cn("mt-1 text-[12.5px] leading-relaxed", muted)}>{kq.doi_chieu?.[k] ?? "—"}</div>
-                </div>
-              ))}
+          {/* Mẫu lấy từ kho không mang theo bảng đối chiếu (nó được đúc theo đường khác),
+              nên ẩn hẳn thay vì hiện sáu ô toàn dấu gạch — trông như hỏng. */}
+          {kq.doi_chieu && Object.keys(kq.doi_chieu).length ? (
+            <div>
+              <div className={cn("mb-2 text-[13px] font-semibold", dark && "text-[#f5f5f6]")}>🔍 Đối chiếu qua Data Engine</div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {Object.entries(DOI_LBL).map(([k, l]) => (
+                  <div key={k} className={card}>
+                    <div className={cn("text-[12px] font-semibold", dark && "text-[#f5f5f6]")}>{l}</div>
+                    <div className={cn("mt-1 text-[12.5px] leading-relaxed", muted)}>{kq.doi_chieu?.[k] ?? "—"}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : null}
           <div>
             <div className={cn("mb-2 text-[13px] font-semibold", dark && "text-[#f5f5f6]")}>🗂 Business Model Canvas của bạn</div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

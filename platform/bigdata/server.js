@@ -1582,8 +1582,16 @@ app.get("/api/admin/bulk-distill",(req,res)=>{
 });
 app.get("/api/admin/bulk-status",(req,res)=>res.json(bulkState));
 
-app.get("/api/mo-hinh-kd",(req,res)=>res.json({count:db.prepare("SELECT count(*) n FROM biz_models").get().n,
-  mo_hinh:db.prepare("SELECT * FROM biz_models ORDER BY id DESC LIMIT ?").all(Number(req.query.limit)||40)}));
+// q= : lọc theo từ khoá ý tưởng. Không có q thì trả mục mới nhất (giữ hành vi cũ cho trang kho).
+// Cổng kiểm chứng ở sandbox BẮT BUỘC truyền q — nếu không, nó chấm ý tưởng thuế BĐS bằng
+// mấy khoản vay xanh ở Mexico rồi cho 0 điểm, mà lỗi lại đổ cho "kho mỏng".
+app.get("/api/mo-hinh-kd",(req,res)=>{
+  const n=Number(req.query.limit)||40;
+  const rows=req.query.q
+    ? khopKho("biz_models",["ten","mo_ta","cach_kiem_tien","phan_khuc","nganh"],req.query.q,n,0).tatCa
+    : db.prepare("SELECT * FROM biz_models ORDER BY id DESC LIMIT ?").all(n);
+  res.json({count:db.prepare("SELECT count(*) n FROM biz_models").get().n,khop:rows.length,mo_hinh:rows});
+});
 app.get("/api/san-pham",(req,res)=>res.json({count:db.prepare("SELECT count(*) n FROM products").get().n,
   san_pham:db.prepare("SELECT * FROM products ORDER BY id DESC LIMIT ?").all(Number(req.query.limit)||40)}));
 app.get("/api/su-kien",(req,res)=>res.json({count:db.prepare("SELECT count(*) n FROM mkt_events").get().n,
@@ -1605,6 +1613,123 @@ function khopKho(bang,cols,tuKhoa,nLienQuan,nMoi){
   try{moi=db.prepare(`SELECT * FROM ${bang} ORDER BY id DESC LIMIT ?`).all(nLienQuan+nMoi).filter(r=>!ids.has(r.id)).slice(0,nMoi);}catch(e){}
   return {lienQuan,tatCa:lienQuan.concat(moi)};
 }
+
+// Quy mô thị trường Việt Nam ĐẾM ĐƯỢC theo từ khoá ngành.
+// Vì sao cần endpoint riêng: cổng kiểm chứng ở sandbox từng cho 0 điểm tiêu chí "có chỗ
+// đứng ở Việt Nam" với lý do "không có số liệu thị trường", trong khi kho có sẵn 44.728 cơ
+// sở kinh doanh thật — nó chỉ không được cho xem. Đây là bằng chứng TAM mạnh nhất trong
+// kho: đếm trực tiếp, không ước đoán.
+app.get("/api/thi-truong-vn",(req,res)=>{
+  const kws=String(req.query.q||"").toLowerCase().normalize("NFC")
+    .replace(/[^\p{L}\p{N} ]/gu," ").split(/\s+/).filter(w=>w.length>3).slice(0,8);
+  if(!kws.length)return res.json({cum:[],tong:0});
+  const cond=kws.map(()=>"(lower(subcategory) LIKE ? OR lower(category) LIKE ? OR lower(name) LIKE ?)").join(" OR ");
+  const args=[];kws.forEach(w=>args.push("%"+w+"%","%"+w+"%","%"+w+"%"));
+  let cum=[];
+  try{cum=db.prepare(`SELECT subcategory nhom,region dia_ban,count(*) so_luong FROM items
+      WHERE type='co-so-kinh-doanh' AND (${cond}) GROUP BY subcategory,region
+      ORDER BY so_luong DESC LIMIT 12`).all(...args);}catch(e){}
+  res.json({cum,tong:cum.reduce((s,c)=>s+c.so_luong,0),
+    ghi_chu:"Số cơ sở kinh doanh có thật trong kho (nguồn OSM/Trang Vàng Việt Nam) — đếm trực tiếp, không ước tính."});
+});
+
+// ═══════ KHỚP TỨC THÌ — trả ý tưởng đã đúc mà KHÔNG gọi mô hình ═══════
+// /api/khoi-tao mất 60-120 giây vì phải suy luận. Nhưng phần lớn ý tưởng CEO gõ ra đã có
+// mẫu tương đương trong kho — lúc đó bắt họ chờ hai phút là phí. Đường này tra chỉ mục
+// khop_mau (do ingest/khop_tuc_thi.py dựng) và trả bản đầy đủ trong vài mili-giây.
+// Chỉ khi không mẫu nào đủ gần thì mới rơi xuống đường chậm.
+const HU_TU_KHOP=new Set(("va la cua cho voi tu den trong ngoai tren duoi mot cac nhung nay do kia theo nhu de khi thi ma boi vi nen "+
+  "ra vao len xuong duoc co khong chua da se dang cung cang hon nhat rat qua lam nguoi ta minh ban toi chung ho anh chi em "+
+  "the nao sao gi day dau ai and for with from into that this these those you your our their have has been will can could would should").split(" "));
+// Tách thành DÃY âm tiết, giữ nguyên thứ tự và giữ cả âm tiết ngắn.
+function amTiet(s){
+  return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/gi,"d")
+    .replace(/[^a-zA-Z0-9\s]/g," ").toLowerCase().split(/\s+/).filter(Boolean);
+}
+// Đặc trưng khớp = ĐÔI ÂM TIẾT LIỀN NHAU (bigram) + âm tiết đơn.
+// Vì sao phải có bigram: tiếng Việt tách theo âm tiết nên "QUẢN lý" và "QUÁN ăn" cùng cho
+// token "quan" sau khi bỏ dấu. Chấm bằng âm tiết đơn từng khiến câu "phần mềm quản lý quán
+// ăn" khớp 91 điểm với một app dự toán xây dựng — khớp sai kiểu đó còn hại hơn trả chậm.
+// Cặp "quan_ly" và "quan_an" thì phân biệt được ngay.
+function dacTrung(s){
+  const at=amTiet(s);
+  const doi=new Set(), don=new Set();
+  for(let i=0;i<at.length;i++){
+    if(at[i].length>2&&!HU_TU_KHOP.has(at[i]))don.add(at[i]);
+    if(i+1<at.length&&!(HU_TU_KHOP.has(at[i])&&HU_TU_KHOP.has(at[i+1])))doi.add(at[i]+"_"+at[i+1]);
+  }
+  return {doi,don};
+}
+function tuKhop(s){ return [...dacTrung(s).don]; }
+// Chỉ mục tự dựng lại khi lệch số lượng với bảng ideas. Kho ý tưởng chỉ vài chục dòng nên
+// dựng lại rẻ hơn nhiều so với việc quên đồng bộ rồi trả thiếu ý tưởng CEO vừa tạo.
+const KHOP_PHIEN_BAN=2;   // tăng số này mỗi khi đổi cách tách đặc trưng → chỉ mục tự dựng lại
+function baoDamChiMuc(){
+  db.exec(`CREATE TABLE IF NOT EXISTS khop_mau(idea_id INTEGER PRIMARY KEY,ten TEXT,nganh TEXT,
+             tu_khoa TEXT,doi_khoa TEXT,so_tu INTEGER,cap_nhat TEXT);
+           CREATE TABLE IF NOT EXISTS khop_meta(khoa TEXT PRIMARY KEY,gia_tri TEXT)`);
+  if(!db.prepare("SELECT 1 FROM pragma_table_info('khop_mau') WHERE name='doi_khoa'").get())
+    db.exec("ALTER TABLE khop_mau ADD COLUMN doi_khoa TEXT");
+  const pb=db.prepare("SELECT gia_tri FROM khop_meta WHERE khoa='phien_ban'").get();
+  const cuHon=!pb||Number(pb.gia_tri)!==KHOP_PHIEN_BAN;
+  if(cuHon)db.exec("DELETE FROM khop_mau");
+  const nY=db.prepare("SELECT count(*) n FROM ideas").get().n;
+  const nK=db.prepare("SELECT count(*) n FROM khop_mau").get().n;
+  if(!cuHon&&nY===nK)return nK;
+  const ins=db.prepare(`INSERT INTO khop_mau(idea_id,ten,nganh,tu_khoa,doi_khoa,so_tu,cap_nhat)
+    VALUES(?,?,?,?,?,?,?) ON CONFLICT(idea_id) DO UPDATE SET ten=excluded.ten,nganh=excluded.nganh,
+    tu_khoa=excluded.tu_khoa,doi_khoa=excluded.doi_khoa,so_tu=excluded.so_tu,cap_nhat=excluded.cap_nhat`);
+  const now=nowIso();
+  db.transaction(()=>{
+    for(const y of db.prepare("SELECT id,ten,nganh,tom_tat,van_de,giai_phap,thi_truong FROM ideas").all()){
+      const dt=dacTrung([y.ten,y.tom_tat,y.van_de,y.giai_phap,y.thi_truong].join(" "));
+      if(dt.don.size)ins.run(y.id,y.ten,y.nganh,[...dt.don].join(" "),[...dt.doi].join(" "),dt.don.size,now);
+    }
+    db.prepare("INSERT INTO khop_meta(khoa,gia_tri) VALUES('phien_ban',?) ON CONFLICT(khoa) DO UPDATE SET gia_tri=excluded.gia_tri")
+      .run(String(KHOP_PHIEN_BAN));
+  })();
+  return db.prepare("SELECT count(*) n FROM khop_mau").get().n;
+}
+// Điểm gần = Jaccard có thiên vị phía truy vấn. Vì sao không dùng Jaccard thuần: mô tả ý
+// tưởng trong kho dài gấp nhiều lần câu CEO gõ, nên mẫu số phình ra và mọi cặp đều ~0.1.
+// Ở đây tính "bao nhiêu phần từ khoá CEO gõ được mẫu phủ", cộng thưởng nhỏ cho độ đặc hiệu.
+function phu(a,b){ if(!a.size)return 0; let c=0; for(const w of a) if(b.has(w))c++; return c/a.size; }
+function diemGan(ceo,mau){
+  // Bigram gánh 72% điểm vì đó mới là thứ phân biệt được ngữ nghĩa tiếng Việt; âm tiết đơn
+  // giữ 28% để câu diễn đạt khác cách vẫn bắt được. Chỉ khớp âm tiết đơn thì trần là 28.
+  const dDoi=phu(ceo.doi,mau.doi), dDon=phu(ceo.don,mau.don);
+  return Math.round(dDoi*72 + dDon*28);
+}
+app.get("/api/khop-nhanh",(req,res)=>{
+  const t0=Date.now();
+  const q=String(req.query.q||"").trim();
+  if(q.length<6)return res.status(400).json({error:"Mô tả ý tưởng dài hơn chút (≥6 ký tự)."});
+  // 60 đo từ thực nghiệm: 6 câu thử cho ra 91/82/73 (đúng mẫu) và 44/14/11 (không có mẫu).
+  // Đặt giữa 44 và 73 nên vừa không bỏ sót vừa không trả nhầm. Chỉnh lại nếu kho đổi nhiều.
+  const nguong=Number(req.query.nguong)||60;
+  let hang=[];
+  try{baoDamChiMuc(); hang=db.prepare("SELECT idea_id,ten,nganh,tu_khoa,doi_khoa FROM khop_mau").all();}
+  catch(e){return res.json({khop:false,ly_do:"chỉ mục khớp lỗi: "+e.message,ms:Date.now()-t0});}
+  const ceo=dacTrung(q);
+  const xep=hang.map(h=>({id:h.idea_id,ten:h.ten,nganh:h.nganh,
+    diem:diemGan(ceo,{don:new Set(String(h.tu_khoa||"").split(" ")),
+                      doi:new Set(String(h.doi_khoa||"").split(" "))})}))
+    .sort((a,b)=>b.diem-a.diem).slice(0,5);
+  const top=xep[0];
+  if(!top||top.diem<nguong)
+    return res.json({khop:false,diem_cao_nhat:top?top.diem:0,nguong,gan_giong:xep.slice(0,3),
+      goi_y:"Không có mẫu đủ gần — dùng POST /api/khoi-tao để Data Engine đúc mới (chậm hơn).",
+      ms:Date.now()-t0});
+  const y=db.prepare("SELECT * FROM ideas WHERE id=?").get(top.id);
+  const jp=(s,md)=>{try{return JSON.parse(s)}catch(e){return md}};
+  res.json({khop:true,diem:top.diem,nguong,ms:Date.now()-t0,
+    id:y.id,ten:y.ten,nganh:y.nganh,tom_tat:y.tom_tat,van_de:y.van_de,giai_phap:y.giai_phap,
+    thi_truong:y.thi_truong,vi_sao_bay_gio:y.vi_sao_bay_gio,tac_gia:y.tac_gia,
+    bmc:jp(y.bmc,{}),lo_trinh:jp(y.lo_trinh,[]),soloceo_stack:jp(y.soloceo_stack,[]),can_cu:jp(y.can_cu,[]),
+    khac:xep.slice(1,4),
+    luu:"Mẫu có sẵn trong kho — trả ngay, không qua suy luận."});
+});
+// ═══════ HẾT KHỚP TỨC THÌ ═══════
 
 // ── ⭐ KHỞI TẠO Ý TƯỞNG CỦA CEO — chạy qua TOÀN BỘ Data Engine ──
 let khoiTaoBusy=false;
@@ -1675,8 +1800,11 @@ Trả DUY NHẤT JSON (tham chiếu [VDx]/[GPx]/[MHx]/[SPx]/[SKx]/#id THẬT ở
 // ═══════ HẾT v13 ═══════
 
 app.get("/api/giai-phap",(req,res)=>{
-  const rows=db.prepare("SELECT * FROM solutions ORDER BY id DESC LIMIT ?").all(Number(req.query.limit)||40);
-  res.json({count:db.prepare("SELECT count(*) n FROM solutions").get().n,giai_phap:rows});
+  const n=Number(req.query.limit)||40;
+  const rows=req.query.q
+    ? khopKho("solutions",["ten","mo_ta","nguyen_ly","ap_dung","nganh","cong_nghe"],req.query.q,n,0).tatCa
+    : db.prepare("SELECT * FROM solutions ORDER BY id DESC LIMIT ?").all(n);
+  res.json({count:db.prepare("SELECT count(*) n FROM solutions").get().n,khop:rows.length,giai_phap:rows});
 });
 app.get("/api/admin/gen-solution",async(req,res)=>{
   if((req.query.token||"")!==REFRESH_TOKEN)return res.status(403).json({error:"token sai"});
@@ -1754,7 +1882,9 @@ JSON hợp lệ, tiếng Việt, lộ trình phải CỤ THỂ đo được, kh�
 
 app.get("/api/van-de",(req,res)=>{
   const st=req.query.status||"all";
-  let rows=db.prepare(`SELECT p.*, i.ten AS y_tuong FROM problems p LEFT JOIN ideas i ON i.id=p.idea_id ORDER BY p.trang_thai='moi' DESC, p.do_dau DESC, p.id DESC`).all();
+  let rows=req.query.q
+    ? khopKho("problems",["tieu_de","mo_ta","khach_hang","nganh","goc_re","boi_canh"],req.query.q,Number(req.query.limit)||40,0).tatCa
+    : db.prepare(`SELECT p.*, i.ten AS y_tuong FROM problems p LEFT JOIN ideas i ON i.id=p.idea_id ORDER BY p.trang_thai='moi' DESC, p.do_dau DESC, p.id DESC`).all();
   if(st==="moi")rows=rows.filter(r=>r.trang_thai==="moi");
   res.json({count:rows.length,mo:rows.filter(r=>r.trang_thai==="moi").length,van_de:rows.slice(0,Number(req.query.limit)||40)});
 });

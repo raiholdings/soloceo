@@ -159,3 +159,45 @@ dữ liệu riêng của SoloCEO (`supabase-db`, CSDL `deerflow`, tenant-02).
 | Sao lưu | `infra/deerflow/backup-deerflow-pg.sh` — cron 03:25 hằng đêm, giữ 14 bản, cảnh báo nếu dump lỗi |
 | Đường lùi | SQLite cũ còn nguyên tại `/opt/deerflow/backend/.deer-flow/data/deerflow.db*` — đổi `backend: sqlite` là quay lại |
 | Script di trú | `infra/deerflow/migrate-sqlite-to-postgres.py` + `migrate-checkpoints.py` (ép kiểu thời gian/JSON/bool, lọc ký tự NUL) |
+
+## 7. Kho đúc & dây chuyền ý tưởng (cập nhật 26/07/2026)
+
+### 7.1 Hai bộ đúc, cố ý đối trọng nhau
+
+| Bộ | Nguồn | Cho ra | Cron |
+|---|---|---|---|
+| `ingest/duc_tu_du_an.py` | 28.062 dự án World Bank (194 nước, 1996–2027) | Bài học có **số tiền thật** và bề dày nhiều năm | `/opt/duc.sh` — phút 10 mỗi giờ |
+| `ingest/duc_tu_vn.py` | 44.728 cơ sở kinh doanh Việt Nam (OSM/Trang Vàng) + số liệu kinh tế VN | Thị trường **đếm được** đúng tầm một người | `/opt/duc-vn.sh` — phút 40 mỗi giờ |
+
+**Vì sao phải có bộ thứ hai.** Chạy một mình, bộ World Bank kéo cả kho lệch sang tài chính
+công và viện trợ phát triển. Hệ quả đo được: máy sinh ý tưởng đẻ ra *"trợ lý tài chính cho
+người Argentina"*, *"nền tảng duy trì dịch vụ công trong khủng hoảng"* — vô dụng với một
+Solo CEO Việt Nam. Bộ VN đúc theo cụm (phân ngành × địa bàn) nên mỗi mục kèm một con số
+thị trường có thật: 7.720 nhà hàng, 5.946 quán cà phê, 5.366 cửa hàng tiện lợi, 1.177 khách
+sạn. Chạy xen kẽ mỗi giờ để kho không lệch lại.
+
+### 7.2 Cổng kiểm chứng ở sandbox — hai lỗi đã sửa
+
+1. **Chấm mù.** `doiChieuKho()` gọi `/api/van-de`, `/api/giai-phap`, `/api/mo-hinh-kd`
+   **không kèm từ khoá**, nên nhận về 40 mục đầu bảng chẳng liên quan gì tới ý tưởng đang
+   chấm. Mọi ý tưởng đều 0 điểm, và tôi đã quy sai nguyên nhân cho "kho quá mỏng".
+   → Sửa: lấy **toàn bộ** kho đúc dạng rút gọn (vài chục mục, rẻ hơn lọc sai).
+2. **Bộ lọc `?q=` tách tiếng Việt theo âm tiết.** "bất **động** sản" khớp trúng "hoạt
+   **động**", "lao **động**". Endpoint `?q=` vẫn còn để dùng khi kho vượt ~300 mục, nhưng
+   khi đó phải chuyển sang FTS chứ không dùng LIKE.
+
+### 7.3 Khớp ý tưởng tức thì — `GET /api/khop-nhanh?q=`
+
+CEO gõ ý tưởng, nếu kho đã có mẫu đủ gần thì trả bản đầy đủ trong **~10ms** thay vì bắt chờ
+`/api/khoi-tao` suy luận 60–120 giây. `/workspace/api/khoi-tao` thử đường nhanh trước rồi
+mới rơi xuống đường chậm; giao diện hiện băng ⚡ nói rõ đây là mẫu có sẵn, không phải bản
+vừa nghĩ riêng cho họ.
+
+**Đặc trưng khớp là ĐÔI ÂM TIẾT (bigram), không phải âm tiết đơn.** Dùng âm tiết đơn thì
+"phần mềm **quản** lý **quán** ăn" khớp 91 điểm với một app dự toán xây dựng — cùng gốc bệnh
+với mục 7.2. Bigram phân biệt được `quan_ly` với `quan_an`.
+
+Hiệu chuẩn thực nghiệm (6 câu thử): khớp đúng 91/82/73 · không có mẫu 44/14/11 → **ngưỡng 60**.
+
+Chỉ mục `khop_mau` tự dựng lại khi lệch số lượng với bảng `ideas` hoặc khi `KHOP_PHIEN_BAN`
+đổi, nên không có chuyện quên đồng bộ.

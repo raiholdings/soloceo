@@ -10,6 +10,20 @@ export async function POST(req: NextRequest) {
   if (yTuong.length < 8) {
     return NextResponse.json({ error: "Mô tả ý tưởng dài hơn chút (≥8 ký tự)." }, { status: 400 });
   }
+  // Đường nhanh trước: nếu kho đã có mẫu đủ gần thì trả ngay (~10ms) thay vì bắt CEO chờ
+  // Data Engine suy luận 60-120 giây. Mẫu trả về là ý tưởng đã đúc đầy đủ, không phải bản
+  // rút gọn — CEO xem xong là chuyển thẳng sang workspace thực thi được.
+  try {
+    const nhanh = await fetch(`${BD}/api/khop-nhanh?q=${encodeURIComponent(yTuong.slice(0, 400))}`,
+      { cache: "no-store", signal: AbortSignal.timeout(6000) });
+    if (nhanh.ok) {
+      const k = (await nhanh.json()) as { khop?: boolean };
+      if (k.khop) return NextResponse.json({ ...k, ok: true, tuc_thi: true });
+    }
+  } catch {
+    // Khớp nhanh hỏng thì im lặng rơi xuống đường chậm — không được để nó chặn CEO.
+  }
+
   try {
     const r = await fetch(`${BD}/api/khoi-tao`, {
       method: "POST",
