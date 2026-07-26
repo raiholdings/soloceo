@@ -85,7 +85,9 @@ chạy trong container `python:3.12-slim` gắn volume `bigdata-data-v3`.
 | `geonames_vn.py` | `VN.zip` GeoNames | |
 | `wikidata_vn.py` | SPARQL Wikidata | máy chủ chặn tốc độ: trang 3000, nghỉ 4s, gặp 429 chờ 60s; `CHI_NHOM=` để chạy lại từng nhóm |
 | `viwiki.py` | `viwiki-latest-pages-articles.xml.bz2` | đọc theo luồng, bỏ trang đổi hướng, lấy đoạn mở đầu |
-| `openalex_vn.py` | api.openalex.org | phân trang bằng cursor |
+| `openalex_vn.py` | api.openalex.org | phân trang cursor; chặn tốc độ bằng 429 — một lần 429 KHÔNG được phép giết cả lượt nạp (lùi 30s×n rồi trả None để dừng êm) |
+| `worldbank_vn.py` | api.worldbank.org | API không nhận `indicator=all`: phải lấy danh mục nguồn 2 rồi truy vấn lô 30; một mã chỉ số đã ngừng cũng đủ làm hỏng cả truy vấn nhiều chỉ số |
+| `chuan_hoa_markdown.py` | — | viết lại mô tả sang Markdown tiếng Việt, chạy lại nhiều lần vẫn an toàn |
 | `hoan_tat.py` | — | **bắt buộc chạy cuối**: dựng lại FTS5 (external-content không tự cập nhật khi ghi thẳng SQLite) |
 
 Sau `hoan_tat.py`, gọi `/api/admin/build-graph?token=…` để dựng lại mạng tri thức.
@@ -125,8 +127,8 @@ Lịch: cron `15 */3` nhóm Việt Nam, `45 */6` nhóm quốc tế (`/opt/crawl-
 **Xác thực Crawl4AI:** `security.enabled: true` mà `api_token` rỗng thì server chặn mọi truy vấn
 và `/token` cũng tắt. Cần đủ ba thứ: `api_token` trong `config.yml`, biến `SECRET_KEY`, và
 `GUNICORN_BIND=0.0.0.0:11235` (mặc định chỉ nghe loopback nên container khác không gọi được).
-`/token` nhận `{"email","api_token"}` và **kiểm tra bản ghi MX của tên miền email** — `soloceo.vn`
-chưa có MX nên phải dùng email khác.
+`/token` nhận `{"email","api_token"}` và **kiểm tra bản ghi MX của tên miền email**.
+soloceo.vn đã trỏ MX Google Workspace (26/07/2026) nên dùng `info@soloceo.vn`.
 
 **Chuẩn hoá Markdown:** `platform/bigdata/ingest/chuan_hoa_markdown.py` viết lại mô tả của mọi
 bản ghi theo một khuôn Markdown tiếng Việt (tên · định danh · lĩnh vực/khu vực/năm/nguồn/giấy phép ·
