@@ -781,7 +781,10 @@ app.post("/api/admin/import",express.json({limit:"25mb"}),(req,res)=>{
 });
 // ═══════ HẾT ĐỒNG BỘ SOLOCEO ═══════
 
-// Bù chỉ mục toàn văn cho bản ghi mới.
+// Bù chỉ mục toàn văn cho bản ghi MỚI.
+// HẠN CHẾ đã biết: chỉ nạp dòng có id lớn hơn mốc, nên bản ghi được CẬP NHẬT
+// (upsert theo ext_key) sẽ giữ nội dung cũ trong chỉ mục cho tới lần dựng lại
+// toàn bộ — cron 5:30 hằng ngày gọi rebuildFts() nên chậm nhất sau một ngày là đúng.
 // FTS5 kiểu external-content KHÔNG tự cập nhật khi bộ nạp ghi thẳng vào bảng items,
 // nên dữ liệu mới nạp sẽ không tìm được cho tới lần dựng lại toàn bộ. Mốc `fts_moc`
 // cho phép chỉ nạp phần mới — vài giây thay vì hơn một phút.

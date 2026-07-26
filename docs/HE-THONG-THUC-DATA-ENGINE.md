@@ -90,6 +90,16 @@ chạy trong container `python:3.12-slim` gắn volume `bigdata-data-v3`.
 
 Sau `hoan_tat.py`, gọi `/api/admin/build-graph?token=…` để dựng lại mạng tri thức.
 
+**Chỉ mục toàn văn:** bộ nạp ghi thẳng SQLite nên FTS5 (external-content) không tự cập nhật.
+Có hai đường: `/api/admin/fts-bosung?token=` chỉ nạp dòng mới (vài giây, các bộ thu thập tự gọi
+sau mỗi lượt) và `rebuildFts()` dựng lại toàn bộ (~80 giây, cron 5:30 hằng ngày).
+Đường bù nhanh **không** cập nhật bản ghi bị sửa — chậm nhất sau một ngày mới đúng.
+Mốc `fts_moc` phải khởi tạo bằng `max(id)`; để 0 thì lần bù đầu nạp lại cả bảng và sinh bản ghi trùng.
+
+**Xếp hạng tìm kiếm:** `ORDER BY` phải đặt `bm25()` TRƯỚC `score`. `score` mang nghĩa khác nhau
+theo loại (số trích dẫn với bài nghiên cứu, dân số với địa danh) nên nếu để trước, một bài
+trích dẫn cao sẽ đè mọi kết quả đúng nghĩa.
+
 ## 4c. Thu thập tự động bằng Crawl4AI (`platform/crawl-sync/`)
 
 `crawl.soloceo.vn` (Crawl4AI 0.9.2, tenant-03) là **cỗ máy thu thập chung** của Data Engine.
