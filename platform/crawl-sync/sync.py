@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 DB = os.environ.get("DB_PATH", "/data/bigdata.db")
 C4AI = os.environ.get("CRAWL4AI_URL", "http://crawl4ai:11235")
 C4AI_TOKEN = os.environ.get("CRAWL4AI_API_TOKEN", "")
-C4AI_EMAIL = os.environ.get("CRAWL4AI_EMAIL", "soloceo.vn@gmail.com")
+C4AI_EMAIL = os.environ.get("CRAWL4AI_EMAIL", "info@soloceo.vn")
 NGUON = os.environ.get("NGUON_JSON", "/work/nguon.json")
 MOI_NGUON = int(os.environ.get("MOI_NGUON", "12"))     # số bài mỗi nguồn mỗi lượt
 CHI_NHOM = set(filter(None, os.environ.get("CHI_NHOM", "").split(",")))

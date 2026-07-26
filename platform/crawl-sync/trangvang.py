@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 DB = os.environ.get("DB_PATH", "/data/bigdata.db")
 C4AI = os.environ.get("CRAWL4AI_URL", "http://crawl4ai:11235")
 C4AI_TOKEN = os.environ.get("CRAWL4AI_API_TOKEN", "")
-C4AI_EMAIL = os.environ.get("CRAWL4AI_EMAIL", "soloceo.vn@gmail.com")
+C4AI_EMAIL = os.environ.get("CRAWL4AI_EMAIL", "info@soloceo.vn")
 SO_NGANH = int(os.environ.get("SO_NGANH", "40"))     # số ngành xử lý mỗi lượt
 NHIP = float(os.environ.get("NHIP", "5"))            # giây giữa 2 lượt tải (theo Crawl-delay)
 GOC = "https://trangvangvietnam.com"
