@@ -40,14 +40,20 @@ Lỗi nằm ở chỗ mọi người **được cấp cùng một danh tính**.
 3. **Vá nóng bản đang chạy** trong container api-core + khởi động lại (đã kiểm chứng
    `api.soloceo.vn` và OIDC discovery trả 200).
 
+4. **Build lại từ git** (26/07/2026): nhánh deploy `soloceo-mvp` vốn vẫn còn mã lỗi,
+   nên bản vá đã được cherry-pick sang (`5eb5d41a`) rồi build lại qua Coolify. Bản đang
+   chạy hiện là build chuẩn — không còn dấu vết vá nóng, `api.soloceo.vn/v1/health` 200,
+   OIDC discovery và `/jwks` 200, `/token` với mã sai trả 400.
+5. **Ràng buộc tầng lưu trữ** (`infra/deerflow/guard-oauth-identity.sql`): CHECK trên
+   bảng `users` từ chối `oauth_id` rỗng hoặc `undefined`/`null`/`none`/`nan` khi có
+   `oauth_provider`. Đã thử ghi `oauth_id='undefined'` → Postgres từ chối.
+
 ## Việc cần làm tiếp
 
-- [ ] Build lại api-core từ nhánh chính để bản vá nóng được thay bằng bản build chuẩn.
 - [ ] Mỗi CEO đăng nhập lại một lượt → xác nhận mỗi người sinh **một tài khoản riêng**
-      (kiểm tra bảng `users` phải tăng dần theo số CEO).
-- [ ] Thêm ràng buộc dữ liệu: chặn ghi `oauth_id` rỗng/`"undefined"` ở tầng lưu trữ.
+      (kiểm tra bảng `users` phải tăng dần theo số CEO). Việc này cần chính các CEO thao tác.
 - [ ] Cân nhắc thông báo cho các CEO đã đăng nhập trong giai đoạn lỗi, vì hội thoại
-      của họ có thể đã hiển thị cho người khác.
+      của họ có thể đã hiển thị cho người khác. **Quyết định thuộc về chủ hệ thống.**
 
 ## Nơi lưu dữ liệu (trả lời câu hỏi kèm theo)
 
