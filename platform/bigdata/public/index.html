@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BigData — Bộ não thứ 2 · SoloCEO</title>
+<style>
+:root{--bg:#0b0b0c;--surface:#131315;--s2:#1b1b1e;--line:#232326;--line2:#2e2e33;--ink:#f5f5f6;--muted:#a2a2aa;--faint:#6b6b73;--green:#3fb950;--gold:#e3b341;--red:#f85149;--steel:#6ea8fe;--mono:ui-monospace,"SF Mono",Menlo,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+a{color:var(--steel);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1200px;margin:0 auto;padding:0 4vw}
+header{padding:34px 0 6px}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+h1{font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;margin:8px 0 2px}h1 b{color:var(--green)}
+.sub{color:var(--muted);font-size:14px;max-width:680px}
+.stats{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0 6px}
+.stat{flex:1;min-width:120px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 13px}
+.stat b{display:block;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat.g b{color:var(--green)}.stat.y b{color:var(--gold)}.stat.s b{color:var(--steel)}.stat.r b{color:var(--red)}
+.stat span{font-size:11px;color:var(--faint)}
+.tabs{display:flex;gap:6px;margin:14px 0 4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{padding:10px 16px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--green);border-bottom-color:var(--green)}
+.view{padding:14px 0 60px}
+.si{width:100%;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:14px;padding:14px 16px;font-size:16px;outline:none}.si:focus{border-color:var(--green)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.chip{border:1px solid var(--line2);background:var(--surface);color:var(--muted);border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer}
+.chip.on{border-color:var(--green);color:var(--green);background:color-mix(in srgb,var(--green) 12%,transparent)}
+select{border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 11px;font-size:13px}
+.count{color:var(--faint);font-size:12px;margin:8px 0 12px;font-family:var(--mono)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.card{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 15px;display:flex;flex-direction:column;gap:6px}
+.ct{display:flex;gap:10px;align-items:flex-start}
+.logo{width:34px;height:34px;border-radius:8px;object-fit:cover;background:var(--s2);flex:none}
+.cn{font-weight:700;font-size:15px;flex:1}
+.badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 7px;border-radius:6px;white-space:nowrap}
+.b-win{color:var(--green);border:1px solid color-mix(in srgb,var(--green) 45%,transparent)}
+.b-dead{color:var(--red);border:1px solid color-mix(in srgb,var(--red) 45%,transparent)}
+.b-live{color:var(--steel);border:1px solid color-mix(in srgb,var(--steel) 40%,transparent)}
+.b-ds{color:var(--gold);border:1px solid color-mix(in srgb,var(--gold) 40%,transparent)}
+.cd{color:var(--muted);font-size:13px}
+.meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.tag{font-size:11px;color:var(--faint);background:var(--s2);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+.tag.top{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 35%,transparent)}
+.empty{color:var(--faint);padding:44px 0;text-align:center}
+/* insights */
+.sec-title{font-size:13px;font-weight:700;color:var(--gold);margin:22px 0 10px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase}
+.bar{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
+.bar .lab{width:190px;flex:none;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .track{flex:1;background:var(--s2);border-radius:6px;height:20px;overflow:hidden;display:flex}
+.bar .fill{height:100%;background:linear-gradient(90deg,var(--green),color-mix(in srgb,var(--green) 60%,var(--steel)))}
+.bar .fw{background:var(--green)}.bar .fd{background:var(--red)}
+.bar .n{width:70px;text-align:right;color:var(--faint);font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:12px}
+/* AI */
+.aibox{border:1px solid var(--line2);background:var(--surface);border-radius:16px;padding:18px}
+.ai-in{width:100%;min-height:90px;border:1px solid var(--line2);background:var(--bg);color:var(--ink);border-radius:12px;padding:13px;font-size:15px;font-family:var(--sans);resize:vertical;outline:none}.ai-in:focus{border-color:var(--green)}
+.btn{background:var(--green);color:#04140a;border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px}
+.btn:disabled{opacity:.5;cursor:default}
+.ans{margin-top:16px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:14.5px;white-space:pre-wrap;line-height:1.6}
+.ans b,.ans strong{color:var(--green)}
+.f{color:var(--faint);font-size:12px;padding:26px 0;text-align:center;border-top:1px solid var(--line);margin-top:14px}
+.hint{color:var(--faint);font-size:12.5px;margin-top:8px}
+@media(max-width:520px){.bar .lab{width:120px}}
+</style></head>
+<body><div class="wrap">
+<header>
+  <div class="eyebrow">SoloCEO · Lớp dữ liệu</div>
+  <h1>BigData — <b>Bộ não thứ 2</b></h1>
+  <div class="sub">Có ý tưởng? Tra cứu & so sánh với hàng nghìn startup toàn cầu qua các năm — mô hình kinh doanh, ngành/ngách, ai <b style="color:var(--green)">thành công</b>, ai <b style="color:var(--red)">thất bại</b>, và <b>AI phân tích</b> ý tưởng của bạn.</div>
+  <div class="stats" id="stats"></div>
+</header>
+<div class="tabs">
+  <div class="tab on" data-v="search">🧠 Dữ liệu</div>
+  <div class="tab" data-v="engine">🔧 Data Engine</div>
+  <div class="tab" data-v="vande">❗ Vấn đề</div>
+  <div class="tab" data-v="giaiphap">💡 Giải pháp</div>
+  <div class="tab" data-v="mohinh">💼 Mô hình KD</div>
+  <div class="tab" data-v="mvp">📦 Sản phẩm</div>
+  <div class="tab" data-v="sukien">📡 Sự kiện</div>
+  <div class="tab" data-v="ytuong">⭐ Ý tưởng</div>
+</div>
+
+<div class="view" id="v-search">
+  <div id="brainWrap" style="position:relative;height:190px;margin-bottom:14px;border:1px solid #26262b;border-radius:14px;overflow:hidden;background:radial-gradient(60% 90% at 50% 50%,#101014,#0b0b0c)">
+    <canvas id="brainCv" style="width:100%;height:100%"></canvas>
+    <div style="position:absolute;left:12px;top:10px;font-size:11px;letter-spacing:.14em;color:#9aa0a6;font-family:monospace">BỘ NÃO THỨ 2 · ĐANG KẾT NỐI NGUỒN DỮ LIỆU</div>
+    <div id="brainStat" style="position:absolute;right:12px;bottom:8px;font-size:11px;color:#3fb950;font-family:monospace"></div>
+  </div>
+  <input id="q" class="si" placeholder="Tìm startup, ý tưởng, ngành, công nghệ… (vd: AI agent, fintech, healthcare, logistics)" autocomplete="off"/>
+  <div class="filters">
+    <div class="chip on" data-type="">Tất cả</div>
+    <div class="chip" data-type="soloceo-dich-vu">🧩 Hệ sinh thái SoloCEO</div>
+    <div class="chip" data-type="soloceo-nen-tang">🛠️ Nền tảng SoloCEO</div>
+    <div class="chip" data-type="soloceo-du-an">🚀 Dự án AI SoloCEO</div>
+    <div class="chip" data-type="soloceo-mo-hinh">💼 Mô hình KD</div>
+    <div class="chip" data-type="soloceo-khoa-hoc">📚 Khoá học</div>
+    <div class="chip" data-type="startup">🚀 Startup</div>
+    <div class="chip" data-type="company">🏢 Doanh nghiệp</div>
+    <div class="chip" data-type="founder">👤 Nhà sáng lập</div>
+    <div class="chip" data-type="ceo">👔 CEO</div>
+    <div class="chip" data-type="technology">⚙️ Công nghệ</div>
+    <div class="chip" data-type="news">📰 Tin tức</div>
+    <div class="chip" data-type="dia-phuong">📍 Địa phương VN</div>
+    <div class="chip" data-type="dac-san">🍜 Đặc sản VN</div>
+    <div class="chip" data-type="du-lich">🏝️ Du lịch VN</div>
+    <div class="chip" data-type="luat">⚖️ Luật VN</div>
+    <div class="chip" data-type="ke-toan">📒 Kế toán VN</div>
+    <div class="chip" data-type="nganh-vsic">🏭 Ngành VSIC</div>
+    <div class="chip" data-type="bat-dong-san">🏢 Bất động sản VN</div>
+    <div class="chip" data-type="nhan-vat">👥 Nhân vật VN</div>
+    <div class="chip" data-type="giao-duc">🎓 Giáo dục VN</div>
+    <div class="chip" data-type="tai-nguyen">🏞️ Sông & địa lý VN</div>
+    <div class="chip" data-type="thanh-pho">🏙️ Thành phố</div>
+    <div class="chip" data-type="quoc-gia">🌐 Quốc gia</div>
+    <div class="chip" data-type="san-bay">🛫 Sân bay</div>
+    <div class="chip" data-type="tien-te">💱 Tiền tệ</div>
+    <div class="chip" data-type="dataset">📊 Dataset</div>
+    <select id="fout"><option value="">Mọi kết quả</option><option value="thanh-cong">✅ Thành công (bán/IPO)</option><option value="dang-hoat-dong">🔵 Đang hoạt động</option><option value="dong-cua">❌ Đã đóng cửa</option></select>
+    <select id="fcat"><option value="">Mọi ngành</option></select>
+    <select id="fyear"><option value="">Mọi năm</option></select>
+    <select id="fcountry"><option value="">Mọi quốc gia</option></select>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="view" id="v-stats" style="display:none"></div>
+
+<div class="view" id="v-ai" style="display:none">
+  <div class="aibox">
+    <div style="font-weight:700;font-size:16px;margin-bottom:4px">🧠 Đưa ý tưởng — bộ não phân tích</div>
+    <div class="hint" style="margin:0 0 10px">AI sẽ tìm startup giống nhất trong CSDL rồi phân tích: đã có ai làm chưa · thành/bại · cạnh tranh · khuyến nghị cho Solo CEO.</div>
+    <textarea id="idea" class="ai-in" placeholder="Vd: Nền tảng AI giúp chủ shop nhỏ tự động trả lời tin nhắn khách và lên đơn qua Zalo/Facebook…"></textarea>
+    <button id="askBtn" class="btn">Phân tích ý tưởng ▸</button>
+    <div id="ans"></div>
+    <div id="aimatch"></div>
+  </div>
+</div>
+
+<div class="view" id="v-engine" style="display:none"></div>
+<div class="view" id="v-ytuong" style="display:none">
+  <div class="sec-title">⭐ Khởi tạo ý tưởng của bạn — chạy qua toàn bộ Data Engine</div>
+  <div class="card" style="margin-bottom:16px;border-color:rgba(63,185,80,.35)">
+    <div class="hint" style="margin-bottom:8px">Engine đối chiếu <b>vấn đề đang xảy ra · giải pháp đã có · mô hình đã có · sản phẩm đã có · sự kiện đang diễn ra</b> → trả về mô hình kinh doanh chuẩn của riêng bạn, tự lưu cho Solo CEO khác tham khảo. <span style="color:#e3b341">(bản test — bản chính thức nằm trên soloceo.vn)</span></div>
+    <textarea id="ktY" class="si" style="min-height:76px" placeholder="vd: Tôi muốn làm dịch vụ AI viết mô tả sản phẩm cho shop bán hàng online ở Việt Nam..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;align-items:center">
+      <input id="ktTen" class="si" style="max-width:220px" placeholder="Tên bạn (hiển thị)"/>
+      <button class="btn" id="ktBtn">⚙️ Chạy qua Data Engine ▸</button>
+      <span class="hint" id="ktStt"></span>
+    </div>
+    <div id="ktOut" style="margin-top:14px"></div>
+  </div>
+  <div class="sec-title">📚 Kho ý tưởng — đúc bởi engine &amp; các Solo CEO</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px" class="yt-sort">
+    <span class="tag" data-s="new" style="cursor:pointer;border-color:#3fb950">Mới nhất</span>
+    <span class="tag" data-s="top" style="cursor:pointer">⭐ Điểm cao</span>
+    <span class="tag" data-s="thuc-thi" style="cursor:pointer">🔥 Nhiều CEO thực thi</span>
+  </div>
+  <div id="ytList" class="grid"><div class="empty">Đang tải…</div></div>
+  <div id="ytDetail" style="display:none"></div>
+</div>
+<div class="view" id="v-vande" style="display:none">
+  <div class="sec-title">❗ Vấn đề thị trường — lập luận chuẩn quốc tế (JTBD · POV · 5 Whys · tần suất × mức độ)</div>
+  <div id="vdFull"><div class="empty">Đang tải…</div></div>
+</div>
+<div class="view" id="v-giaiphap" style="display:none">
+  <div class="sec-title">💡 Kho giải pháp — pattern thế giới đã chứng minh, đúc liên tục từ dữ liệu</div>
+  <div id="gpList" class="grid"><div class="empty">Đang tải…</div></div>
+</div>
+<div class="view" id="v-mohinh" style="display:none">
+  <div class="sec-title">💼 Thư viện mô hình kinh doanh SoloCEO — khung để đúc ý tưởng</div>
+  <div id="mhList" class="grid"><div class="empty">Đang tải…</div></div>
+</div>
+<div class="view" id="v-mvp" style="display:none">
+  <div class="sec-title">🚀 MVP mẫu — dự án vận hành sẵn để tham chiếu/khởi động nhanh</div>
+  <div id="mvpList" class="grid"><div class="empty">Đang tải…</div></div>
+</div>
+<div class="view" id="v-sukien" style="display:none">
+  <div class="sec-title">📡 Sự kiện thị trường — đúc lại từ tin tức thật đang diễn ra</div>
+  <div id="skList"><div class="empty">Đang tải…</div></div>
+</div>
+<div class="view" id="v-lotrinh" style="display:none">
+  <div class="sec-title">🕸 Mạng tri thức — từ nốt bạn quen tới nốt cần gặp (≤6 bậc)</div>
+  <div class="hint" style="margin-bottom:10px">Nêu mục tiêu — bộ não tìm các nốt thật (vùng nguyên liệu, công ty đã làm, người cần quen) và lập kế hoạch tiếp cận từng bước.</div>
+  <textarea id="ltGoal" class="si" style="min-height:74px" placeholder="vd: Tôi muốn khởi nghiệp nông nghiệp thông minh — vùng nguyên liệu nào tốt, ai đã làm, cần quen ai để bắt đầu?"></textarea>
+  <button class="btn" id="ltBtn" style="margin-top:10px">🧭 Lập lộ trình tiếp cận ▸</button>
+  <div id="ltOut" style="margin-top:14px"></div>
+  <div class="sec-title" style="margin-top:26px">Tìm đường giữa 2 nốt (six degrees)</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <input id="pFrom" class="si" style="flex:1;min-width:200px" placeholder="Nốt xuất phát (vd: Hà Nội, VinGroup…)"/>
+    <input id="pTo" class="si" style="flex:1;min-width:200px" placeholder="Nốt muốn tới (vd: cà phê, Trung Nguyên…)"/>
+    <button class="btn" id="pBtn">Tìm đường ▸</button>
+  </div>
+  <div id="pOut" style="margin-top:12px"></div>
+</div>
+
+<div class="view" id="v-detail" style="display:none"></div>
+
+<div class="f">bigdata.soloceo.vn · Bộ não thứ 2 · nguồn: YC (startup), Wikidata (nhà sáng lập & CEO), GitHub (công nghệ), Hacker News + dev.to (tin tức), awesome-public-datasets · cập nhật hàng giờ · AI qua LLM Gateway SoloCEO</div>
+</div>
+<style>
+.cmore{margin-top:8px;font-size:12px;color:#3fb950;opacity:.85}
+.dback{display:inline-block;cursor:pointer;color:#3fb950;font-weight:600;margin-bottom:14px;font-size:14px}
+.detail-head{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.02)}
+.detail-title{font-size:24px;font-weight:800;margin:0}
+.detail-one{color:#9aa;margin-top:6px;font-size:15px}
+.detail-desc{margin:16px 2px;line-height:1.6;color:#cdd}
+.detail-rich{margin:18px 2px;line-height:1.7;color:#cdd;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;max-width:100%;overflow-x:auto}
+.detail-rich h2{font-size:20px;margin:18px 0 8px}.detail-rich h3{font-size:17px;margin:14px 0 6px}.detail-rich h4,.detail-rich h5{font-size:15px;margin:12px 0 4px}
+.detail-rich code{background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px;font-size:13px}
+.detail-rich pre.cb,.detail-rich .cb{background:#0d1117;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px;overflow-x:auto;font-size:12.5px;white-space:pre-wrap}
+.detail-rich ul{margin:6px 0 6px 18px}.detail-rich a{color:#3fb950}.detail-rich img{max-width:100%}
+.es-flow{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:8px 0}
+.es{display:flex;gap:10px;align-items:flex-start;flex:1 1 260px;min-width:240px;background:rgba(63,185,80,.05);border:1px solid rgba(63,185,80,.18);border-radius:12px;padding:12px}
+.es-n{flex:none;width:26px;height:26px;border-radius:50%;background:#3fb950;color:#0b0b0c;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+.es-t{font-weight:700;font-size:14px;margin-bottom:3px}.es-d{font-size:12.5px;color:#9aa;line-height:1.5}
+.es-ar{display:none}
+</style>
+<script>
+const $=s=>document.querySelector(s), esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let TYPE="",timer=null,STATS=null;
+const OUT={"thanh-cong":["b-win","Thành công"],"dang-hoat-dong":["b-live","Đang hoạt động"],"dong-cua":["b-dead","Đã đóng cửa"]};
+
+async function boot(){
+  STATS=await(await fetch("/api/stats")).json();
+  $("#stats").innerHTML=`
+    <div class="stat s"><b>${(STATS.total||0).toLocaleString()}</b><span>MỤC TRA CỨU</span></div>
+    <div class="stat"><b>${(STATS.startups||0).toLocaleString()}</b><span>STARTUP (${STATS.yearFrom}–${STATS.yearTo})</span></div>
+    <div class="stat g"><b>${(STATS.thanhcong||0).toLocaleString()}</b><span>THÀNH CÔNG (BÁN/IPO)</span></div>
+    <div class="stat s"><b>${(STATS.donghoatdong||0).toLocaleString()}</b><span>ĐANG HOẠT ĐỘNG</span></div>
+    <div class="stat r"><b>${(STATS.dongcua||0).toLocaleString()}</b><span>ĐÃ ĐÓNG CỬA</span></div>
+    <div class="stat"><b>${(STATS.companies||0).toLocaleString()}</b><span>DOANH NGHIỆP (THEO QUỐC GIA)</span></div>
+    <div class="stat"><b>${(((STATS.founders||0)+(STATS.ceos||0))).toLocaleString()}</b><span>NHÀ SÁNG LẬP & CEO</span></div>
+    <div class="stat"><b>${(STATS.technology||0).toLocaleString()}</b><span>CÔNG NGHỆ</span></div>
+    <div class="stat s"><b>${(STATS.news||0).toLocaleString()}</b><span>TIN TỨC (LIVE)</span></div>
+    <div class="stat y"><b>${(STATS.datasets||0).toLocaleString()}</b><span>DATASET</span></div>`;
+  const fac=await(await fetch("/api/facets")).json();
+  $("#fcat").innerHTML='<option value="">Mọi ngành</option>'+[...new Set([...(fac.industries||[]),...(fac.categories||[])])].sort().map(c=>`<option>${esc(c)}</option>`).join("");
+  $("#fyear").innerHTML='<option value="">Mọi năm</option>'+fac.years.map(y=>`<option>${y}</option>`).join("");
+  $("#fcountry").innerHTML='<option value="">Mọi quốc gia</option>'+(fac.countries||[]).map(c=>`<option>${esc(c)}</option>`).join("");
+  search();
+}
+async function search(){
+  const p=new URLSearchParams({q:$("#q").value,type:TYPE,outcome:$("#fout").value,category:$("#fcat").value,year:$("#fyear").value,region:$("#fcountry").value,limit:"90"});
+  const r=await(await fetch("/api/search?"+p)).json();
+  $("#count").textContent=`${r.count} kết quả`+($("#q").value?` cho "${$("#q").value}"`:"");
+  $("#grid").innerHTML=r.results.length?r.results.map(card).join(""):'<div class="empty">Không tìm thấy — thử từ khoá khác.</div>';
+}
+function card(x){
+  const sp=x.type==="startup";
+  const TB={dataset:["b-ds","Dataset"],company:["b-live","Doanh nghiệp"],founder:["b-live","Nhà sáng lập"],ceo:["b-live","CEO"],technology:["b-win","Công nghệ"],news:["b-ds","Tin tức"],"dia-phuong":["b-win","Địa phương"],"dac-san":["b-win","Đặc sản"],"du-lich":["b-win","Du lịch"],luat:["b-ds","Luật"],"ke-toan":["b-ds","Kế toán"],"nganh-vsic":["b-ds","Ngành VSIC"],"bat-dong-san":["b-win","Bất động sản"],"nhan-vat":["b-live","Nhân vật"],"giao-duc":["b-win","Giáo dục"],"tai-nguyen":["b-win","Sông & địa lý"]};
+  const link=x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)} ↗</a>`:esc(x.name);
+  const tb=TB[x.type]||["b-ds",x.type||"Mục"];
+  let badge=`<span class="badge ${tb[0]}">${tb[1]}</span>`;
+  if(sp){const o=OUT[x.outcome]||["b-live",x.status||"Startup"];badge=`<span class="badge ${o[0]}">${o[1]}</span>`;}
+  const logo=x.logo?`<img class="logo" src="${esc(x.logo)}" loading="lazy" onerror="this.style.display='none'"/>`:"";
+  const m=[];
+  if(x.category)m.push(`<span class="tag">${esc(x.category)}${x.subcategory?" · "+esc(x.subcategory):""}</span>`);
+  if(x.batch)m.push(`<span class="tag">${esc(x.batch)}</span>`); else if(x.year)m.push(`<span class="tag">${x.year}</span>`);
+  if(x.region)m.push(`<span class="tag">📍 ${esc(x.region)}</span>`);
+  if(x.team_size)m.push(`<span class="tag">👥 ${x.team_size}</span>`);
+  if(x.type==="technology"&&x.score)m.push(`<span class="tag">★ ${Number(x.score).toLocaleString()}</span>`);
+  if(x.type==="news"&&x.score)m.push(`<span class="tag">▲ ${x.score}</span>`);
+  if(x.published)m.push(`<span class="tag">🕒 ${String(x.published).slice(0,10)}</span>`);
+  if(x.top)m.push(`<span class="tag top">★ Top</span>`);
+  return `<div class="card" data-id="${x.id}" style="cursor:pointer"><div class="ct">${logo}<div class="cn">${esc(x.name)}</div>${badge}</div>
+    ${x.description?`<div class="cd">${esc((x.description||"").slice(0,220))}${(x.description||"").length>220?"…":""}</div>`:""}
+    <div class="meta">${m.join("")}</div>
+    <div class="cmore">Xem chi tiết →</div></div>`;
+}
+// tabs
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(z=>z.classList.remove("on"));t.classList.add("on");
+  ["search","stats","ai","engine","lotrinh","ytuong","vande","giaiphap","mohinh","mvp","sukien","detail"].forEach(v=>$("#v-"+v).style.display=v===t.dataset.v?"block":"none");
+  if(t.dataset.v==="stats")loadStats();
+  if(t.dataset.v==="engine")loadEngine();
+  if(t.dataset.v==="search")startBrain();
+  if(t.dataset.v==="vande")loadVanDe();
+  if(t.dataset.v==="giaiphap")loadGiaiPhap();
+  if(t.dataset.v==="mohinh")loadMoHinh();
+  if(t.dataset.v==="mvp")loadSanPham();
+  if(t.dataset.v==="sukien")loadSuKien();
+  if(t.dataset.v==="ytuong"){loadIdeas();bindKhoiTao();}
+});
+let engineLoaded=false;
+
+// ==== 🔒 DỮ LIỆU ĐỘC QUYỀN (đếm các kho tự đúc) ====
+async function loadDocQuyen(){
+  const el=document.getElementById("engDocQuyen"); if(!el)return;
+  const get=async(u,k)=>{try{const d=await(await fetch(u)).json();return d[k]!=null?d[k]:(d.count||0);}catch(e){return 0;}};
+  const [vd,gp,mh,sp,sk,yt]=await Promise.all([
+    get("/api/van-de?limit=1","count"),get("/api/giai-phap?limit=1","count"),
+    get("/api/mo-hinh-kd?limit=1","count"),get("/api/san-pham?limit=1","count"),
+    get("/api/su-kien?limit=1","count"),get("/api/ideas?limit=1","count")]);
+  let vdMo=0; try{vdMo=(await(await fetch("/api/van-de?limit=1")).json()).mo||0;}catch(e){}
+  const box=(v,l,c,tab)=>`<div class="stat${c?" "+c:""}" style="cursor:pointer" onclick="document.querySelector('.tab[data-v=\'${tab}\']').click()"><b>${Number(v).toLocaleString("vi")}</b><span>${l}</span></div>`;
+  el.innerHTML=box(vd,"VẤN ĐỀ ĐÃ PHÁT HIỆN"+(vdMo?" ("+vdMo+" đang mở)":""),"","vande")+
+    box(gp,"GIẢI PHÁP ĐÃ ĐÚC","g","giaiphap")+box(mh,"MÔ HÌNH KD ĐÃ ĐÚC","","mohinh")+
+    box(sp,"SẢN PHẨM ĐÃ ĐÚC","","mvp")+box(sk,"SỰ KIỆN THỊ TRƯỜNG","y","sukien")+
+    box(yt,"Ý TƯỞNG HOÀN CHỈNH","g","ytuong");
+}
+async function loadEngine(){
+  if(engineLoaded)return; engineLoaded=true;
+  const d=await(await fetch("/api/engine")).json();
+  const stages=d.phuong_phap.map((s,i)=>`<div class="es"><div class="es-n">${i+1}</div><div><div class="es-t">${esc(s.ten.replace(/^\d+\.\s*/,""))}</div><div class="es-d">${esc(s.mo_ta)}</div></div></div>`).join('<div class="es-ar">→</div>');
+  const src=d.nguon.map(s=>`<div class="bar"><div class="lab">${esc(s.ten)}</div><div class="track"><div class="fill" style="width:${Math.min(100,s.so_luong/d.tong_ban_ghi*100*3)}%"></div></div><div class="n">${s.so_luong.toLocaleString()} · ${esc(s.license)}</div></div>`).join("");
+  const q=d.chat_luong;
+  $("#v-engine").innerHTML=`
+    <div style="text-align:center;margin-bottom:6px"><div style="font-size:22px;font-weight:800">${esc(d.ten)}</div>
+    <div class="hint">${esc(d.khau_hieu)}</div></div>
+    <div class="stats">
+      <div class="stat s"><b>${d.tong_ban_ghi.toLocaleString()}</b><span>TỔNG BẢN GHI</span></div>
+      <div class="stat g"><b>${q.diem_trung_binh}%</b><span>ĐIỂM CHẤT LƯỢNG TB</span></div>
+      <div class="stat"><b>${d.do_phu.quoc_gia}</b><span>QUỐC GIA</span></div>
+      <div class="stat y"><b>${d.do_phu.nganh}</b><span>NGÀNH</span></div>
+      <div class="stat"><b>${d.nguon.length}</b><span>NGUỒN DỮ LIỆU</span></div>
+    </div>
+    <div class="sec-title">🔒 Dữ liệu độc quyền — do hệ thống tự đúc từ dòng dữ liệu</div>
+    <div class="stats" id="engDocQuyen"><div class="hint">Đang đếm…</div></div>
+    <div class="sec-title">Phương pháp — vòng lặp dữ liệu (flywheel)</div>
+    <div class="es-flow">${stages}</div>
+    <div class="sec-title">Nguồn & giấy phép (provenance)</div>${src}
+    <div class="sec-title">Chất lượng chuẩn hóa (độ đầy đủ trường)</div>
+    <div class="bar"><div class="lab">Có mô tả</div><div class="track"><div class="fill fw" style="width:${q.co_mo_ta}%"></div></div><div class="n">${q.co_mo_ta}%</div></div>
+    <div class="bar"><div class="lab">Có URL nguồn</div><div class="track"><div class="fill fw" style="width:${q.co_url}%"></div></div><div class="n">${q.co_url}%</div></div>
+    <div class="bar"><div class="lab">Có ngành (taxonomy)</div><div class="track"><div class="fill fw" style="width:${q.co_nganh}%"></div></div><div class="n">${q.co_nganh}%</div></div>
+    <div class="bar"><div class="lab">Có quốc gia</div><div class="track"><div class="fill fw" style="width:${q.co_quoc_gia}%"></div></div><div class="n">${q.co_quoc_gia}%</div></div>
+    <div class="sec-title">Phục vụ hệ điều hành SoloCEO (API chuẩn cho agent)</div>
+    <div class="detail-desc">${d.phuc_vu_os.map(a=>"<code>"+esc(a)+"</code>").join("<br>")}</div>
+    <div class="sec-title">📊 Phân bố dữ liệu nền (ngành · ngách · vùng · năm)</div>
+    <div id="engStats"><div class="hint">Đang tải…</div></div>
+    <div class="hint" style="margin-top:10px">Cập nhật: hàng giờ (${d.cap_nhat.hang_gio.join(", ")}) · hàng ngày (${d.cap_nhat.hang_ngay.join(", ")}).</div>`;
+  loadDocQuyen(); loadStatsInto("engStats");
+}
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{document.querySelectorAll(".chip").forEach(z=>z.classList.remove("on"));c.classList.add("on");TYPE=c.dataset.type;search();});
+$("#q").oninput=()=>{clearTimeout(timer);timer=setTimeout(search,220)};
+["#fout","#fcat","#fyear","#fcountry"].forEach(s=>$(s).onchange=search);
+// ==== TRANG CHI TIẾT (click item → page chi tiết) ====
+const TLABEL={startup:"Startup",company:"Doanh nghiệp",founder:"Nhà sáng lập",ceo:"CEO",technology:"Công nghệ",news:"Tin tức",dataset:"Dataset","dia-phuong":"Địa phương VN","dac-san":"Đặc sản VN","du-lich":"Du lịch VN",luat:"Luật Việt Nam","ke-toan":"Kế toán Việt Nam","nganh-vsic":"Ngành kinh tế VSIC","bat-dong-san":"Bất động sản VN","nhan-vat":"Nhân vật VN","giao-duc":"Giáo dục VN","tai-nguyen":"Sông & địa lý VN","linh-vuc":"Lĩnh vực","quoc-gia":"Quốc gia/Vùng","thanh-pho":"Thành phố","san-bay":"Sân bay","tien-te":"Tiền tệ","soloceo-dich-vu":"Hệ sinh thái SoloCEO","soloceo-nen-tang":"Nền tảng SoloCEO","soloceo-du-an":"Dự án AI SoloCEO","soloceo-mo-hinh":"Mô hình kinh doanh","soloceo-khoa-hoc":"Khoá học SoloCEO","soloceo-y-tuong":"Ý tưởng khởi nghiệp","soloceo-van-de":"Vấn đề thị trường","soloceo-giai-phap":"Giải pháp","soloceo-mo-hinh-data":"Mô hình KD (đúc)","soloceo-san-pham":"Sản phẩm"};
+function mdLite(s){ // markdown → HTML tối giản, an toàn (escape trước)
+  let h=esc(s);
+  h=h.replace(/```[\s\S]*?```/g,m=>`<pre class="cb">${m.replace(/```/g,"")}</pre>`);
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  h=h.replace(/^###### (.*)$/gm,"<h5>$1</h5>").replace(/^##### (.*)$/gm,"<h5>$1</h5>").replace(/^#### (.*)$/gm,"<h4>$1</h4>").replace(/^### (.*)$/gm,"<h4>$1</h4>").replace(/^## (.*)$/gm,"<h3>$1</h3>").replace(/^# (.*)$/gm,"<h2>$1</h2>");
+  h=h.replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>").replace(/(^|[^*])\*([^*]+)\*/g,"$1<i>$2</i>");
+  h=h.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  h=h.replace(/^\s*[-*] (.*)$/gm,"<li>$1</li>").replace(/(<li>[\s\S]*?<\/li>)/g,"<ul>$1</ul>");
+  h=h.replace(/\n{2,}/g,"<br><br>");
+  return h;
+}
+function detailCard(x){const tb=TLABEL[x.type]||x.type;const logo=x.logo?`<img class="logo" src="${esc(x.logo)}" loading="lazy" onerror="this.style.display='none'"/>`:"";
+  return `<div class="card" data-id="${x.id}" style="cursor:pointer"><div class="ct">${logo}<div class="cn">${esc(x.name)}</div><span class="badge b-ds">${tb}</span></div>${x.oneliner||x.description?`<div class="cd">${esc((x.oneliner||x.description||"").slice(0,140))}</div>`:""}</div>`;}
+async function openDetail(id){
+  window.scrollTo(0,0);
+  document.querySelectorAll(".tab").forEach(z=>z.classList.remove("on"));
+  ["search","stats","ai","engine","lotrinh","ytuong","vande","giaiphap","mohinh","mvp","sukien","detail"].forEach(v=>$("#v-"+v).style.display=v==="detail"?"block":"none");
+  $("#v-detail").innerHTML='<div class="empty">Đang tải chi tiết…</div>';
+  let d; try{d=await(await fetch("/api/item/"+id)).json();}catch(e){$("#v-detail").innerHTML='<div class="empty">Lỗi tải.</div>';return;}
+  if(!d.item){$("#v-detail").innerHTML='<div class="empty">Không tìm thấy.</div>';return;}
+  const x=d.item, tb=TLABEL[x.type]||x.type, m=[];
+  if(x.category)m.push(`<span class="tag">${esc(x.category)}${x.subcategory?" · "+esc(x.subcategory):""}</span>`);
+  if(x.region)m.push(`<span class="tag">🌍 ${esc(x.region)}</span>`);
+  if(x.batch)m.push(`<span class="tag">${esc(x.batch)}</span>`);else if(x.year)m.push(`<span class="tag">${x.year}</span>`);
+  if(x.status)m.push(`<span class="tag">${esc(x.status)}</span>`);
+  if(x.team_size)m.push(`<span class="tag">👥 ${x.team_size}</span>`);
+  if(x.type==="technology"&&x.score)m.push(`<span class="tag">★ ${Number(x.score).toLocaleString()} sao</span>`);
+  if(x.type==="news"&&x.score)m.push(`<span class="tag">▲ ${x.score}</span>`);
+  if(x.published)m.push(`<span class="tag">🕒 ${String(x.published).slice(0,10)}</span>`);
+  const logo=x.logo?`<img src="${esc(x.logo)}" style="width:64px;height:64px;object-fit:contain;border-radius:12px;background:#111" onerror="this.style.display='none'"/>`:"";
+  let richHtml="";
+  if(d.rich){ richHtml=`<div class="detail-rich">${d.richType==="markdown"?mdLite(d.rich):"<p>"+esc(d.rich).replace(/\n/g,"<br>")+"</p>"}</div>`; }
+  const rel=(d.related||[]).length?`<div class="sec-title">Liên quan (${d.related.length})</div><div class="grid">${d.related.map(detailCard).join("")}</div>`:"";
+  $("#v-detail").innerHTML=`
+    <div class="dback" id="dback">← Quay lại</div>
+    <div class="detail-head">
+      ${logo}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="badge b-ds">${tb}</span><h1 class="detail-title">${esc(x.name)}</h1></div>
+        ${x.oneliner?`<div class="detail-one">${esc(x.oneliner)}</div>`:""}
+        <div class="meta" style="margin-top:8px">${m.join("")}</div>
+        ${x.url?`<a class="btn" style="margin-top:12px;display:inline-block;text-decoration:none" href="${esc(x.url)}" target="_blank" rel="noopener">Xem nguồn ↗</a>`:""}
+        <button class="btn" id="dtrans" style="margin-top:12px;margin-left:8px">🇻🇳 Dịch sang tiếng Việt</button>
+      </div>
+    </div>
+    <div id="ddesc">${x.description&&x.description!==x.oneliner?`<div class="detail-desc">${esc(x.description)}</div>`:""}
+    ${richHtml}</div>
+    ${rel}
+    <div id="dgraph"></div>`;
+
+  // 🕸 nạp mạng lưới liên kết của nốt
+  fetch("/api/graph/node/"+id).then(r=>r.json()).then(g=>{
+    if(!g||!g.lien_ket)return; const ks=Object.keys(g.lien_ket); if(!ks.length)return;
+    let h='<div class="sec-title">🕸 Mạng lưới liên kết ('+g.bac+' nốt kề)</div>';
+    for(const k of ks){h+='<div class="hint" style="margin:10px 0 4px">'+esc(k)+'</div><div class="grid">'+g.lien_ket[k].map(detailCard).join("")+'</div>';}
+    const el=document.getElementById("dgraph"); if(el)el.innerHTML=h;
+  }).catch(()=>{});
+  $("#dback").onclick=()=>{["search","stats","ai","engine","lotrinh","ytuong","vande","giaiphap","mohinh","mvp","sukien","detail"].forEach(v=>$("#v-"+v).style.display=v==="search"?"block":"none");document.querySelector('.tab[data-v="search"]').classList.add("on");};
+  const dt=$("#dtrans"); if(dt) dt.onclick=async()=>{
+    const src=(x.description&&x.description!==x.oneliner?x.description+"\n\n":"")+(d.rich||"");
+    if(!src.trim()){dt.textContent="Không có nội dung để dịch";return;}
+    dt.textContent="Đang dịch…"; dt.disabled=true;
+    try{const r=await(await fetch("/api/translate",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({text:src})})).json();
+      $("#ddesc").innerHTML=`<div class="detail-desc">${d.richType==="markdown"?mdLite(r.vi):esc(r.vi).replace(/\n/g,"<br>")}</div>`;
+      dt.textContent="✓ Đã dịch";
+    }catch(e){dt.textContent="Lỗi dịch";dt.disabled=false;}
+  };
+}
+document.addEventListener("click",e=>{const c=e.target.closest(".card[data-id]");if(c){e.preventDefault();openDetail(c.dataset.id);}});
+// insights
+let statsLoaded=false;
+async function loadStats(){
+  if(statsLoaded)return; statsLoaded=true;
+  const d=await(await fetch("/api/insights")).json();
+  const maxI=Math.max(...d.byIndustry.map(x=>x.n),1);
+  const bars=(arr,max,win)=>arr.map(x=>{const k=x.category||x.subcategory||x.region||x.year;const w=win?(x.win/x.n*100):0,de=win?(x.dead/x.n*100):0,ba=(x.n/max*100);
+    return `<div class="bar"><div class="lab">${esc(String(k))}</div><div class="track">${win?`<div class="fill fw" style="width:${w*x.n/max}%"></div><div class="fill fd" style="width:${de*x.n/max}%"></div><div class="fill" style="width:${(100-w-de)*x.n/max}%"></div>`:`<div class="fill" style="width:${ba}%"></div>`}</div><div class="n">${x.n.toLocaleString()}</div></div>`;}).join("");
+  const maxS=Math.max(...d.bySubindustry.map(x=>x.n),1), maxR=Math.max(...d.byRegion.map(x=>x.n),1), maxY=Math.max(...d.byYear.map(x=>x.n),1);
+  $("#v-stats").innerHTML=`
+    <div class="sec-title">Theo ngành lớn — 🟩 thành công · 🟥 đóng cửa · còn lại đang hoạt động</div>${bars(d.byIndustry,maxI,true)}
+    <div class="sec-title">Top ngách (subindustry)</div>${bars(d.bySubindustry,maxS)}
+    <div class="sec-title">Theo khu vực</div>${bars(d.byRegion,maxR)}
+    <div class="sec-title">Startup mới theo năm</div>${bars(d.byYear,maxY)}`;
+}
+// AI
+$("#askBtn").onclick=async()=>{
+  const idea=$("#idea").value.trim(); if(idea.length<3)return;
+  const b=$("#askBtn"); b.disabled=true; b.textContent="Đang phân tích…"; $("#ans").innerHTML=""; $("#aimatch").innerHTML="";
+  try{
+    const r=await(await fetch("/api/ask",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({idea})})).json();
+    const html=esc(r.answer||"").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+    $("#ans").innerHTML=`<div class="ans">${html}</div>`;
+    if(r.matches&&r.matches.length){$("#aimatch").innerHTML=`<div class="sec-title">Startup tương tự bộ não tìm thấy</div><div class="grid">${r.matches.map(card).join("")}</div>`;}
+  }catch(e){$("#ans").innerHTML=`<div class="ans">Lỗi: ${esc(e.message)}</div>`;}
+  b.disabled=false; b.textContent="Phân tích ý tưởng ▸";
+};
+
+// ==== 🕸 LỘ TRÌNH ====
+$("#ltBtn").onclick=async()=>{
+  const goal=$("#ltGoal").value.trim(); if(goal.length<5)return;
+  const b=$("#ltBtn"); b.disabled=true; b.textContent="Bộ não đang lần theo mạng lưới…"; $("#ltOut").innerHTML="";
+  try{
+    const r=await(await fetch("/api/lo-trinh",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({muc_tieu:goal})})).json();
+    if(r.error){$("#ltOut").innerHTML='<div class="empty">'+esc(r.error)+'</div>';}
+    else{
+      let h='<div class="ans">'+mdLite(r.ke_hoach||"")+'</div>';
+      if(r.not_lien_quan&&r.not_lien_quan.length)h+='<div class="sec-title">Các nốt trong lộ trình — bấm để đi sâu</div><div class="grid">'+r.not_lien_quan.map(detailCard).join("")+'</div>';
+      $("#ltOut").innerHTML=h;
+    }
+  }catch(e){$("#ltOut").innerHTML='<div class="empty">Lỗi: '+esc(e.message)+'</div>';}
+  b.disabled=false; b.textContent="🧭 Lập lộ trình tiếp cận ▸";
+};
+async function resolveNode(q){try{const d=await(await fetch("/api/search?q="+encodeURIComponent(q)+"&limit=1")).json();return (d.results&&d.results[0])||null;}catch(e){return null;}}
+$("#pBtn").onclick=async()=>{
+  const a=$("#pFrom").value.trim(), z=$("#pTo").value.trim(); if(!a||!z)return;
+  const b=$("#pBtn"); b.disabled=true; b.textContent="Đang tìm…"; $("#pOut").innerHTML="";
+  const na=await resolveNode(a), nz=await resolveNode(z);
+  if(!na||!nz){$("#pOut").innerHTML='<div class="empty">Không tìm thấy nốt khớp "'+esc(!na?a:z)+'".</div>'; b.disabled=false; b.textContent="Tìm đường ▸"; return;}
+  try{
+    const r=await(await fetch("/api/graph/path?from="+na.id+"&to="+nz.id)).json();
+    if(!r.thay){$("#pOut").innerHTML='<div class="empty">'+esc(r.thong_bao||"Chưa có đường.")+'</div>';}
+    else{
+      const chain=r.duong.map((nd,i)=>{
+        const lab=(TLABEL[nd.type]||nd.type);
+        const rel=i>0?'<span class="hint" style="margin:0 6px">—'+esc(nd.rel||"")+(nd.rev?" ←":" →")+'</span>':'';
+        return rel+'<span class="tag" style="cursor:pointer" onclick="openDetail('+nd.id+')"><b>'+esc(nd.name)+'</b> · '+esc(lab)+'</span>';
+      }).join("");
+      $("#pOut").innerHTML='<div class="hint" style="margin-bottom:6px">Tìm thấy đường '+r.so_bac+' bậc:</div><div style="line-height:2.2">'+chain+'</div>';
+    }
+  }catch(e){$("#pOut").innerHTML='<div class="empty">Lỗi: '+esc(e.message)+'</div>';}
+  b.disabled=false; b.textContent="Tìm đường ▸";
+};
+
+
+
+// ==== 🧠 BỘ NÃO SỐNG ====
+let brainStarted=false;
+async function startBrain(){
+  if(brainStarted)return; brainStarted=true;
+  const cv=document.getElementById("brainCv"); if(!cv)return;
+  const ctx2=cv.getContext("2d");
+  let W,H;const fit=()=>{W=cv.width=cv.offsetWidth*2;H=cv.height=cv.offsetHeight*2;};fit();window.addEventListener("resize",fit);
+  let SRC=[{ten:"Wikidata"},{ten:"GitHub"},{ten:"Y Combinator"},{ten:"Hacker News"},{ten:"World Bank"},{ten:"GeoNames"},{ten:"Nobel"},{ten:"SoloCEO OS"}];
+  try{const d=await(await fetch("/api/engine")).json();
+    if(d.nguon)SRC=d.nguon.slice(0,9).map(x=>({ten:x.ten||x.nguon,n:x.so_luong}));
+    const el=document.getElementById("brainStat");
+    if(el)el.textContent=(d.tong_ban_ghi||0).toLocaleString("vi")+" bản ghi · "+(d.nguon||[]).length+" nguồn · cập nhật hàng giờ";
+  }catch(e){}
+  const parts=[];
+  function nodePos(i,n){const a=(i/n)*Math.PI*2-Math.PI/2;const rx=W*0.38,ry=H*0.36;return[W/2+Math.cos(a)*rx,H/2+Math.sin(a)*ry];}
+  function tick(){
+    ctx2.clearRect(0,0,W,H);
+    const cx=W/2,cy=H/2,t=performance.now()/1000;
+    // hào quang não
+    const g=ctx2.createRadialGradient(cx,cy,4,cx,cy,70+Math.sin(t*2)*8);
+    g.addColorStop(0,"rgba(63,185,80,.9)");g.addColorStop(.5,"rgba(227,179,65,.25)");g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx2.fillStyle=g;ctx2.beginPath();ctx2.arc(cx,cy,80,0,7);ctx2.fill();
+    ctx2.fillStyle="#0b0b0c";ctx2.beginPath();ctx2.arc(cx,cy,34,0,7);ctx2.fill();
+    ctx2.strokeStyle="rgba(63,185,80,.8)";ctx2.lineWidth=2;ctx2.beginPath();ctx2.arc(cx,cy,34,0,7);ctx2.stroke();
+    ctx2.fillStyle="#e3b341";ctx2.font="bold 22px monospace";ctx2.textAlign="center";ctx2.fillText("🧠",cx,cy+8);
+    SRC.forEach((sr,i)=>{
+      const[x,y]=nodePos(i,SRC.length);
+      ctx2.strokeStyle="rgba(255,255,255,.06)";ctx2.lineWidth=1;
+      ctx2.beginPath();ctx2.moveTo(x,y);ctx2.lineTo(cx,cy);ctx2.stroke();
+      ctx2.fillStyle="rgba(63,185,80,.9)";ctx2.beginPath();ctx2.arc(x,y,5,0,7);ctx2.fill();
+      ctx2.fillStyle="#9aa0a6";ctx2.font="10px monospace";
+      ctx2.fillText(String(sr.ten).slice(0,16),x,y+(y<cy?-12:22));
+      if(Math.random()<0.06)parts.push({i,p:0,sp:0.004+Math.random()*0.008});
+    });
+    for(let k=parts.length-1;k>=0;k--){
+      const pt=parts[k];pt.p+=pt.sp;
+      if(pt.p>=1){parts.splice(k,1);continue;}
+      const[sx,sy]=nodePos(pt.i,SRC.length);
+      const x=sx+(cx-sx)*pt.p,y=sy+(cy-sy)*pt.p;
+      ctx2.fillStyle="rgba(227,179,65,"+(1-pt.p*0.5)+")";
+      ctx2.beginPath();ctx2.arc(x,y,2.5,0,7);ctx2.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+// ==== ❗ TAB VẤN ĐỀ (chuẩn JTBD/POV/5Whys) ====
+async function loadVanDe(){
+  const d=await(await fetch("/api/van-de?limit=30")).json();
+  const el=document.getElementById("vdFull");
+  if(!d.van_de||!d.van_de.length){el.innerHTML='<div class="empty">Chưa có — máy quét mỗi giờ (phút :05).</div>';return;}
+  el.innerHTML='<div class="hint" style="margin-bottom:10px">'+d.mo+' vấn đề đang mở · máy phát hiện mỗi giờ theo chuẩn JTBD + POV + 5 Whys</div>'+
+    d.van_de.map(v=>`<div class="card" style="margin-bottom:12px">
+      <div class="ct"><div class="cn">❗ ${esc(v.tieu_de)}</div>
+        <span class="tag">đau ${v.do_dau}/10${v.tan_suat?" · "+esc(v.tan_suat):""}</span>
+        ${v.trang_thai==="moi"?'<span class="tag">⏳ chờ ý tưởng</span>':`<span class="tag" style="color:#3fb950;cursor:pointer" onclick="event.stopPropagation();openIdea(${v.idea_id})">✅ ${esc((v.y_tuong||"ý tưởng").slice(0,34))}</span>`}</div>
+      <div class="cd"><b>👥 Khách hàng:</b> ${esc(v.khach_hang||"")}</div>
+      ${v.pov?`<div class="cd"><b>🎯 POV:</b> ${esc(v.pov)}</div>`:""}
+      ${v.boi_canh?`<div class="cd"><b>🧭 JTBD:</b> ${esc(v.boi_canh)}</div>`:""}
+      <div class="cd"><b>😣 Nỗi đau:</b> ${esc(v.mo_ta||"")}</div>
+      ${v.cach_xoay_xo?`<div class="cd"><b>🔄 Đang xoay xở:</b> ${esc(v.cach_xoay_xo)}</div>`:""}
+      ${v.goc_re?`<div class="cd"><b>🌱 Gốc rễ (5 Whys):</b> ${esc(v.goc_re)}</div>`:""}
+    </div>`).join("");
+}
+// ==== 💡 TAB GIẢI PHÁP ====
+async function loadGiaiPhap(){
+  const d=await(await fetch("/api/giai-phap?limit=40")).json();
+  const el=document.getElementById("gpList");
+  if(!d.giai_phap||!d.giai_phap.length){el.innerHTML='<div class="empty">Kho đang đúc — mỗi giờ thêm pattern mới (phút :35).</div>';return;}
+  el.innerHTML=d.giai_phap.map(g=>`<div class="card">
+    <div class="ct"><div class="cn">💡 ${esc(g.ten)}</div><span class="tag">${esc(g.nganh||"")}</span></div>
+    <div class="cd">${esc(g.mo_ta||"")}</div>
+    <div class="cd"><b>⚙️ Nguyên lý:</b> ${esc(g.nguyen_ly||"")}</div>
+    ${g.vi_du?`<div class="cd"><b>🌍 Thế giới đã dùng:</b> ${esc(g.vi_du)}</div>`:""}
+    <div class="cd" style="color:#3fb950"><b>🇻🇳 Solo CEO áp dụng:</b> ${esc(g.ap_dung||"")}</div>
+  </div>`).join("");
+}
+// ==== 💼 MÔ HÌNH KD + 🚀 MVP MẪU ====
+async function loadTypeGrid(type,elId){
+  const d=await(await fetch("/api/search?type="+type+"&limit=120")).json();
+  const el=document.getElementById(elId);
+  el.innerHTML=(d.results||[]).length?d.results.map(card).join(""):'<div class="empty">Trống.</div>';
+}
+
+
+// ==== 💼 MÔ HÌNH KD (đúc lại từ startup thành công thật) ====
+async function loadMoHinh(){
+  const d=await(await fetch("/api/mo-hinh-kd?limit=40")).json();
+  const el=document.getElementById("mhList");
+  if(!d.mo_hinh||!d.mo_hinh.length){el.innerHTML='<div class="empty">Kho đang đúc — mỗi giờ thêm mô hình từ startup thật.</div>';return;}
+  el.innerHTML=d.mo_hinh.map(b=>`<div class="card">
+    <div class="ct"><div class="cn">💼 ${esc(b.ten)}</div><span class="tag">${esc(b.nganh||"")}</span></div>
+    <div class="cd"><b>📎 Đúc từ:</b> ${esc(b.cong_ty||"")} ${b.nguon_id?`<span class="tag" style="cursor:pointer" onclick="openDetail(${b.nguon_id})">xem nốt gốc →</span>`:""}</div>
+    <div class="cd">${esc(b.mo_ta||"")}</div>
+    <div class="cd"><b>💰 Kiếm tiền:</b> ${esc(b.cach_kiem_tien||"")}</div>
+    <div class="cd"><b>👥 Phân khúc:</b> ${esc(b.phan_khuc||"")} · <b>📣 Kênh:</b> ${esc(b.kenh||"")}</div>
+    <div class="cd" style="color:#3fb950"><b>🎓 Solo CEO học được:</b> ${esc(b.bai_hoc||"")}</div>
+  </div>`).join("");
+}
+// ==== 📦 SẢN PHẨM (đúc lại hồ sơ sản phẩm startup thật) ====
+async function loadSanPham(){
+  const d=await(await fetch("/api/san-pham?limit=40")).json();
+  const el=document.getElementById("mvpList");
+  if(!d.san_pham||!d.san_pham.length){el.innerHTML='<div class="empty">Kho đang đúc — mỗi giờ thêm sản phẩm thật.</div>';return;}
+  el.innerHTML=d.san_pham.map(x=>`<div class="card">
+    <div class="ct"><div class="cn">📦 ${esc(x.ten)}</div><span class="tag">${esc(x.nganh||"")}</span></div>
+    <div class="cd"><b>⚙️ Làm gì:</b> ${esc(x.lam_gi||"")}</div>
+    <div class="cd"><b>👥 Cho ai:</b> ${esc(x.cho_ai||"")}</div>
+    <div class="cd"><b>💵 Cách bán:</b> ${esc(x.cach_ban||"")}</div>
+    <div class="cd" style="color:#3fb950"><b>✨ Điểm hay:</b> ${esc(x.diem_hay||"")}</div>
+    ${x.nguon_id?`<div class="cmore" onclick="openDetail(${x.nguon_id})">Xem nốt gốc trong dữ liệu →</div>`:""}
+  </div>`).join("");
+}
+// ==== 📡 SỰ KIỆN THỊ TRƯỜNG ====
+async function loadSuKien(){
+  const d=await(await fetch("/api/su-kien?limit=60")).json();
+  const el=document.getElementById("skList");
+  if(!d.su_kien||!d.su_kien.length){el.innerHTML='<div class="empty">Đang đúc từ dòng tin tức — quay lại sau.</div>';return;}
+  el.innerHTML='<div class="hint" style="margin-bottom:10px">'+d.count+' sự kiện · đúc lại từ tin tức thật, cập nhật hàng giờ</div>'+
+    d.su_kien.map(e=>`<div class="card" style="margin-bottom:10px">
+    <div class="ct"><div class="cn">📡 ${esc(e.tieu_de)}</div><span class="tag">${esc(e.loai||"")}</span>${e.nganh?`<span class="tag">${esc(e.nganh)}</span>`:""}</div>
+    <div class="cd">${esc(e.mo_ta||"")}</div>
+    <div class="cd" style="color:#e3b341"><b>⚡ Tác động cho Solo CEO:</b> ${esc(e.tac_dong||"")}</div>
+    ${e.nguon_id?`<div class="cmore" onclick="openDetail(${e.nguon_id})">Xem tin gốc →</div>`:""}
+  </div>`).join("");
+}
+// ==== ⭐ KHỞI TẠO Ý TƯỞNG CỦA CEO ====
+const DOI_LBL={van_de:"❗ Vấn đề đang xảy ra",giai_phap:"💡 Giải pháp đã có",mo_hinh:"💼 Mô hình đã có",san_pham:"📦 Sản phẩm đã có",su_kien:"📡 Sự kiện đang diễn ra"};
+document.addEventListener("DOMContentLoaded",()=>{});
+function bindKhoiTao(){
+  const b=document.getElementById("ktBtn"); if(!b||b._bound)return; b._bound=1;
+  b.onclick=async()=>{
+    const y=document.getElementById("ktY").value.trim();
+    if(y.length<8){document.getElementById("ktStt").textContent="⚠️ Mô tả dài hơn chút";return;}
+    b.disabled=true;document.getElementById("ktStt").textContent="Engine đang chạy qua 5 kho dữ liệu… (60-120s)";
+    document.getElementById("ktOut").innerHTML="";
+    try{
+      const r=await(await fetch("/api/khoi-tao",{method:"POST",headers:{"content-type":"application/json"},
+        body:JSON.stringify({y_tuong:y,tac_gia:document.getElementById("ktTen").value})})).json();
+      if(r.error){document.getElementById("ktOut").innerHTML='<div class="empty">'+esc(r.error)+'</div>';}
+      else{
+        let h='<div class="sec-title">✅ '+esc(r.ten)+'</div><div class="detail-one">'+esc(r.tom_tat||"")+'</div>';
+        h+='<div class="sec-title">🔍 Đối chiếu qua Data Engine</div><div class="grid">'+
+          Object.keys(DOI_LBL).map(k=>`<div class="card"><h3>${DOI_LBL[k]}</h3><p>${esc((r.doi_chieu||{})[k]||"—")}</p></div>`).join("")+'</div>';
+        h+='<div class="sec-title">🗂 Business Model Canvas của bạn</div><div class="grid">'+
+          Object.entries(BMC_LBL).map(([k,l])=>`<div class="card"><h3>${l}</h3><p>${esc((r.bmc||{})[k]||"—")}</p></div>`).join("")+'</div>';
+        if(r.lo_trinh&&r.lo_trinh.length)h+='<div class="sec-title">🗺 Lộ trình triển khai</div>'+
+          r.lo_trinh.map(g=>`<div class="card" style="margin-bottom:8px"><h3>📍 ${esc(g.giai_doan||"")}</h3><p>• ${(g.viec||[]).map(esc).join("<br>• ")}</p><p style="color:#3fb950;margin-top:6px">🎯 ${esc(g.muc_tieu||"")}</p></div>`).join("");
+        if(r.soloceo_stack&&r.soloceo_stack.length)h+='<div class="sec-title">🧩 Stack SoloCEO</div><div class="detail-desc">'+r.soloceo_stack.map(esc).join("<br>")+'</div>';
+        h+='<div class="card" style="margin-top:12px;color:#3fb950">💾 '+esc(r.luu||"")+' <span class="tag" style="cursor:pointer" onclick="openIdea('+r.id+')">Xem bản đầy đủ →</span></div>';
+        document.getElementById("ktOut").innerHTML=h;
+        loadIdeas();
+      }
+    }catch(e){document.getElementById("ktOut").innerHTML='<div class="empty">Lỗi: '+esc(e.message)+'</div>';}
+    b.disabled=false;document.getElementById("ktStt").textContent="";
+  };
+}
+
+// ==== 💡 XƯỞNG Ý TƯỞNG ====
+let YT_SORT="new";
+
+async function loadProblems(){
+  try{
+    const d=await(await fetch("/api/van-de?limit=8")).json();
+    const el=document.getElementById("vdList"); if(!el)return;
+    if(!d.van_de||!d.van_de.length){el.innerHTML='<div class="hint">Chưa có — máy quét mỗi giờ, quay lại sau.</div>';return;}
+    el.innerHTML='<div class="hint" style="margin-bottom:6px">'+d.mo+' vấn đề đang mở · máy quét mỗi giờ</div>'+
+      d.van_de.map(v=>`<div class="bar" style="align-items:center"><div class="lab" style="width:auto;min-width:0;flex:1">❗ <b>${esc(v.tieu_de)}</b> <span class="mut">· ${esc(v.khach_hang||"")}</span></div>
+      <span class="tag">đau ${v.do_dau}/10</span>
+      ${v.trang_thai==="moi"?'<span class="tag">⏳ chờ ý tưởng</span>':`<span class="tag" style="color:#3fb950;cursor:pointer" onclick="openIdea(${v.idea_id})">✅ ${esc((v.y_tuong||"ý tưởng").slice(0,30))}…</span>`}</div>`).join("");
+  }catch(e){}
+}
+async function loadIdeas(){
+  const d=await(await fetch("/api/ideas?sort="+YT_SORT)).json();
+  const el=$("#ytList");$("#ytDetail").style.display="none";el.style.display="grid";
+  if(!d.ideas||!d.ideas.length){el.innerHTML='<div class="empty">Chưa có ý tưởng — xưởng đúc mỗi giờ 1 ý tưởng, quay lại sau nhé.</div>';return;}
+  el.innerHTML=d.ideas.map(x=>`<div class="card" data-yt="${x.id}" style="cursor:pointer">
+    <div class="ct"><div class="cn">💡 ${esc(x.ten)}</div>${x.tac_gia?`<span class="tag">👤 ${esc(x.tac_gia)}</span>`:""}</div>
+    <div class="cd">${esc((x.tom_tat||x.van_de||"").slice(0,160))}</div>
+    <div class="meta"><span class="tag">${esc(x.nganh||"")}</span>
+      <span class="tag">⭐ ${x.diem_tb||0} (${x.so_vote})</span>
+      <span class="tag">🔥 ${x.so_thuc_thi} thực thi</span>
+      <span class="tag">🕒 ${String(x.created_at||"").slice(0,10)}</span></div>
+    <div class="cmore">Xem BMC đầy đủ →</div></div>`).join("");
+}
+document.querySelectorAll(".yt-sort .tag").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".yt-sort .tag").forEach(z=>z.style.borderColor="");
+  t.style.borderColor="#3fb950";YT_SORT=t.dataset.s;loadIdeas();});
+const BMC_LBL={phan_khuc_khach_hang:"👥 Phân khúc khách hàng",gia_tri_cot_loi:"💎 Giá trị cốt lõi",kenh_phan_phoi:"📣 Kênh phân phối",quan_he_khach_hang:"🤝 Quan hệ khách hàng",dong_doanh_thu:"💰 Dòng doanh thu",nguon_luc_chinh:"🧱 Nguồn lực chính",hoat_dong_chinh:"⚙️ Hoạt động chính",doi_tac_chinh:"🔗 Đối tác chính",co_cau_chi_phi:"📉 Cơ cấu chi phí"};
+async function openIdea(id){
+  const x=await(await fetch("/api/ideas/"+id)).json();
+  if(x.error)return;
+  $("#ytList").style.display="none";const el=$("#ytDetail");el.style.display="block";
+  const sec=(t,c)=>c?`<div class="sec-title">${t}</div><div class="detail-desc">${esc(c)}</div>`:"";
+  const stars=[1,2,3,4,5].map(n=>`<span class="yt-star" data-n="${n}" style="cursor:pointer;font-size:22px">☆</span>`).join("");
+  el.innerHTML=`<div class="dback" id="ytBack">← Danh sách ý tưởng</div>
+    <h1 class="detail-title">💡 ${esc(x.ten)}</h1>
+    <div class="meta" style="margin:8px 0"><span class="tag">${esc(x.nganh||"")}</span>
+      <span class="tag">⭐ <b id="ytDiem">${x.diem_tb||0}</b> (<span id="ytNVote">${x.so_vote}</span> đánh giá)</span>
+      <span class="tag">🔥 <b id="ytNExec">${x.so_thuc_thi}</b> CEO thực thi</span></div>
+    <div class="detail-one">${esc(x.tom_tat||"")}</div>
+    ${sec("❗ Vấn đề",x.van_de)}${sec("✅ Giải pháp",x.giai_phap)}
+    ${sec("📈 Thị trường (ước lượng)",x.thi_truong)}${sec("⏰ Vì sao bây giờ",x.vi_sao_bay_gio)}
+    <div class="sec-title">🗂 Business Model Canvas (9 khối)</div>
+    <div class="grid">${Object.entries(BMC_LBL).map(([k,l])=>`<div class="card"><h3>${l}</h3><p>${esc(x.bmc[k]||"—")}</p></div>`).join("")}</div>
+    ${x.lo_trinh&&x.lo_trinh.length?'<div class="sec-title">🗺 Lộ trình triển khai chi tiết</div>'+x.lo_trinh.map(g=>`<div class="card" style="margin-bottom:8px"><h3>📍 ${esc(g.giai_doan||"")}</h3><p>${(g.viec||[]).map(esc).join("<br>• ")}</p><p style="color:#3fb950;margin-top:6px">🎯 ${esc(g.muc_tieu||"")}</p></div>`).join(""):""}
+    ${x.buoc_dau&&x.buoc_dau.length?'<div class="sec-title">🚀 Tuần đầu tiên</div><div class="detail-desc">'+x.buoc_dau.map((b,i)=>(i+1)+". "+esc(b)).join("<br>")+"</div>":""}
+    ${x.soloceo_stack&&x.soloceo_stack.length?'<div class="sec-title">🧩 Stack SoloCEO nên dùng</div><div class="detail-desc">'+x.soloceo_stack.map(esc).join("<br>")+"</div>":""}
+    ${x.not_can_cu&&x.not_can_cu.length?'<div class="sec-title">📚 Căn cứ dữ liệu (bấm xem nốt)</div><div class="grid">'+x.not_can_cu.map(n=>`<div class="card" data-id="${n.id}" style="cursor:pointer"><div class="cn">${esc(n.name)}</div><div class="cd">${esc(n.oneliner||n.type)}</div></div>`).join("")+"</div>":""}
+    <div class="sec-title">⭐ Bạn chấm ý tưởng này mấy sao?</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span id="ytStars">${stars}</span>
+      <button class="btn" id="ytExec">🔥 Tôi sẽ thực thi ý tưởng này</button>
+      <span class="hint" id="ytMsg"></span>
+    </div>`;
+  $("#ytBack").onclick=()=>{el.style.display="none";$("#ytList").style.display="grid";loadIdeas();};
+  document.querySelectorAll("#ytStars .yt-star").forEach(st=>st.onclick=async()=>{
+    const n=Number(st.dataset.n);
+    const r=await(await fetch("/api/ideas/"+id+"/vote",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({diem:n})})).json();
+    if(r.ok){$("#ytDiem").textContent=r.diem_tb;$("#ytNVote").textContent=r.so_vote;$("#ytMsg").textContent="✓ Đã ghi "+n+"★";
+      document.querySelectorAll("#ytStars .yt-star").forEach(z=>z.textContent=Number(z.dataset.n)<=n?"★":"☆");}
+  });
+  $("#ytExec").onclick=async()=>{
+    const r=await(await fetch("/api/ideas/"+id+"/thuc-thi",{method:"POST",headers:{"content-type":"application/json"},body:"{}"})).json();
+    if(r.ok){$("#ytNExec").textContent=r.so_thuc_thi;$("#ytMsg").textContent="✓ Đã ghi nhận bạn thực thi";}
+  };
+}
+document.addEventListener("click",e=>{const c=e.target.closest(".card[data-yt]");if(c){e.preventDefault();openIdea(c.dataset.yt);}});
+
+
+// deep-link: #ytuong → tab ý tưởng; #idea-N → mở thẳng BMC ý tưởng N
+function hashRoute(){
+  const h=location.hash||"";
+  const goTab=v=>{const t=document.querySelector('.tab[data-v="'+v+'"]');if(t)t.click();};
+  if(h==="#ytuong")goTab("ytuong");
+  else if(h==="#vande")goTab("vande");
+  else if(h==="#giaiphap")goTab("giaiphap");
+  else if(h==="#mohinh")goTab("mohinh");
+  else if(h==="#mvp")goTab("mvp");
+  else if(h==="#sukien")goTab("sukien");
+  else if(h==="#sanpham")goTab("mvp");
+  else if(/^#idea-\d+$/.test(h)){goTab("ytuong");openIdea(h.slice(6));}
+}
+window.addEventListener("hashchange",hashRoute);
+setTimeout(()=>{hashRoute();bindKhoiTao();},300);
+
+boot();
+startBrain();
+</script>
+</body></html>

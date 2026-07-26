@@ -4,6 +4,7 @@
 import { AlertTriangle, Check, Loader2, ShieldCheck, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { WorkspaceBody, WorkspaceContainer, WorkspaceHeader } from "@/components/workspace/workspace-container";
+import { SoloceoOpsTabs } from "@/components/workspace/soloceo-ops-tabs";
 import { soloceoApi } from "@/components/workspace/soloceo-api";
 
 const ACTION_LABEL: Record<string, string> = {
@@ -82,6 +83,7 @@ export function SoloceoApprovals() {
     <WorkspaceContainer>
       <WorkspaceHeader />
       <WorkspaceBody>
+      <SoloceoOpsTabs />
         <div className="mx-auto w-full max-w-3xl px-4 py-8">
           <div className="mb-6 flex items-center gap-3">
             <ShieldCheck className="h-6 w-6 text-emerald-600" />

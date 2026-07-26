@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
+import { SoloceoIdeasStrip } from "./soloceo-ideas-strip";
 import { startTemplateKickoff, type ProjectTemplate } from "./soloceo-kickoff";
 
 const API = "https://api.soloceo.vn/v1";
@@ -41,6 +42,7 @@ export function SoloceoProjectTemplates({ className }: { className?: string }) {
 
   return (
     <div className={cn("mx-auto w-full max-w-(--container-width-md)", className)}>
+      <SoloceoIdeasStrip />
       <div className="mb-3 flex items-center justify-between gap-3 px-0.5">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <SparklesIcon className="size-4 text-emerald-500" /> Tạo dự án theo mẫu
@@ -82,7 +84,7 @@ export function SoloceoProjectTemplates({ className }: { className?: string }) {
                 </div>
                 {free ? (
                   <span className="rounded-full bg-emerald-500/12 px-2 py-0.5 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
-                    MIỄN PHÍ
+                    {new Intl.NumberFormat("vi-VN").format(Number((t as {monthlyFeeVnd?: number}).monthlyFeeVnd) || 0)}đ/th
                   </span>
                 ) : (
                   <span className="rounded-full bg-amber-500/12 px-2 py-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400">

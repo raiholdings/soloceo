@@ -1,6 +1,6 @@
 "use client";
 
-import { BotIcon, FolderIcon, CalendarClock, GraduationCap, LayoutDashboard, LayoutGrid, MessageCircle, MessagesSquare, Users, Video, VideoIcon } from "lucide-react";
+import { Receipt, Building2, BotIcon, FolderIcon, CalendarClock, GraduationCap, Handshake, Landmark, LayoutDashboard, ScanEye, ScanText, LayoutGrid, MessageCircle, MessagesSquare, Users, Video, VideoIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -88,97 +88,6 @@ export function WorkspaceNavChatList() {
             >
               <CalendarClock />
               <span>{t.sidebar.scheduledTasks}</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* Nền tảng — cổng dịch vụ PaaS + tên miền (platform.soloceo.vn / WHMCS), thay Chợ ứng dụng */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/nen-tang")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/nen-tang">
-              <LayoutGrid />
-              <span>Nền tảng</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* CRM — Perfex SaaS tại crm.soloceo.vn (nhúng workspace) */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/crm")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/crm">
-              <LayoutDashboard />
-              <span>CRM</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* Chat đa kênh — Support Board SaaS tại chat.soloceo.vn (nhúng workspace) */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname === "/workspace/chat" || pathname.startsWith("/workspace/chat/")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/chat">
-              <MessagesSquare />
-              <span>Chat đa kênh</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* Đào tạo (LMS) — Academy tại edu.soloceo.vn */}
-        <SidebarMenuItem>
-          <SidebarMenuButton isActive={pathname.startsWith("/workspace/dao-tao")} asChild>
-            <Link className="text-muted-foreground" href="/workspace/dao-tao">
-              <GraduationCap />
-              <span>Đào tạo</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* --- Cộng đồng / Video / Nhóm chat (WoWonder/PlayTube/Grupo) --- */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/cong-dong")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/cong-dong">
-              <Users />
-              <span>Cộng đồng</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/video")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/video">
-              <Video />
-              <span>Video</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/nhom-chat")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/nhom-chat">
-              <MessageCircle />
-              <span>Nhóm chat</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        {/* Họp video — LiveSmart SFU tại meeting.soloceo.vn (Zoom của SoloCEO) */}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname.startsWith("/workspace/hop-video")}
-            asChild
-          >
-            <Link className="text-muted-foreground" href="/workspace/hop-video">
-              <VideoIcon />
-              <span>Họp video</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

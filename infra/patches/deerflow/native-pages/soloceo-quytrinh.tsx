@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { WorkspaceBody, WorkspaceContainer, WorkspaceHeader } from "@/components/workspace/workspace-container";
+import { SoloceoOpsTabs } from "@/components/workspace/soloceo-ops-tabs";
 import { soloceoApi } from "@/components/workspace/soloceo-api";
 import { KICKOFF_KEY } from "@/components/workspace/soloceo-kickoff";
 
@@ -142,6 +143,7 @@ export function SoloceoQuyTrinh() {
     const editableNodes = editing.graphJson.nodes;
     return (
       <WorkspaceContainer><WorkspaceHeader /><WorkspaceBody>
+      <SoloceoOpsTabs />
         <div className="mx-auto w-full max-w-2xl px-4 py-8">
           <button onClick={() => { setEditing(null); setRunResult(null); }} className="text-muted-foreground mb-4 inline-flex items-center gap-1.5 text-sm hover:underline">
             <ChevronLeft className="h-4 w-4" /> Danh sách quy trình
@@ -227,6 +229,7 @@ export function SoloceoQuyTrinh() {
   // ── UI: list ──
   return (
     <WorkspaceContainer><WorkspaceHeader /><WorkspaceBody>
+      <SoloceoOpsTabs />
       <div className="mx-auto w-full max-w-2xl px-4 py-8">
         <div className="mb-6 flex items-center gap-3">
           <Workflow className="h-6 w-6 text-emerald-600" />

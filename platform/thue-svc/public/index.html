@@ -1,0 +1,320 @@
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hoá đơn & Thuế — SoloCEO</title>
+<style>
+:root{--bg:#0b0b0c;--card:#141416;--line:#26262b;--green:#3fb950;--gold:#e3b341;--mut:#9aa0a6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#e8e8ea;font:15px/1.55 system-ui,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:23px;margin:0 0 3px}.sub{color:var(--mut);font-size:13.5px;margin-bottom:14px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.tab{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 13px;cursor:pointer;font-size:14px;color:#cfd2d6}
+.tab.on{background:var(--green);color:#0b0b0c;border-color:var(--green);font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;background:#0e0e10;border:1px solid var(--line);border-radius:9px;color:#fff;padding:9px 11px;font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row3{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:end}
+.btn{background:var(--green);color:#0b0b0c;border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer;font-size:15px}
+.btn.sec{background:transparent;color:var(--green);border:1px solid var(--green)}.btn.mini{padding:8px 12px;font-size:13px}
+.doc{background:#0e0e10;border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:12px;white-space:pre-wrap;font-size:13.5px;line-height:1.65}
+.doc h3{margin:0 0 8px;color:var(--gold)}
+.step{display:flex;gap:10px;margin:8px 0}.step b{color:var(--green);flex:none}
+.warn{background:rgba(227,179,65,.08);border:1px solid rgba(227,179,65,.3);border-radius:10px;padding:12px;font-size:13px;color:#e9d9a8;margin-bottom:14px}
+.mut{color:var(--mut);font-size:13px}.hide{display:none}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}th,td{border:1px solid var(--line);padding:7px 8px;text-align:right}th,td:first-child,td:nth-child(2){text-align:left}
+.tot{color:var(--gold);font-weight:700}.bad{color:#f0776c}
+.pill{display:inline-block;background:#0e0e10;border:1px solid var(--line);border-radius:20px;padding:4px 11px;margin:3px 5px 0 0;font-size:12.5px}
+@media(max-width:640px){.row,.row3{grid-template-columns:1fr}}
+@media print{body{background:#fff;color:#000}.noprint{display:none}.doc{border:0;color:#000;background:#fff}.doc h3{color:#000}}
+</style>
+<div class="wrap">
+<h1>🧾 Hoá đơn & Thuế</h1>
+<div class="sub">Trợ lý AI hỗ trợ toàn diện: xuất hoá đơn đúng chuẩn · nắm nghĩa vụ thuế · soạn tờ khai · nhắc hạn tránh phạt.</div>
+<div class="warn noprint">⚖️ <b>Hợp pháp & minh bạch:</b> SoloCEO <b>soạn thảo, tính toán, kiểm tra và hướng dẫn</b>. Hoá đơn phát hành qua <b>nhà cung cấp được Tổng cục Thuế công nhận</b> (MISA/Viettel/VNPT…) bằng tài khoản của bạn; tờ khai bạn tự nộp trên <b>thuedientu.gdt.gov.vn</b> bằng chữ ký số. SoloCEO <b>không phát hành/nộp thay</b>.</div>
+
+<div class="tabs noprint">
+  <div class="tab on" data-t="hoadon">🧾 Hoá đơn</div>
+  <div class="tab" data-t="baocao">📥 Báo cáo quý</div>
+  <div class="tab" data-t="ketnoi">🔌 Kết nối</div>
+  <div class="tab" data-t="nghiavu">📊 Nghĩa vụ thuế</div>
+  <div class="tab" data-t="tokhai">✍️ Soạn tờ khai</div>
+  <div class="tab" data-t="lich">📅 Lịch thuế</div>
+  <div class="tab" data-t="huongdan">📖 Hướng dẫn</div>
+</div>
+
+<!-- HOÁ ĐƠN -->
+<div class="pane" id="p-hoadon">
+  <div class="card">
+    <div class="row">
+      <div><label>Người bán (DN của bạn)</label><input id="ban_ten" placeholder="Tên công ty"/></div>
+      <div><label>MST người bán *</label><input id="ban_mst" placeholder="0xxxxxxxxx"/></div>
+    </div>
+    <div class="row">
+      <div><label>Người mua</label><input id="mua_ten" placeholder="Tên khách hàng"/></div>
+      <div><label>MST người mua (nếu là tổ chức)</label><input id="mua_mst"/></div>
+    </div>
+    <label>Dòng hàng hoá / dịch vụ</label>
+    <div id="items"></div>
+    <button class="btn sec mini" id="addItem" style="margin-top:8px">+ Thêm dòng</button>
+    <div style="margin-top:14px"><button class="btn" id="genHD">🧮 Tính & kiểm tra hoá đơn</button>
+      <span class="mut" id="sttHD" style="margin-left:10px"></span></div>
+  </div>
+  <div id="hdKq"></div>
+</div>
+
+<!-- BÁO CÁO QUÝ -->
+<div class="pane hide" id="p-baocao">
+  <div class="warn">📥 Nạp hoá đơn <b>đầu vào & đầu ra</b> của kỳ (nhập tay, dán CSV, hoặc <b>Đồng bộ</b> từ phần mềm HĐĐT bạn đã nối ở tab Kết nối) → hệ thống <b>tổng hợp + đối chiếu</b> và tự đổ số vào tờ khai 01/GTGT.</div>
+  <div class="card">
+    <div class="row">
+      <div><label>MST doanh nghiệp bạn</label><input id="bc_mst" placeholder="0xxxxxxxxx"/></div>
+      <div><label>Kỳ tính thuế</label><input id="bc_ky" placeholder="vd: Quý 2/2026"/></div>
+    </div>
+    <div style="margin:10px 0"><button class="btn sec mini" id="bcSync">🔄 Đồng bộ từ phần mềm HĐĐT</button>
+      <span class="mut" id="bcSyncStt" style="margin-left:8px"></span></div>
+    <label>Danh sách hoá đơn (Loại · Số · Ngày · MST đối tác · Tên · Tiền trước thuế · Thuế suất)</label>
+    <div id="bcItems"></div>
+    <button class="btn sec mini" id="bcAdd" style="margin-top:8px">+ Thêm hoá đơn</button>
+    <label style="margin-top:12px">…hoặc dán CSV (mỗi dòng: <code>loai,so,ngay,mst,ten,truoc_thue,thue_suat</code> — loai = ra/vao)</label>
+    <textarea id="bcCsv" style="min-height:70px" placeholder="ra,HD001,2026-04-05,0398765432,Cty XYZ,50000000,10&#10;vao,MB123,2026-04-10,0311111111,NCC ABC,20000000,10"></textarea>
+    <button class="btn sec mini" id="bcParse" style="margin-top:8px">↧ Nạp CSV vào bảng</button>
+    <div style="margin-top:14px"><button class="btn" id="bcRun">📊 Tổng hợp & đối chiếu</button><span class="mut" id="bcStt" style="margin-left:10px"></span></div>
+  </div>
+  <div id="bcKq"></div>
+</div>
+
+<!-- KẾT NỐI -->
+<div class="pane hide" id="p-ketnoi">
+  <div class="warn">🔌 <b>Kênh chính thống:</b> nhập tài khoản API của <b>chính doanh nghiệp bạn</b> tại nhà cung cấp HĐĐT (được Tổng cục Thuế cấp phép) để SoloCEO đồng bộ hoá đơn <b>của bạn</b> về. SoloCEO <b>không</b> đăng nhập Cổng Thuế thay bạn.</div>
+  <div class="card">
+    <h3 style="margin:0 0 8px;color:#e3b341">Nối phần mềm hoá đơn điện tử</h3>
+    <div class="row">
+      <div><label>MST doanh nghiệp</label><input id="kn_mst" placeholder="0xxxxxxxxx"/></div>
+      <div><label>Nhà cung cấp</label><select id="kn_provider"></select></div>
+    </div>
+    <div class="mut" id="kn_huongdan" style="margin-top:6px"></div>
+    <div class="row"><div><label>Endpoint / Domain</label><input id="kn_domain" placeholder="vd: https://xxx.meinvoice.vn"/></div>
+      <div><label>Tài khoản API / Username</label><input id="kn_user"/></div></div>
+    <div class="row"><div><label>Mật khẩu / Secret</label><input id="kn_pass" type="password"/></div>
+      <div><label>AppId (nếu có)</label><input id="kn_appid"/></div></div>
+    <div style="margin-top:12px"><button class="btn" id="knSave">💾 Lưu kết nối</button>
+      <button class="btn sec" id="knSync" style="margin-left:8px">🔄 Thử đồng bộ</button>
+      <span class="mut" id="knStt" style="margin-left:10px"></span></div>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 8px;color:#e3b341">Nối doanh thu từ CRM (đối chiếu)</h3>
+    <div class="mut" id="crm_conn" style="margin-bottom:8px"></div>
+    <div class="row"><div><label>Từ ngày</label><input id="crm_tu" placeholder="2026-04-01"/></div>
+      <div><label>Đến ngày</label><input id="crm_den" placeholder="2026-06-30"/></div></div>
+    <div style="margin-top:12px"><button class="btn sec" id="crmGet">📈 Lấy doanh thu từ CRM</button><span class="mut" id="crmStt" style="margin-left:10px"></span></div>
+    <div id="crmKq" class="mut" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- NGHĨA VỤ THUẾ -->
+<div class="pane hide" id="p-nghiavu">
+  <div class="card">
+    <div class="row">
+      <div><label>Loại hình DN</label><select id="nv_loai"><option>Công ty TNHH một thành viên</option><option>Công ty TNHH hai thành viên trở lên</option><option>Công ty Cổ phần</option><option>Doanh nghiệp tư nhân</option></select></div>
+      <div><label>Vốn điều lệ (VNĐ)</label><input id="nv_von" placeholder="vd: 500.000.000"/></div>
+    </div>
+    <div class="row">
+      <div><label>Doanh thu năm ước tính (VNĐ)</label><input id="nv_dt" placeholder="vd: 2.000.000.000"/></div>
+      <div><label>Phương pháp tính thuế GTGT</label><select id="nv_pp"><option value="khấu trừ">Khấu trừ (phổ biến)</option><option value="trực tiếp">Trực tiếp trên doanh thu</option></select></div>
+    </div>
+    <label class="mut" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px"><input type="checkbox" id="nv_ld" style="width:auto"/> Có lao động (trả lương)</label>
+    <div style="margin-top:14px"><button class="btn" id="genNV">📊 Xác định nghĩa vụ thuế</button><span class="mut" id="sttNV" style="margin-left:10px"></span></div>
+  </div>
+  <div id="nvKq"></div>
+</div>
+
+<!-- SOẠN TỜ KHAI -->
+<div class="pane hide" id="p-tokhai">
+  <div class="card">
+    <div class="row">
+      <div><label>Loại tờ khai</label><select id="tk_loai">
+        <option value="gtgt">01/GTGT — Tờ khai thuế GTGT (khấu trừ)</option>
+        <option value="mon_bai">01/LPMB — Lệ phí môn bài</option>
+        <option value="tncn_kk">05/KK-TNCN — Khấu trừ thuế TNCN</option>
+        <option value="tndn_qt">03/TNDN — Quyết toán TNDN năm</option>
+        <option value="tncn_qt">05/QTT-TNCN — Quyết toán TNCN năm</option>
+      </select></div>
+      <div><label>Kỳ tính thuế</label><input id="tk_ky" placeholder="vd: Quý 2/2026 hoặc Năm 2026"/></div>
+    </div>
+    <div class="row">
+      <div><label>Tên người nộp thuế</label><input id="tk_nnt"/></div>
+      <div><label>MST</label><input id="tk_mst"/></div>
+    </div>
+    <label>Số liệu (mỗi dòng: chỉ tiêu = giá trị) — vd: Doanh thu bán ra chịu thuế 10% = 500000000</label>
+    <textarea id="tk_solieu" style="min-height:110px" placeholder="Doanh thu chịu thuế 10% = ...&#10;Thuế GTGT đầu ra = ...&#10;Thuế GTGT đầu vào được khấu trừ = ..."></textarea>
+    <div style="margin-top:14px"><button class="btn" id="genTK">✍️ Soạn bản thảo tờ khai</button><span class="mut" id="sttTK" style="margin-left:10px"></span></div>
+  </div>
+  <div id="tkKq"></div>
+</div>
+
+<!-- LỊCH THUẾ -->
+<div class="pane hide" id="p-lich">
+  <div class="card">
+    <div class="row">
+      <div><label>Năm</label><input id="lich_nam" placeholder="vd: 2026"/></div>
+      <div><label>Kỳ khai GTGT</label><select id="lich_pp"><option value="quy">Theo quý (≤ 50 tỷ/năm)</option><option value="thang">Theo tháng (> 50 tỷ/năm)</option></select></div>
+    </div>
+    <div style="margin-top:14px"><button class="btn" id="genLich">📅 Xem lịch thuế</button></div>
+  </div>
+  <div id="lichKq"></div>
+</div>
+
+<!-- HƯỚNG DẪN -->
+<div class="pane hide" id="p-huongdan"><div id="hdanKq"><div class="card mut">Đang tải…</div></div></div>
+
+</div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+function esc(s){return(s==null?"":String(s)).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+function vnd(n){return (Number(n)||0).toLocaleString("vi-VN")+"đ";}
+// tabs
+$$(".tab").forEach(t=>t.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("on"));t.classList.add("on");
+  $$(".pane").forEach(p=>p.classList.add("hide"));$("#p-"+t.dataset.t).classList.remove("hide");
+  if(t.dataset.t==="huongdan")loadHuongDan();});
+
+// ── Hoá đơn: dòng động
+let TS=[{v:0},{v:5},{v:8},{v:10}];
+function itemRow(){const d=document.createElement("div");d.className="row3";d.style.marginTop="8px";
+  d.innerHTML=`<input placeholder="Tên hàng hoá/dịch vụ" class="it-ten"/>
+    <input placeholder="ĐVT" class="it-dvt"/>
+    <input placeholder="SL" class="it-sl" type="number"/>
+    <input placeholder="Đơn giá" class="it-dg" type="number"/>
+    <select class="it-ts">${TS.map(t=>`<option value="${t.v}">${t.v}%</option>`).join("")}</select>`;
+  $("#items").appendChild(d);}
+$("#addItem").onclick=itemRow; itemRow(); itemRow();
+$("#genHD").onclick=async()=>{
+  const items=$$("#items .row3").map(r=>({ten:r.querySelector(".it-ten").value,dvt:r.querySelector(".it-dvt").value,
+    so_luong:r.querySelector(".it-sl").value,don_gia:r.querySelector(".it-dg").value,thue_suat:r.querySelector(".it-ts").value}))
+    .filter(x=>x.ten||x.don_gia);
+  if(!items.length){$("#sttHD").textContent="⚠️ Nhập ít nhất 1 dòng";return;}
+  $("#genHD").disabled=true;$("#sttHD").textContent="Đang tính & hỏi AI…";
+  try{const r=await(await fetch("/api/hoadon/draft",{method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({ban_ten:$("#ban_ten").value,ban_mst:$("#ban_mst").value,mua_ten:$("#mua_ten").value,mua_mst:$("#mua_mst").value,items})})).json();
+    if(r.error){$("#sttHD").textContent="Lỗi: "+r.error;$("#genHD").disabled=false;return;}
+    let h=`<div class="card"><h3 style="margin:0 0 8px;color:#e3b341">Bảng kê hoá đơn (bản thảo)</h3>
+      <table><tr><th>#</th><th>Tên</th><th>ĐVT</th><th>SL</th><th>Đơn giá</th><th>Thuế</th><th>Thành tiền</th><th>Tiền thuế</th></tr>
+      ${r.rows.map(x=>`<tr><td>${x.stt}</td><td>${esc(x.ten)}</td><td>${esc(x.dvt)}</td><td>${x.so_luong}</td><td>${vnd(x.don_gia)}</td><td>${x.thue_suat}%</td><td>${vnd(x.thanh_tien)}</td><td>${vnd(x.tien_thue)}</td></tr>`).join("")}
+      <tr><td colspan="6" class="tot">Cộng tiền hàng</td><td colspan="2" class="tot">${vnd(r.tong_truoc_thue)}</td></tr>
+      <tr><td colspan="6" class="tot">Tiền thuế GTGT</td><td colspan="2" class="tot">${vnd(r.tong_thue)}</td></tr>
+      <tr><td colspan="6" class="tot">TỔNG THANH TOÁN</td><td colspan="2" class="tot">${vnd(r.tong_thanh_toan)}</td></tr></table>`;
+    if(r.canh_bao&&r.canh_bao.length)h+=`<div style="margin-top:10px" class="bad">⚠️ ${r.canh_bao.map(esc).join("<br>⚠️ ")}</div>`;
+    h+=`</div><div class="doc"><h3>Ghi chú AI & rủi ro cần lưu ý</h3>${esc(r.ai_note)}</div>
+      <div class="card"><b>Phát hành chính thức:</b> <span class="mut">${esc(r.phat_hanh.huong_dan)}</span><div style="margin-top:8px">${r.phat_hanh.providers.map(p=>`<a class="pill" href="${p.web}" target="_blank" style="color:#3fb950;text-decoration:none">${esc(p.ten)} ↗</a>`).join("")}</div></div>`;
+    $("#hdKq").innerHTML=h;$("#sttHD").textContent="✓";$("#genHD").disabled=false;
+  }catch(e){$("#sttHD").textContent="Lỗi: "+e.message;$("#genHD").disabled=false;}
+};
+
+// ── Báo cáo quý
+const TSOPT=`<option value="0">0%</option><option value="5">5%</option><option value="8">8%</option><option value="10" selected>10%</option>`;
+function bcRow(v){v=v||{};const d=document.createElement("div");d.className="row3";d.style.marginTop="8px";d.style.gridTemplateColumns="auto 1fr 1fr 1fr 1fr 1fr auto";
+  d.innerHTML=`<select class="bc-loai"><option value="ra"${v.loai!=="vao"?" selected":""}>Đầu ra</option><option value="vao"${v.loai==="vao"?" selected":""}>Đầu vào</option></select>
+    <input class="bc-so" placeholder="Số HĐ" value="${v.so||""}"/><input class="bc-ngay" placeholder="Ngày" value="${v.ngay||""}"/>
+    <input class="bc-mst" placeholder="MST đối tác" value="${v.mst||""}"/><input class="bc-ten" placeholder="Tên đối tác" value="${v.ten||""}"/>
+    <input class="bc-truoc" type="number" placeholder="Tiền trước thuế" value="${v.truoc_thue||""}"/>
+    <select class="bc-ts">${TSOPT}</select>`;
+  $("#bcItems").appendChild(d);if(v.thue_suat!=null)d.querySelector(".bc-ts").value=String(v.thue_suat);}
+$("#bcAdd").onclick=()=>bcRow(); bcRow({loai:"ra"}); bcRow({loai:"vao"});
+$("#bcParse").onclick=()=>{const lines=$("#bcCsv").value.split("\n").map(l=>l.trim()).filter(Boolean);let n=0;
+  lines.forEach(l=>{const p=l.split(",");if(p.length>=6){bcRow({loai:p[0].trim(),so:p[1],ngay:p[2],mst:p[3],ten:p[4],truoc_thue:p[5],thue_suat:p[6]!=null?p[6].trim():10});n++;}});
+  $("#bcCsv").value="";$("#bcStt").textContent=`↧ Nạp ${n} dòng`;};
+function bcCollect(){return $$("#bcItems .row3").map(r=>({loai:r.querySelector(".bc-loai").value,so:r.querySelector(".bc-so").value,
+  ngay:r.querySelector(".bc-ngay").value,mst:r.querySelector(".bc-mst").value,ten:r.querySelector(".bc-ten").value,
+  truoc_thue:r.querySelector(".bc-truoc").value,thue_suat:r.querySelector(".bc-ts").value})).filter(x=>x.truoc_thue||x.so);}
+$("#bcSync").onclick=async()=>{if(!$("#bc_mst").value){$("#bcSyncStt").textContent="⚠️ Nhập MST";return;}
+  $("#bcSyncStt").textContent="Đang gọi phần mềm HĐĐT…";
+  const r=await(await fetch("/api/ketnoi/dong-bo",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({mst:$("#bc_mst").value})})).json();
+  if(r.hoa_don&&r.hoa_don.length){r.hoa_don.forEach(bcRow);$("#bcSyncStt").textContent=`✓ Nạp ${r.hoa_don.length} HĐ`;}
+  else $("#bcSyncStt").textContent=r.error||r.thong_bao||"Chưa có dữ liệu — hãy nhập file/CSV.";};
+window.LAST_PREFILL=null;
+$("#bcRun").onclick=async()=>{const hd=bcCollect();if(!hd.length){$("#bcStt").textContent="⚠️ Chưa có hoá đơn";return;}
+  $("#bcRun").disabled=true;$("#bcStt").textContent="Đang tổng hợp & hỏi AI…";
+  try{const r=await(await fetch("/api/baocao/tong-hop",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({mst:$("#bc_mst").value,ky:$("#bc_ky").value,hoa_don:hd})})).json();
+    if(r.error){$("#bcStt").textContent="Lỗi: "+r.error;$("#bcRun").disabled=false;return;}
+    window.LAST_PREFILL={ky:$("#bc_ky").value,prefill:r.to_khai_prefill};
+    let h=`<div class="card"><h3 style="margin:0 0 8px;color:#e3b341">Tổng hợp kỳ ${esc(r.ky)} · ${r.so_luong.dau_ra} HĐ ra · ${r.so_luong.dau_vao} HĐ vào</h3>
+      <table><tr><th>Chỉ tiêu</th><th>Số tiền</th></tr>
+      <tr><td>Tổng doanh thu bán ra chịu thuế</td><td class="tot">${vnd(r.tong.doanh_thu)}</td></tr>
+      <tr><td>Thuế GTGT đầu ra</td><td>${vnd(r.tong.thue_dau_ra)}</td></tr>
+      <tr><td>Thuế GTGT đầu vào được khấu trừ</td><td>${vnd(r.tong.thue_dau_vao)}</td></tr>
+      <tr><td class="tot">Thuế GTGT phải nộp trong kỳ</td><td class="tot">${vnd(r.tong.phai_nop)}</td></tr>
+      ${r.tong.con_khau_tru>0?`<tr><td>Chưa khấu trừ hết → chuyển kỳ sau</td><td>${vnd(r.tong.con_khau_tru)}</td></tr>`:""}</table>
+      <div style="margin-top:8px" class="mut">Doanh thu theo mức thuế: ${r.theo_muc.map(m=>`${m.thue_suat}%: ${vnd(m.doanh_thu)}`).join(" · ")||"—"}</div></div>`;
+    if(r.canh_bao&&r.canh_bao.length)h+=`<div class="card"><b class="bad">⚠️ Đối chiếu phát hiện ${r.canh_bao.length} điểm cần rà:</b><div style="margin-top:6px" class="bad">${r.canh_bao.map(esc).join("<br>• ")}</div></div>`;
+    else h+=`<div class="card" style="color:#3fb950">✓ Đối chiếu tự động: không phát hiện lỗi định dạng/tính toán/trùng lặp.</div>`;
+    h+=`<div class="doc"><h3>Đối chiếu AI trước khi nộp</h3>${esc(r.ai_doi_chieu)}</div>
+      <div class="card"><button class="btn" id="toTokhai">➡️ Đổ số vào tờ khai 01/GTGT</button><span class="mut" style="margin-left:8px">Số tổng hợp sẽ tự điền vào tab Soạn tờ khai.</span></div>`;
+    $("#bcKq").innerHTML=h;$("#bcStt").textContent="✓";$("#bcRun").disabled=false;
+    $("#toTokhai").onclick=()=>{const s=window.LAST_PREFILL;if(!s)return;
+      $("#tk_loai").value="gtgt";$("#tk_ky").value=s.ky;$("#tk_mst").value=$("#bc_mst").value;
+      $("#tk_solieu").value=Object.entries(s.prefill).map(([k,v])=>`${k} = ${v}`).join("\n");
+      $$(".tab").forEach(x=>x.classList.remove("on"));$$('.tab[data-t="tokhai"]')[0].classList.add("on");
+      $$(".pane").forEach(p=>p.classList.add("hide"));$("#p-tokhai").classList.remove("hide");window.scrollTo({top:0,behavior:"smooth"});};
+  }catch(e){$("#bcStt").textContent="Lỗi: "+e.message;$("#bcRun").disabled=false;}
+};
+
+// ── Kết nối
+(async()=>{const m=await(await fetch("/api/ketnoi/meta")).json();
+  $("#kn_provider").innerHTML=m.providers.map(p=>`<option value="${p.key}">${esc(p.ten)}</option>`).join("");
+  const upd=()=>{const p=m.providers.find(x=>x.key===$("#kn_provider").value);$("#kn_huongdan").textContent=p?p.huong_dan:"";};
+  $("#kn_provider").onchange=upd;upd();})();
+$("#knSave").onclick=async()=>{if(!$("#kn_mst").value){$("#knStt").textContent="⚠️ Nhập MST";return;}
+  const r=await(await fetch("/api/ketnoi/luu",{method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({mst:$("#kn_mst").value,provider:$("#kn_provider").value,cfg:{domain:$("#kn_domain").value,username:$("#kn_user").value,password:$("#kn_pass").value,appId:$("#kn_appid").value}})})).json();
+  $("#knStt").textContent=r.error||r.trang_thai||"Đã lưu";};
+$("#knSync").onclick=async()=>{if(!$("#kn_mst").value){$("#knStt").textContent="⚠️ Nhập MST";return;}$("#knStt").textContent="Đang thử…";
+  const r=await(await fetch("/api/ketnoi/dong-bo",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({mst:$("#kn_mst").value})})).json();
+  $("#knStt").textContent=r.thong_bao||r.error||(r.hoa_don?`✓ ${r.hoa_don.length} HĐ`:"OK");};
+const CEO_TOKEN=new URLSearchParams(location.search).get("ceo")||"";
+if($("#crm_conn"))$("#crm_conn").innerHTML=CEO_TOKEN?'✓ Đã nhận diện CRM của bạn qua workspace SoloCEO.':'⚠️ Mở trang này trong <b>workspace SoloCEO</b> (Hoá đơn & Thuế) để tự nhận diện CRM của bạn.';
+$("#crmGet").onclick=async()=>{$("#crmStt").textContent="Đang đọc CRM…";
+  const r=await(await fetch("/api/crm/doanh-thu",{method:"POST",headers:{"content-type":"application/json","x-ceo-token":CEO_TOKEN},
+    body:JSON.stringify({ceo:CEO_TOKEN,tu:$("#crm_tu").value,den:$("#crm_den").value})})).json();
+  $("#crmStt").textContent=r.ok?"✓":"";
+  $("#crmKq").innerHTML=r.ok?`Doanh thu CRM kỳ: <b style="color:#3fb950">${vnd(r.tong_doanh_thu)}</b> (${r.so_hoa_don} hoá đơn, đã thu ${vnd(r.da_thanh_toan)}). ${esc(r.ghi_chu)}`:esc(r.thong_bao||"");};
+
+// ── Nghĩa vụ thuế
+$("#genNV").onclick=async()=>{
+  $("#genNV").disabled=true;$("#sttNV").textContent="AI đang phân tích…";
+  try{const r=await(await fetch("/api/thue/nghia-vu",{method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({loai_hinh:$("#nv_loai").value,von:$("#nv_von").value,doanh_thu_nam:$("#nv_dt").value,pp_tinh_thue:$("#nv_pp").value,co_lao_dong:$("#nv_ld").checked})})).json();
+    let h=`<div class="card"><h3 style="margin:0 0 4px;color:#e3b341">Nghĩa vụ thuế của bạn</h3><div class="mut">Kỳ khai GTGT: <b style="color:#3fb950">${r.ky_gtgt}</b></div>`;
+    h+=r.danh_sach.map(x=>`<div style="border-top:1px solid #26262b;padding:10px 0"><b>${esc(x.thue)}</b> · <span class="mut">${esc(x.to_khai.ma)} — ${esc(x.to_khai.ten)}</span><br><span style="color:#3fb950">Mức:</span> ${esc(x.muc)}<br><span style="color:#e3b341">Hạn:</span> ${esc(x.han)}</div>`).join("");
+    h+=`</div><div class="doc"><h3>Tư vấn AI cho Solo CEO</h3>${esc(r.ai_note)}</div>`;
+    $("#nvKq").innerHTML=h;$("#sttNV").textContent="✓";$("#genNV").disabled=false;
+  }catch(e){$("#sttNV").textContent="Lỗi: "+e.message;$("#genNV").disabled=false;}
+};
+
+// ── Soạn tờ khai
+$("#genTK").onclick=async()=>{
+  const solieu={};$("#tk_solieu").value.split("\n").forEach(l=>{const i=l.indexOf("=");if(i>0)solieu[l.slice(0,i).trim()]=l.slice(i+1).trim();});
+  $("#genTK").disabled=true;$("#sttTK").textContent="AI đang soạn tờ khai… (30-60s)";
+  try{const r=await(await fetch("/api/thue/to-khai",{method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({loai:$("#tk_loai").value,ky:$("#tk_ky").value,nnt_ten:$("#tk_nnt").value,mst:$("#tk_mst").value,so_lieu:solieu})})).json();
+    if(r.error){$("#sttTK").textContent="Lỗi: "+r.error;$("#genTK").disabled=false;return;}
+    $("#tkKq").innerHTML=`<div class="card noprint"><button class="btn sec" onclick="window.print()">🖨️ In / Lưu PDF</button></div>
+      <div class="doc"><h3>${esc(r.to_khai.ma)} — ${esc(r.to_khai.ten)}</h3>${esc(r.van_ban)}</div>
+      <div class="card"><b>📤 Nộp tại:</b> <a href="https://${r.nop.cong}" target="_blank" style="color:#3fb950">${r.nop.cong} ↗</a><div class="mut" style="margin-top:6px">${esc(r.nop.huong_dan)}</div></div>`;
+    $("#sttTK").textContent="✓";$("#genTK").disabled=false;$("#tkKq").scrollIntoView({behavior:"smooth"});
+  }catch(e){$("#sttTK").textContent="Lỗi: "+e.message;$("#genTK").disabled=false;}
+};
+
+// ── Lịch thuế
+$("#genLich").onclick=async()=>{
+  const r=await(await fetch("/api/thue/lich?nam="+encodeURIComponent($("#lich_nam").value)+"&pp="+$("#lich_pp").value)).json();
+  $("#lichKq").innerHTML=`<div class="card"><h3 style="margin:0 0 8px;color:#e3b341">📅 Lịch thuế (${r.pp==="quy"?"khai quý":"khai tháng"})</h3>
+    ${r.lich.map(x=>`<div class="step"><b style="min-width:120px">${esc(x.han)}</b><span>${esc(x.viec)}</span></div>`).join("")}
+    <div class="mut" style="margin-top:10px">${esc(r.luu_y)}</div></div>`;
+};
+
+// ── Hướng dẫn
+let hdanLoaded=false;
+async function loadHuongDan(){if(hdanLoaded)return;hdanLoaded=true;
+  const r=await(await fetch("/api/thue/huong-dan")).json();
+  $("#hdanKq").innerHTML=`<div class="card"><h3 style="margin:0 0 10px;color:#e3b341">📖 Quy trình hoá đơn & thuế cho Solo CEO</h3>
+    ${r.buoc.map(x=>`<div class="step"><b>${esc(x.b)}</b><span>${esc(x.m)}</span></div>`).join("")}
+    <div class="warn" style="margin-top:12px">${esc(r.chu_y)}</div></div>`;
+}
+</script>

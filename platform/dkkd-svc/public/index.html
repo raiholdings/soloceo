@@ -1,0 +1,100 @@
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Lập doanh nghiệp — SoloCEO</title>
+<style>
+:root{--bg:#0b0b0c;--card:#141416;--line:#26262b;--green:#3fb950;--gold:#e3b341;--mut:#9aa0a6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#e8e8ea;font:15px/1.55 system-ui,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:940px;margin:0 auto;padding:22px 16px 60px}
+h1{font-size:24px;margin:0 0 4px}.sub{color:var(--mut);font-size:14px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;background:#0e0e10;border:1px solid var(--line);border-radius:9px;color:#fff;padding:9px 11px;font:inherit}
+textarea{min-height:60px}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chk{display:inline-flex;align-items:center;gap:6px;margin:6px 14px 0 0;color:#ddd;font-size:14px}
+.btn{background:var(--green);color:#0b0b0c;border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer;font-size:15px}
+.btn.sec{background:transparent;color:var(--green);border:1px solid var(--green)}
+.doc{background:#0e0e10;border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:12px;white-space:pre-wrap;font-size:13.5px;line-height:1.6}
+.doc h3{margin:0 0 8px;color:var(--gold)}
+.step{display:flex;gap:10px;margin:8px 0}.step b{color:var(--green);flex:none}
+.warn{background:rgba(227,179,65,.08);border:1px solid rgba(227,179,65,.3);border-radius:10px;padding:12px;font-size:13px;color:#e9d9a8;margin-bottom:16px}
+.mut{color:var(--mut);font-size:13px}.hide{display:none}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+@media print{body{background:#fff;color:#000}.noprint{display:none}.doc{border:0;color:#000;background:#fff}.doc h3{color:#000}}
+</style>
+<div class="wrap">
+<h1>🏛️ Lập doanh nghiệp</h1>
+<div class="sub">Trợ lý AI soạn <b>bộ hồ sơ thành lập doanh nghiệp</b> + hướng dẫn nộp online — cho Solo CEO khởi nghiệp tại Việt Nam.</div>
+
+<div class="warn noprint">⚖️ <b>Hợp pháp & minh bạch:</b> SoloCEO chỉ <b>chuẩn bị bản thảo hồ sơ</b> để bạn rà soát và <b>hướng dẫn tự nộp</b> trên Cổng ĐKKD quốc gia. SoloCEO <b>không nộp thay</b> và không kết nối cơ quan nhà nước. Hãy đối chiếu mẫu chính thức (TT 01/2021/TT-BKHĐT) trước khi ký.</div>
+
+<div class="card noprint" id="form">
+  <div class="row">
+    <div><label>Loại hình doanh nghiệp *</label>
+      <select id="loai_hinh">
+        <option value="tnhh-1tv">Công ty TNHH một thành viên (phổ biến cho Solo CEO)</option>
+        <option value="tnhh-2tv">Công ty TNHH hai thành viên trở lên</option>
+        <option value="cp">Công ty Cổ phần</option>
+        <option value="dntn">Doanh nghiệp tư nhân</option>
+      </select></div>
+    <div><label>Vốn điều lệ (VNĐ) *</label><input id="von" placeholder="vd: 500.000.000"/></div>
+  </div>
+  <div class="row">
+    <div><label>Tên công ty (tiếng Việt) *</label><input id="ten_vi" placeholder="Công ty TNHH ..."/></div>
+    <div><label>Tên viết tắt</label><input id="ten_tat" placeholder="vd: SOLOCEO CO., LTD"/></div>
+  </div>
+  <div class="row">
+    <div><label>Tên tiếng Anh</label><input id="ten_en"/></div>
+    <div><label>Người đại diện pháp luật *</label><input id="dai_dien" placeholder="Họ tên"/></div>
+  </div>
+  <label>Địa chỉ trụ sở chính *</label><input id="dia_chi" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"/>
+  <label>Ngành nghề kinh doanh (gõ để gợi ý mã VSIC)</label>
+  <input id="nganh" placeholder="vd: bán lẻ, phần mềm, tư vấn..." autocomplete="off"/>
+  <div id="nganh_sug" class="mut" style="margin-top:4px"></div>
+  <div class="row">
+    <div><label>Chức danh người đại diện</label><input id="chuc_danh" value="Giám đốc"/></div>
+    <div><label>Chủ sở hữu (nếu khác người đại diện)</label><input id="chu_so_huu"/></div>
+  </div>
+  <div id="tv_wrap" class="hide"><label>Danh sách thành viên/cổ đông (mỗi dòng: Họ tên - CCCD - tỷ lệ góp vốn %)</label><textarea id="thanh_vien"></textarea></div>
+  <label>Tài liệu cần soạn</label>
+  <div>
+    <label class="chk"><input type="checkbox" class="tl" value="giay_de_nghi" checked/> Giấy đề nghị ĐKDN</label>
+    <label class="chk"><input type="checkbox" class="tl" value="dieu_le" checked/> Điều lệ công ty</label>
+    <label class="chk" id="ds_chk"><input type="checkbox" class="tl" value="danh_sach"/> Danh sách thành viên/cổ đông</label>
+  </div>
+  <div style="margin-top:16px"><button class="btn" id="gen">✍️ Soạn bộ hồ sơ</button>
+    <span class="mut" id="stt" style="margin-left:12px"></span></div>
+</div>
+
+<div id="ketqua"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+function toggleDS(){const l=$("#loai_hinh").value;const need=l==="tnhh-2tv"||l==="cp";$("#tv_wrap").classList.toggle("hide",!need);$("#ds_chk").style.display=need?"inline-flex":"none";}
+$("#loai_hinh").onchange=toggleDS; toggleDS();
+let nt=null;
+$("#nganh").oninput=()=>{clearTimeout(nt);nt=setTimeout(async()=>{const q=$("#nganh").value.trim();if(q.length<2){$("#nganh_sug").textContent="";return;}
+  try{const d=await(await fetch("/api/nganh?q="+encodeURIComponent(q))).json();
+    $("#nganh_sug").innerHTML=(d.nganh||[]).slice(0,4).map(n=>`<span style="cursor:pointer;color:#3fb950" onclick="document.querySelector('#nganh').value='${(n.ten||'').replace(/'/g,'')}'">• ${n.ten}</span>`).join(" &nbsp; ");
+  }catch(e){}},300)};
+$("#gen").onclick=async()=>{
+  const tl=[...document.querySelectorAll(".tl:checked")].map(c=>c.value);
+  const body={loai_hinh:$("#loai_hinh").value,von:$("#von").value,ten_vi:$("#ten_vi").value,ten_tat:$("#ten_tat").value,
+    ten_en:$("#ten_en").value,dai_dien:$("#dai_dien").value,chuc_danh:$("#chuc_danh").value,chu_so_huu:$("#chu_so_huu").value,
+    dia_chi:$("#dia_chi").value,nganh:$("#nganh").value,thanh_vien:$("#thanh_vien").value,tai_lieu:tl};
+  if(!body.ten_vi){$("#stt").textContent="⚠️ Nhập tên công ty";return;}
+  $("#gen").disabled=true;$("#stt").textContent="AI đang soạn hồ sơ… (30-60s)";
+  try{
+    const r=await(await fetch("/api/generate",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)})).json();
+    if(r.error){$("#stt").textContent="Lỗi: "+r.error;$("#gen").disabled=false;return;}
+    const LB={giay_de_nghi:"GIẤY ĐỀ NGHỊ ĐĂNG KÝ DOANH NGHIỆP",dieu_le:"ĐIỀU LỆ CÔNG TY",danh_sach:"DANH SÁCH THÀNH VIÊN/CỔ ĐÔNG"};
+    let html='<div class="card noprint"><button class="btn sec" onclick="window.print()">🖨️ In / Lưu PDF</button></div>';
+    for(const k of ["giay_de_nghi","dieu_le","danh_sach"]) if(r.ho_so[k]) html+=`<div class="doc"><h3>${LB[k]}</h3>${esc(r.ho_so[k])}</div>`;
+    html+='<div class="card"><h3 style="margin:0 0 10px;color:#e3b341">📋 Hướng dẫn nộp online (dangkyquamang.dkkd.gov.vn)</h3>'+
+      r.huong_dan.map(s=>`<div class="step"><b>${esc(s.b)}</b><span>${esc(s.m)}</span></div>`).join("")+
+      '<h3 style="margin:16px 0 8px;color:#e3b341">✅ Checklist tránh bị từ chối</h3>'+
+      r.checklist.map(c=>`<div class="step"><b>✓</b><span>${esc(c)}</span></div>`).join("")+'</div>';
+    $("#ketqua").innerHTML=html; $("#stt").textContent="✓ Xong"; $("#gen").disabled=false;
+    $("#ketqua").scrollIntoView({behavior:"smooth"});
+  }catch(e){$("#stt").textContent="Lỗi: "+e.message;$("#gen").disabled=false;}
+};
+function esc(s){return(s==null?"":String(s)).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+</script>

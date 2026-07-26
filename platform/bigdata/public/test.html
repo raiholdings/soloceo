@@ -1,0 +1,109 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kịch bản test — bigdata.soloceo.vn</title><style>
+body{background:#0b0b0c;color:#e8e8ea;font:15px/1.6 system-ui,Segoe UI,Roboto,sans-serif;margin:0}
+.w{max-width:860px;margin:0 auto;padding:30px 18px 70px}
+h1{font-size:24px;color:#e3b341}h2{font-size:19px;color:#3fb950;margin-top:30px;border-top:1px solid #26262b;padding-top:18px}h3{font-size:16px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px}th,td{border:1px solid #26262b;padding:7px 9px;text-align:left}th{color:#9aa0a6;font-size:12px;text-transform:uppercase}
+code{background:#141416;border:1px solid #26262b;border-radius:5px;padding:1px 6px;color:#e3b341}
+blockquote{border-left:3px solid #3fb950;margin:8px 0;padding:6px 12px;background:#141416;border-radius:0 8px 8px 0;color:#cfd2d6}
+li{margin:4px 0 4px 18px}a{color:#3fb950}hr{border:0;border-top:1px solid #26262b;margin:22px 0}
+p{margin:6px 0}
+@media print{body{background:#fff;color:#000}code{color:#000}h1,h2{color:#000}}
+</style></head><body><div class="w"><h1>KỊCH BẢN TEST — bigdata.soloceo.vn (&quot;Bộ não thứ 2&quot; của SoloCEO OS)</h1>
+
+<p><b>Phiên bản:</b> v9 · 26/07/2026 · <b>Người test:</b> 2 người (1 người thao tác, 1 người ghi nhận)</p>
+<p><b>Thời lượng:</b> ~35–45 phút · <b>Cần:</b> trình duyệt, không cần đăng nhập</p>
+
+<h2>Hệ thống đang có gì (để đối chiếu khi test)</h2>
+
+<table><tr><th>Số liệu</th><th>Giá trị lúc bàn giao</th></tr>
+<tr><td>Tổng bản ghi</td><td><b>133.352</b></td></tr>
+<tr><td>Liên kết mạng tri thức (cạnh)</td><td><b>345.035</b></td></tr>
+<tr><td>Loại dữ liệu</td><td>25 loại: doanh nghiệp (42k), thành phố (34k), địa phương VN (9.4k), đại học (10k), sân bay (7.7k), founder/CEO/Nobel, luật &amp; kế toán VN, ngành VSIC, BĐS VN, đặc sản, du lịch, quốc gia (GDP/nông nghiệp), tiền tệ…</td></tr>
+<tr><td>Tri thức SoloCEO</td><td><b>358 nốt</b>: 104 nền tảng · 101 dự án AI · 94 khoá học · 38 mô hình KD · 21 dịch vụ hệ sinh thái</td></tr>
+<tr><td>Cập nhật</td><td>Tự động: hàng giờ (tin tức/công nghệ) · 4:30 full · 5:30 dựng lại đồ thị</td></tr>
+</table>
+
+<p><b>Giá trị cần kiểm chứng:</b> (1) TRA CỨU nhanh đúng; (2) MỖI SỰ VẬT LÀ MỘT NỐT có mạng lưới liên kết; (3) TÌM ĐƯỜNG giữa 2 nốt bất kỳ ≤6 bậc; (4) AI LẬP LỘ TRÌNH kinh doanh từ dữ liệu thật; (5) Tri thức SoloCEO đã hoà vào cùng một mạng.</p>
+
+<hr>
+
+<h2>PHẦN A — Tra cứu &amp; dữ liệu thật (10 phút)</h2>
+
+<p><b>A1. Mở trang</b> → <a href="https://bigdata.soloceo.vn" target="_blank">https://bigdata.soloceo.vn</a></p>
+<li>✅ Đạt khi: trang tải &lt; 3s, thấy ô tìm kiếm + dãy chip loại dữ liệu (có cả nhóm SoloCEO 🧩🛠️🚀💼📚).</li>
+
+<p><b>A2. Tìm tiếng Việt</b> → gõ <code>Sabeco</code> (hoặc <code>Viettel</code>, <code>Hòa Phát</code>)</p>
+<li>✅ Đạt khi: ra doanh nghiệp VN tên tiếng Việt, có ngành + vùng. Bấm vào → trang chi tiết có mô tả + nút &quot;Xem nguồn ↗&quot;.</li>
+
+<p><b>A3. Dữ liệu quốc tế thật (không phải link)</b> → chip <b>🌐 Quốc gia</b> → tìm <code>Nhật Bản</code></p>
+<li>✅ Đạt khi: trang chi tiết có <b>thủ đô, GDP, dân số, tiền tệ, % đất nông nghiệp, sản lượng ngũ cốc</b> (số cụ thể, không phải đường dẫn).</li>
+
+<p><b>A4. Nhân vật</b> → tìm <code>Einstein</code></p>
+<li>✅ Đạt khi: ra &quot;Albert Einstein — Nobel Vật lý 1921&quot; kèm nơi sinh.</li>
+
+<p><b>A5. Việt Nam chuyên sâu</b> → chip <b>📍 Địa phương VN</b> tìm <code>Đà Lạt</code>; chip <b>🍜 Đặc sản</b> xem vài món; chip <b>⚖️ Luật VN</b> xem danh mục luật.</p>
+<li>✅ Đạt khi: mỗi loại đều có kết quả tiếng Việt, bấm vào ra chi tiết.</li>
+<li>✍️ Ghi nhận: loại nào thấy MỎNG nhất? (đây là input cho đợt làm giàu sau)</li>
+
+<h2>PHẦN B — Mạng tri thức: mỗi sự vật là một nốt (10 phút)</h2>
+
+<p><b>B1. Mạng lưới của một nốt</b> → mở chi tiết <code>Sabeco</code> → cuộn xuống <b>&quot;🕸 Mạng lưới liên kết&quot;</b></p>
+<li>✅ Đạt khi: thấy các nhóm quan hệ (hoạt động trong → lĩnh vực; thuộc vùng → Việt Nam…), bấm 1 nốt kề → nhảy sang trang nốt đó (du hành trong mạng).</li>
+
+<p><b>B2. Nốt gốc hệ điều hành</b> → tìm <code>SoloCEO OS</code> (chip 🧩 Hệ sinh thái SoloCEO)</p>
+<li>✅ Đạt khi: mạng lưới hiện <b>← thuộc hệ sinh thái</b>: Workspace, Cộng đồng, CRM, Học tập… (~40 nốt kề). Đây là bằng chứng tri thức nội bộ đã hoà vào mạng.</li>
+
+<p><b>B3. Tìm đường 2 nốt (six degrees)</b> → tab <b>🕸 Lộ trình</b>, khung &quot;Tìm đường giữa 2 nốt&quot;:</p>
+<li>Thử 1: <code>Hà Nội</code> → <code>Sabeco</code> (kỳ vọng ≤ 3 bậc)</li>
+<li>Thử 2: <code>Đà Lạt</code> → <code>cà phê</code></li>
+<li>Thử 3 (khó): một đại học bất kỳ → một công ty S&amp;P 500</li>
+<li>✅ Đạt khi: trả về chuỗi nốt có nhãn quan hệ từng bước, mỗi nốt bấm được.</li>
+<li>✍️ Ghi nhận: cặp nào KHÔNG tìm thấy đường (giới hạn thật của mạng hiện tại).</li>
+
+<h2>PHẦN C — AI khai thác mạng (10 phút)</h2>
+
+<p><b>C1. Lộ trình kinh doanh</b> → tab <b>🕸 Lộ trình</b>, nhập:</p>
+<blockquote>&quot;Tôi muốn khởi nghiệp nông nghiệp thông minh tại Việt Nam — vùng nguyên liệu nào tốt, ai đã làm, cần quen ai, bắt đầu từng bước thế nào?&quot;</blockquote>
+<li>✅ Đạt khi: AI trả kế hoạch ≤7 bước, <b>dẫn nốt thật #id</b> (bấm được ở lưới bên dưới), và <b>nói thẳng chỗ dữ liệu còn thiếu</b> thay vì bịa.</li>
+<li>✍️ Chấm điểm 1–10: tính hành động được của kế hoạch.</li>
+
+<p><b>C2. Phân tích ý tưởng</b> → tab <b>🧠 Hỏi bộ não AI</b>, nhập 1 ý tưởng thật của người test (vd &quot;app quản lý phòng gym&quot;).</p>
+<li>✅ Đạt khi: liệt kê startup tương tự thật (tên + trạng thái thành/bại) + khuyến nghị.</li>
+
+<p><b>C3. Dịch</b> → mở 1 nốt tiếng Anh (vd 1 công nghệ GitHub) → bấm <b>&quot;🇻🇳 Dịch sang tiếng Việt&quot;</b></p>
+<li>✅ Đạt khi: mô tả/README được dịch tự nhiên.</li>
+
+<h2>PHẦN D — Tri thức SoloCEO phục vụ CEO (8 phút)</h2>
+
+<p><b>D1.</b> Chip <b>🛠️ Nền tảng SoloCEO</b> → tìm <code>CRM</code> → ✅ ra nền tảng có giá VNĐ/tháng + demo LIVE, bấm &quot;Xem nguồn ↗&quot; mở đúng demo.</p>
+<p><b>D2.</b> Chip <b>🚀 Dự án AI SoloCEO</b> → xem 3 dự án bất kỳ → ✅ mỗi dự án có tóm tắt mô hình kinh doanh rõ.</p>
+<p><b>D3.</b> Chip <b>💼 Mô hình KD</b> → mở &quot;Dịch vụ hóa (Services Shift)&quot; → ✅ có công thức + biến thể.</p>
+<p><b>D4.</b> Chip <b>📚 Khoá học</b> → mở 1 khoá → ✅ bấm nguồn ra đúng trang edu.soloceo.vn.</p>
+<p><b>D5. Bài kiểm tra giá trị tổng hợp:</b> hỏi tab Lộ trình:</p>
+<blockquote>&quot;Tôi là CEO mới trên SoloCEO, muốn bán đặc sản Tây Bắc online — dùng nền tảng nào của SoloCEO, học khoá nào, theo mô hình KD nào?&quot;</blockquote>
+<li>✅ Đạt khi: kế hoạch trộn ĐƯỢC cả 3 lớp: nền tảng SoloCEO + khoá học + dữ liệu đặc sản/vùng.</li>
+
+<h2>PHẦN E — Data Engine &amp; độ tin cậy (5 phút)</h2>
+
+<p><b>E1.</b> Tab <b>🔧 Data Engine</b> → ✅ thấy tổng bản ghi (≥133k), 6 giai đoạn flywheel, nguồn + giấy phép từng nguồn (provenance), % chất lượng trường.</p>
+<p><b>E2.</b> Tab <b>📊 Thống kê</b> → ✅ biểu đồ ngành/ngách/vùng/năm có số.</p>
+<p><b>E3. Kiểm tra &quot;không bịa&quot;:</b> tìm 1 thứ chắc chắn không có (vd <code>công ty ABC XYZ 999</code>) → ✅ trả &quot;không có kết quả&quot; chứ không sinh dữ liệu giả.</p>
+
+<hr>
+
+<h2>PHIẾU CHẤM (mỗi người tự chấm 1–10)</h2>
+
+<table><tr><th>Tiêu chí</th><th>Điểm</th><th>Ghi chú</th></tr>
+<tr><td>Tra cứu nhanh, đúng, tiếng Việt</td><td>/10</td><td></td></tr>
+<tr><td>Mạng liên kết &amp; tìm đường có ích thật</td><td>/10</td><td></td></tr>
+<tr><td>AI lộ trình: hành động được, trung thực</td><td>/10</td><td></td></tr>
+<tr><td>Tri thức SoloCEO đủ để 1 CEO mới bắt đầu</td><td>/10</td><td></td></tr>
+<tr><td>Điều THIẾU nhất muốn bổ sung</td><td>(ghi tự do)</td><td></td></tr>
+</table>
+
+<p><b>Giá trị thật của hệ thống nằm ở câu hỏi cuối:</b> *&quot;Nếu ngày mai bạn khởi nghiệp thật, trang này tiết kiệm cho bạn bao nhiêu giờ nghiên cứu?&quot;* — ghi con số ước lượng của mỗi người.</p>
+
+<blockquote>Gửi phiếu chấm + ghi nhận về cho Thư để lên kế hoạch làm giàu dữ liệu đợt tiếp (ưu tiên phần bị chấm thấp).</blockquote>
+
+<p style="margin-top:30px;color:#6b7178;font-size:12px">SoloCEO · bigdata.soloceo.vn/test.html · in được (Ctrl/Cmd+P)</p></div></body></html>

@@ -1,0 +1,9 @@
+{
+  "name": "thue-svc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SoloCEO — Hoá đơn & Thuế: trợ lý AI soạn hoá đơn + kê khai thuế (đúng luật, không phát hành/nộp thay)",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "^4.19.2", "mysql2": "^3.11.5" }
+}
