@@ -74,6 +74,47 @@ def the_loai(wiki):
     return [c.strip() for c in RE_CAT.findall(wiki)[:6] if c.strip()]
 
 
+# ── Bộ lọc liên quan ────────────────────────────────────────────────────────
+# Wikipedia tiếng Việt có hàng trăm nghìn bài do bot sinh (tiểu hành tinh, loài
+# côn trùng, xã bên Pháp/Tây Ban Nha). Nạp hết chỉ làm phình con số mà không
+# thêm giá trị nào cho một hệ điều hành kinh doanh — nên loại thẳng.
+LOAI_BO = re.compile(
+    r"tiểu hành tinh|thiên thể|chòm sao|ngôi sao |thiên hà"
+    r"|^chi |^họ |^bộ |^phân họ |^tông |loài |động vật|thực vật|côn trùng|bò sát|lưỡng cư"
+    r"|nhện|bọ |ruồi|muỗi|ong |bướm|kiến |cá |chim |nấm |tảo |rêu |dương xỉ|phong lan"
+    r"|hymenoptera|coleoptera|lepidoptera|diptera|trichoptera|arachnida|mollusca"
+    r"|xã của |xã ở |khu tự quản|đô thị của |đô thị ở |công xã |quận của "
+    r"|danh sách nhân vật|nhân vật hư cấu|tập phim|đĩa đơn|album ", re.I)
+
+# Giữ lại: bất cứ thứ gì gắn với Việt Nam, hoặc thuộc miền tri thức mà một
+# Solo CEO thực sự dùng (kinh doanh · công nghệ · pháp lý · xã hội · kỹ năng).
+GIU_LAI = re.compile(
+    r"việt nam|hà nội|hồ chí minh|đà nẵng|hải phòng|cần thơ|huế|nha trang|đà lạt"
+    r"|kinh tế|kinh doanh|doanh nghiệp|công ty|tập đoàn|thương hiệu|khởi nghiệp"
+    r"|tài chính|ngân hàng|chứng khoán|đầu tư|bảo hiểm|kế toán|thuế|tiền tệ"
+    r"|thương mại|xuất khẩu|nhập khẩu|bán lẻ|tiếp thị|marketing|quảng cáo|thương mại điện tử"
+    r"|quản trị|quản lý|nhân sự|lãnh đạo|chiến lược|năng suất"
+    r"|công nghệ|phần mềm|máy tính|internet|trí tuệ nhân tạo|dữ liệu|mật mã|viễn thông|điện tử"
+    r"|luật|pháp luật|hiến pháp|hợp đồng|sở hữu trí tuệ|toà án"
+    r"|giáo dục|đào tạo|đại học|y tế|sức khỏe|dược|bệnh"
+    r"|nông nghiệp|thủy sản|lâm nghiệp|thực phẩm|ẩm thực"
+    r"|du lịch|khách sạn|vận tải|logistics|hàng không|cảng "
+    r"|năng lượng|điện lực|dầu khí|xây dựng|bất động sản|kiến trúc|vật liệu"
+    r"|truyền thông|báo chí|xuất bản|điện ảnh|âm nhạc|thể thao"
+    r"|xã hội|dân số|lao động|môi trường|khí hậu|đô thị hóa"
+    r"|kỹ thuật|khoa học|toán học|thống kê|vật lý|hóa học|sinh học phân tử", re.I)
+
+
+def dang_quan_tam(ten, mo, cats):
+    """Bài có đáng đưa vào bộ não thứ 2 không?"""
+    kho = (ten + " " + mo + " " + " ".join(cats)).lower()
+    if "việt nam" in kho:          # ưu tiên tuyệt đối cho Việt Nam
+        return True
+    if LOAI_BO.search(kho):
+        return False
+    return bool(GIU_LAI.search(kho))
+
+
 SQL = """INSERT INTO items(type,source,ext_key,name,url,description,oneliner,category,subcategory,region,tags,
                            year,batch,status,outcome,team_size,logo,top,stage,score,published,updated_at)
 VALUES(?,?,?,?,?,?,?,?,?,?,?, NULL,'','','',NULL,'',0,'',0,'',?)
@@ -108,6 +149,8 @@ def main():
             if len(mo) < 40:
                 continue
             cats = the_loai(wiki)
+            if not dang_quan_tam(title, mo, cats):
+                continue
             buf.append((
                 "tri-thuc-vi", "wikipedia-vi", "viwiki-" + title, title,
                 "https://vi.wikipedia.org/wiki/" + title.replace(" ", "_"),

@@ -141,14 +141,65 @@ def cong_trinh(con, now):
     return tong
 
 
+def chuyen_gia(con, now, tran=200000):
+    """Nhà nghiên cứu đang làm việc tại tổ chức Việt Nam — lớp 'quen ai để tới đâu'."""
+    cur, tong = "*", 0
+    while cur and tong < tran:
+        u = ("https://api.openalex.org/authors?filter=last_known_institutions.country_code:VN"
+             "&per-page=200&cursor=%s&mailto=%s" % (urllib.parse.quote(cur), MAIL))
+        d = lay(u)
+        rows = []
+        for a in d.get("results", []):
+            ten = (a.get("display_name") or "").strip()
+            if not ten:
+                continue
+            vien = [i.get("display_name") for i in (a.get("last_known_institutions") or [])
+                    if i.get("display_name")]
+            chu_de = [t.get("display_name", "") for t in (a.get("topics") or [])[:5]]
+            nganh_en = ""
+            for t in (a.get("topics") or []):
+                nganh_en = (t.get("field") or {}).get("display_name") or ""
+                if nganh_en:
+                    break
+            nganh = LINH_VUC.get(nganh_en, nganh_en or "Nghiên cứu")
+            mo = "%s — nhà nghiên cứu%s. Chuyên môn: %s. Đã công bố %s công trình, được trích dẫn %s lần." % (
+                ten, (" tại " + ", ".join(vien[:2])) if vien else " tại Việt Nam",
+                ", ".join(c for c in chu_de if c) or "chưa rõ",
+                format(a.get("works_count") or 0, ",d").replace(",", "."),
+                format(a.get("cited_by_count") or 0, ",d").replace(",", "."))
+            rows.append((
+                "chuyen-gia-vn", "openalex", a["id"].rsplit("/", 1)[-1], ten,
+                (a.get("orcid") or a["id"]), mo, nganh, nganh,
+                chu_de[0] if chu_de else "", vien[0] if vien else "Việt Nam",
+                ", ".join(filter(None, chu_de + vien))[:400],
+                None, a.get("works_count") or None,
+                min(a.get("cited_by_count") or 0, 2_000_000_000), "", now,
+            ))
+        if rows:
+            nap(con, rows)
+            tong += len(rows)
+            if tong % 4000 < 200:
+                print("  chuyên gia: %d" % tong, flush=True)
+        cur = (d.get("meta") or {}).get("next_cursor")
+        if not d.get("results"):
+            break
+    return tong
+
+
 def main():
     con = sqlite3.connect(DB, timeout=180)
     con.execute("PRAGMA journal_mode=WAL")
     con.execute("PRAGMA synchronous=NORMAL")
     now = datetime.now(timezone.utc).isoformat()
-    a = to_chuc(con, now)
-    b = cong_trinh(con, now)
-    print("XONG OpenAlex Việt Nam: %d tổ chức + %d công trình" % (a, b), flush=True)
+    phan = os.environ.get("PHAN", "tat-ca")
+    a = b = c = 0
+    if phan in ("tat-ca", "to-chuc"):
+        a = to_chuc(con, now)
+    if phan in ("tat-ca", "cong-trinh"):
+        b = cong_trinh(con, now)
+    if phan in ("tat-ca", "chuyen-gia"):
+        c = chuyen_gia(con, now)
+    print("XONG OpenAlex Việt Nam: %d tổ chức + %d công trình + %d chuyên gia" % (a, b, c), flush=True)
     con.close()
 
 
