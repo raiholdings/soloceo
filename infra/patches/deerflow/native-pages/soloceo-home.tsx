@@ -61,6 +61,14 @@ const COMMUNITY: [string, string, string, string][] = [
   ["Tin tức", "Nền tảng media & tin tức của bạn", "/giai-phap/tin-tuc", "📰"],
 ];
 // 8 nền tảng lõi (lớp n0) — năng lực engine AI + hạ tầng vận hành an toàn.
+// Ba khâu của một dây chuyền: dữ liệu → kiểm chứng → bán.
+// LƯU Ý NỢ KỸ THUẬT: thanh điều hướng ở đây LẶP LẠI soloceo-nav.tsx. Sửa một chỗ không
+// ăn chỗ kia (đã mắc lỗi đúng vậy). Nên gộp về dùng chung <SiteHeader /> khi có dịp.
+const SAN_PHAM: [string, string, string, string][] = [
+  ["Bộ não dữ liệu", "Gần 1 triệu bản ghi thật, trọng tâm Việt Nam", "/san-pham/du-lieu", "🧠"],
+  ["Xưởng kiểm chứng", "Ý tưởng phải chạy được thật mới đi tiếp", "/san-pham/xuong-kiem-chung", "🧪"],
+  ["Sàn sản phẩm", "Mua doanh nghiệp đã chạy, có demo bấm được", "/san-pham/san-giao-dich", "🛒"],
+];
 const CORE: [string, string, string, string][] = [
   ["Đội AI tự hành", "Agent tự lập kế hoạch & thực thi", "/tinh-nang/doi-ai", "🤖"],
   ["Sandbox an toàn", "AI chạy code trong hộp cát cô lập", "/tinh-nang/sandbox", "🧪"],
@@ -106,6 +114,23 @@ export function SoloceoHome() {
       <header className="sticky top-0 z-50 flex items-center justify-between border-b border-[#1a1a1d] bg-[#0b0b0c]/85 px-[6vw] py-3.5 backdrop-blur">
         <Logo />
         <nav className="hidden items-center gap-1 md:flex">
+          {/* Sản phẩm — dây chuyền dữ liệu → kiểm chứng → bán */}
+          <div className="group relative">
+            <button className="flex items-center gap-1 rounded-lg px-3 py-2 text-[13.5px] text-[#a2a2aa] transition group-hover:bg-[#1a1a1d] group-hover:text-[#f5f5f6]">Sản phẩm<span className="text-[10px]">▾</span></button>
+            <div className="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2 opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100">
+              <div className="w-[480px] rounded-2xl border border-[#232326] bg-[#131315] p-3 shadow-2xl shadow-black/50">
+                <div className="mb-2 px-2 font-mono text-[10px] tracking-[.14em] text-[#6b6b73] uppercase">Dây chuyền: dữ liệu → kiểm chứng → bán</div>
+                <div className="grid grid-cols-1 gap-0.5">
+                  {SAN_PHAM.map(([t,d,h,e]) => (
+                    <a key={t} href={h} className="flex items-start gap-3 rounded-xl p-2.5 transition hover:bg-[#1a1a1d]">
+                      <span className="mt-0.5 text-lg">{e}</span>
+                      <span><span className="block text-[13.5px] text-[#f5f5f6]">{t}</span><span className="block text-[12px] text-[#8b8b92]">{d}</span></span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
           {/* Tính năng — mega-menu 8 nền tảng lõi (engine AI) */}
           <div className="group relative">
             <button className="flex items-center gap-1 rounded-lg px-3 py-2 text-[13.5px] text-[#a2a2aa] transition group-hover:bg-[#1a1a1d] group-hover:text-[#f5f5f6]">Tính năng<span className="text-[10px]">▾</span></button>
