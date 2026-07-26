@@ -4,6 +4,13 @@
 // server component lẫn client component.
 const WORKSPACE = "/workspace";
 
+// Ba sản phẩm đứng riêng — chúng là ba khâu nối tiếp của một dây chuyền:
+// dữ liệu thật → kiểm chứng thành MVP chạy được → bán trên sàn.
+const PRODUCTS: [string, string, string, string][] = [
+  ["Bộ não dữ liệu", "Gần 1 triệu bản ghi thật, trọng tâm Việt Nam — nơi ý tưởng được đúc ra", "/san-pham/du-lieu", "🧠"],
+  ["Xưởng kiểm chứng", "Ý tưởng bị chấm điểm rồi dựng thành MVP — chỉ thứ chạy được mới đi tiếp", "/san-pham/xuong-kiem-chung", "🧪"],
+  ["Sàn sản phẩm", "Mua bán doanh nghiệp đã chạy thật, có demo bấm vào được ngay", "/san-pham/san-giao-dich", "🛒"],
+];
 // 9 nền tảng cộng đồng (Giải pháp).
 const COMMUNITY: [string, string, string, string][] = [
   ["CRM", "Quản lý khách hàng, báo giá, hoá đơn", "/giai-phap/crm", "📊"],
@@ -65,6 +72,7 @@ export function SiteHeader() {
         <span className="text-[15px] font-semibold text-[#f5f5f6]">SoloCEO</span>
       </a>
       <nav className="hidden items-center gap-1 md:flex">
+        <Mega label="Sản phẩm" items={PRODUCTS} cols={1} width="w-[480px]" note="Dây chuyền: dữ liệu → kiểm chứng → bán" />
         <Mega label="Tính năng" items={CORE} width="w-[560px]" note="8 nền tảng lõi · engine AI vận hành an toàn" />
         <Mega label="Giải pháp" items={COMMUNITY} width="w-[560px]" note="9 nền tảng cộng đồng · đi kèm mọi Solo CEO" />
         <Mega label="Tài nguyên" items={RESOURCES} width="w-[520px]" note="Tin tức · chân dung · tài liệu" />

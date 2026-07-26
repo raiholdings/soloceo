@@ -1,0 +1,9 @@
+{
+  "name": "soloceo-sandbox",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Xưởng kiểm chứng ý tưởng: bigdata → kiểm chứng → MVP thật → marketplace",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "^4.21.2", "better-sqlite3": "^11.8.1" }
+}

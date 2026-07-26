@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Xưởng kiểm chứng ý tưởng — SoloCEO</title>
+<style>
+:root{--nen:#0b0b0c;--the:#141416;--vien:#26262a;--chu:#e6e6e6;--mo:#8b8b92;--xanh:#3fb950;--vang:#e3b341;--do:#f85149}
+*{box-sizing:border-box}
+body{margin:0;background:var(--nen);color:var(--chu);font:14px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+header{padding:26px 22px 16px;border-bottom:1px solid var(--vien)}
+h1{margin:0;font-size:20px;letter-spacing:-.3px}
+.sub{color:var(--mo);font-size:13px;margin-top:6px}
+main{padding:22px;max-width:1180px;margin:0 auto}
+.luong{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 26px}
+.buoc{flex:1;min-width:150px;background:var(--the);border:1px solid var(--vien);border-radius:10px;padding:12px}
+.buoc b{display:block;font-size:12.5px;margin-bottom:4px}
+.buoc span{color:var(--mo);font-size:11.5px}
+.mui{color:var(--mo);align-self:center;font-size:18px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:24px}
+.o{background:var(--the);border:1px solid var(--vien);border-radius:10px;padding:14px}
+.o .n{font-size:24px;font-weight:600}
+.o .t{color:var(--mo);font-size:11.5px;margin-top:2px}
+h2{font-size:14px;margin:26px 0 10px;color:var(--mo);text-transform:uppercase;letter-spacing:.6px}
+table{width:100%;border-collapse:collapse;background:var(--the);border:1px solid var(--vien);border-radius:10px;overflow:hidden}
+th{text-align:left;padding:9px 12px;font-size:11.5px;color:var(--mo);border-bottom:1px solid var(--vien);font-weight:500}
+td{padding:9px 12px;border-bottom:1px solid #1c1c1f;font-size:13px;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;border:1px solid}
+.t-moi{color:var(--mo);border-color:var(--vien)}
+.t-dat{color:var(--xanh);border-color:#1e4620}
+.t-truot{color:var(--do);border-color:#5c2b2b}
+.t-xay{color:var(--vang);border-color:#3d3218}
+.t-xuat{color:var(--xanh);border-color:var(--xanh);background:#0f2413}
+.t-hong{color:var(--do);border-color:var(--do)}
+.diem{font-weight:600}
+.trong{padding:34px;text-align:center;color:var(--mo);background:var(--the);border:1px dashed var(--vien);border-radius:10px}
+a{color:var(--xanh)}
+.tc{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+.tc div{background:var(--the);border:1px solid var(--vien);border-radius:8px;padding:10px}
+.tc b{font-size:12.5px}.tc p{margin:3px 0 0;color:var(--mo);font-size:11.5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Xưởng kiểm chứng ý tưởng</h1>
+  <div class="sub">Ý tưởng chỉ lên sàn khi đã <b>chạy được thật</b> — không còn dự án mẫu chỉ có mô tả.</div>
+</header>
+<main>
+  <div class="luong" id="luong"></div>
+  <div class="kpi" id="kpi"></div>
+
+  <h2>Sáu tiêu chí kiểm chứng</h2>
+  <div class="tc" id="tieuchi"></div>
+
+  <h2>Dự án trong xưởng</h2>
+  <div id="bang"></div>
+</main>
+<script>
+const esc = s => String(s??"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const NHAN = {moi:["Mới","t-moi"],"dang-kiem-chung":["Đang kiểm chứng","t-moi"],dat:["Đạt — chờ dựng","t-dat"],
+  truot:["Trượt","t-truot"],"dang-xay":["Subagent đang dựng","t-xay"],"nghiem-thu":["Nghiệm thu đạt","t-dat"],
+  "xuat-ban":["Đã lên sàn","t-xuat"],hong:["MVP không chạy","t-hong"]};
+
+(async function(){
+  const tq = await (await fetch("/api/tong-quan")).json();
+
+  document.getElementById("luong").innerHTML = tq.quy_trinh.map((b,i)=>{
+    const [so,...rest]=b.split(". ");
+    return `<div class="buoc"><b>${esc(so)}. ${esc(rest.join(". "))}</b><span>${
+      ["từ kho dữ liệu thật","6 tiêu chí, phải có căn cứ","dựng mã, triển khai","gọi thử — phải trả 2xx","chỉ khi đã chạy"][i]||""}</span></div>`;
+  }).join('<span class="mui">→</span>');
+
+  const t = tq.theo_trang_thai||{};
+  const o = (n,tt)=>`<div class="o"><div class="n">${n??0}</div><div class="t">${tt}</div></div>`;
+  document.getElementById("kpi").innerHTML =
+    o(tq.tong,"Tổng dự án") + o(t["moi"],"Chờ kiểm chứng") + o(t["dat"],"Đạt, chờ dựng") +
+    o(t["dang-xay"],"Đang dựng MVP") + o(t["nghiem-thu"],"Nghiệm thu đạt") +
+    o(t["xuat-ban"],"Đã lên sàn") + o(t["truot"],"Trượt") +
+    `<div class="o"><div class="n">${tq.nguong_dat}</div><div class="t">Điểm sàn để được dựng</div></div>`;
+
+  document.getElementById("tieuchi").innerHTML = tq.tieu_chi.map(c=>
+    `<div><b>${esc(c.ten)} · ${c.trong_so}%</b><p>${esc(c.mo_ta)}</p></div>`).join("");
+
+  const d = await (await fetch("/api/du-an?limit=100")).json();
+  const el = document.getElementById("bang");
+  if(!d.results.length){
+    el.innerHTML = `<div class="trong">Chưa có dự án nào trong xưởng.<br><br>
+      Ý tưởng được hút tự động từ <a href="https://bigdata.soloceo.vn">bigdata.soloceo.vn</a>,
+      chấm điểm theo 6 tiêu chí ở trên, rồi mới giao subagent dựng MVP.</div>`;
+    return;
+  }
+  el.innerHTML = `<table><thead><tr><th>Dự án</th><th>Ngành</th><th>Điểm</th><th>Trạng thái</th><th>Demo chạy thật</th></tr></thead><tbody>`+
+    d.results.map(r=>{
+      const [nh,cl]=NHAN[r.trang_thai]||[r.trang_thai,"t-moi"];
+      const mau = r.diem_kha_thi>=tq.nguong_dat?"var(--xanh)":(r.diem_kha_thi>0?"var(--do)":"var(--mo)");
+      return `<tr>
+        <td><b>${esc(r.ten)}</b><div style="color:var(--mo);font-size:11.5px;margin-top:2px">${esc((r.tom_tat||"").slice(0,110))}</div></td>
+        <td style="color:var(--mo)">${esc(r.nganh||"—")}</td>
+        <td class="diem" style="color:${mau}">${r.diem_kha_thi||"—"}</td>
+        <td><span class="tag ${cl}">${esc(nh)}</span></td>
+        <td>${r.demo_url?`<a href="${esc(r.demo_url)}" target="_blank" rel="noopener">mở ↗</a> <span style="color:var(--mo);font-size:11px">${r.nghiem_thu_ma||""}</span>`:'<span style="color:var(--mo)">chưa có</span>'}</td>
+      </tr>`;
+    }).join("")+`</tbody></table>`;
+})();
+</script>
+</body>
+</html>
