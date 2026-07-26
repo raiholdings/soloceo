@@ -242,6 +242,12 @@ export class AdminEcosystemService {
       for (const m of d.may_chu || []) {
         if (m.ten) map[m.ten] = m;
         if (m.ip && m.ip !== "local") map[m.ip] = m;
+        // Coolify gọi máy chủ lõi là "localhost" (ip host.docker.internal),
+        // còn bộ đo gọi là "core-01" — không bắc cầu thì thẻ này luôn trống.
+        if (m.ten === "core-01") {
+          map["localhost"] = m;
+          map["host.docker.internal"] = m;
+        }
       }
       return map;
     } catch {
