@@ -303,7 +303,18 @@ const SOURCE_META={
   "wikidata-vn":{ten:"Wikidata (lớp Việt Nam mở rộng)",license:"CC0 (miền công cộng)",loai:"doanh nghiệp / tổ chức / hạ tầng"},
   "wikipedia-vi":{ten:"Wikipedia tiếng Việt",license:"CC BY-SA 4.0",loai:"tri thức tiếng Việt"},
   openalex:{ten:"OpenAlex",license:"CC0 (miền công cộng)",loai:"nghiên cứu / tổ chức khoa học"},
+  worldbank:{ten:"World Bank Open Data",license:"CC BY 4.0",loai:"số liệu kinh tế - xã hội"},
 };
+// Nguồn thu thập bằng Crawl4AI: mã có dạng crawl-<nguồn>, tra tên hiển thị từ bảng tài liệu
+function metaNguon(src){
+  if(SOURCE_META[src]) return SOURCE_META[src];
+  if(src.startsWith("crawl-")){
+    let ten=src.slice(6);
+    try{const r=db.prepare("SELECT ten_nguon FROM tai_lieu WHERE nguon=? LIMIT 1").get(src.slice(6)); if(r&&r.ten_nguon) ten=r.ten_nguon;}catch(e){}
+    return {ten,license:"Trích dẫn có ghi nguồn — bản quyền thuộc đơn vị xuất bản",loai:"tài liệu web"};
+  }
+  return {ten:src,license:"—"};
+}
 const ENGINE_STAGES=[
   {ma:"thu-thap",ten:"1. Thu thập",mo_ta:"Kết nối nhiều nguồn mở. Lớp Việt Nam: OpenStreetMap (cơ sở kinh doanh, địa điểm, đường phố), GeoNames (địa danh có toạ độ), Wikidata VN (doanh nghiệp, tổ chức, hạ tầng), Wikipedia tiếng Việt (tri thức), OpenAlex (nghiên cứu và tổ chức khoa học). Lớp quốc tế: YC, GitHub, Hacker News, dev.to, DN 57 quốc gia. Cập nhật hàng giờ (tin tức/công nghệ) + full hàng ngày."},
   {ma:"chuan-hoa",ten:"2. Chuẩn hóa",mo_ta:"Đưa mọi nguồn về 1 lược đồ chung (items): loại · tên · mô tả · ngành (taxonomy) · quốc gia · năm · nguồn · khóa duy nhất. Upsert theo (type, ext_key) chống trùng; ngành dịch tiếng Việt."},
@@ -320,7 +331,7 @@ app.get("/api/engine",(req,res)=>{
   const g=q=>db.prepare(q).get().n;
   const total=g("SELECT count(*) n FROM items");
   const bySource=db.prepare("SELECT source,count(*) n FROM items GROUP BY source ORDER BY n DESC").all()
-    .map(r=>({nguon:r.source,so_luong:r.n,...(SOURCE_META[r.source]||{ten:r.source,license:"—"})}));
+    .map(r=>({nguon:r.source,so_luong:r.n,...metaNguon(r.source)}));
   // Chất lượng: độ đầy đủ trường
   const withDesc=g("SELECT count(*) n FROM items WHERE description!=''");
   const withUrl=g("SELECT count(*) n FROM items WHERE url!=''");
@@ -745,6 +756,56 @@ app.post("/api/admin/import",express.json({limit:"25mb"}),(req,res)=>{
   res.json({ok:true,nhan:ok,tong:db.prepare("SELECT count(*) n FROM items").get().n});
 });
 // ═══════ HẾT ĐỒNG BỘ SOLOCEO ═══════
+
+// ═══════════ KHO TÀI LIỆU MARKDOWN (thu thập bằng Crawl4AI) ═══════════
+// Mỗi tài liệu là một bài viết công khai đã chuẩn hoá sang Markdown tiếng Việt,
+// giữ nguyên đường dẫn gốc và thời điểm lấy để truy vết nguồn.
+db.exec(`
+CREATE TABLE IF NOT EXISTS tai_lieu (
+  id INTEGER PRIMARY KEY,
+  nguon TEXT NOT NULL, nhom TEXT NOT NULL, ten_nguon TEXT,
+  url TEXT NOT NULL UNIQUE, tieu_de TEXT, tom_tat TEXT, markdown TEXT,
+  so_tu INTEGER DEFAULT 0, ngay_dang TEXT, lay_luc TEXT,
+  giay_phep TEXT DEFAULT 'Trích dẫn có ghi nguồn — bản quyền thuộc về đơn vị xuất bản'
+);
+CREATE INDEX IF NOT EXISTS idx_tl_nguon ON tai_lieu(nguon);
+CREATE INDEX IF NOT EXISTS idx_tl_nhom ON tai_lieu(nhom);
+`);
+
+// Danh sách nguồn kèm số tài liệu — dùng cho tab "Tài liệu" gom theo nguồn
+app.get("/api/tai-lieu/nguon",(req,res)=>{
+  try{
+    const rows=db.prepare(`SELECT nhom, nguon, ten_nguon, count(*) so_luong,
+        max(lay_luc) moi_nhat, sum(so_tu) tong_tu FROM tai_lieu GROUP BY nguon ORDER BY nhom, so_luong DESC`).all();
+    const nhom={};
+    for(const r of rows){(nhom[r.nhom]=nhom[r.nhom]||[]).push(r);}
+    res.json({tong:db.prepare("SELECT count(*) n FROM tai_lieu").get().n, nhom});
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
+// Danh sách tài liệu (lọc theo nguồn/nhóm, tìm theo tiêu đề)
+app.get("/api/tai-lieu",(req,res)=>{
+  try{
+    const {nguon="",nhom="",q="",limit=40}=req.query;
+    const dk=[],ts=[];
+    if(nguon){dk.push("nguon=?");ts.push(nguon);}
+    if(nhom){dk.push("nhom=?");ts.push(nhom);}
+    if(q){dk.push("(tieu_de LIKE ? OR tom_tat LIKE ?)");ts.push("%"+q+"%","%"+q+"%");}
+    const where=dk.length?"WHERE "+dk.join(" AND "):"";
+    const rows=db.prepare(`SELECT id,nguon,nhom,ten_nguon,url,tieu_de,tom_tat,so_tu,ngay_dang,lay_luc
+      FROM tai_lieu ${where} ORDER BY id DESC LIMIT ?`).all(...ts,Math.min(+limit||40,200));
+    res.json({count:rows.length,results:rows});
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
+// Một tài liệu kèm toàn văn Markdown
+app.get("/api/tai-lieu/:id",(req,res)=>{
+  try{
+    const r=db.prepare("SELECT * FROM tai_lieu WHERE id=?").get(req.params.id);
+    if(!r) return res.status(404).json({error:"Không có tài liệu này"});
+    res.json(r);
+  }catch(e){res.status(500).json({error:e.message});}
+});
 
 // ═══════════════ MẠNG TRI THỨC (Knowledge Graph) — v4 ═══════════════
 // Mỗi sự vật/hiện tượng là một NỐT (items). Quan hệ là CẠNH (edges).

@@ -38,17 +38,22 @@ ON CONFLICT(type,ext_key) DO UPDATE SET
  year=excluded.year,score=excluded.score,updated_at=excluded.updated_at"""
 
 
-def lay(url, thu=4):
+def lay(url, thu=6):
+    """OpenAlex chặn tốc độ bằng 429. Một lần 429 không được phép giết cả lượt nạp:
+    lùi thời gian đủ lâu rồi thử lại, hết lượt thì trả None để nơi gọi dừng êm."""
     for i in range(thu):
         try:
             rq = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
-            with urllib.request.urlopen(rq, timeout=90) as r:
+            with urllib.request.urlopen(rq, timeout=120) as r:
                 return json.loads(r.read().decode("utf-8"))
         except Exception as e:
+            ma = getattr(e, "code", 0)
             if i == thu - 1:
-                raise
-            time.sleep(2 * (i + 1))
-            print("    thử lại (%s)" % str(e)[:60], flush=True)
+                print("    dừng nhánh này: %s" % str(e)[:70], flush=True)
+                return None
+            cho = 30 * (i + 1) if ma == 429 else 5 * (i + 1)
+            print("    chờ %ds rồi thử lại (%s)" % (cho, str(e)[:50]), flush=True)
+            time.sleep(cho)
 
 
 def nap(con, rows):
@@ -63,6 +68,8 @@ def to_chuc(con, now):
         u = ("https://api.openalex.org/institutions?filter=country_code:VN"
              "&per-page=200&cursor=%s&mailto=%s" % (urllib.parse.quote(cur), MAIL))
         d = lay(u)
+        if d is None:
+            break
         rows = []
         for it in d.get("results", []):
             ten = it.get("display_name") or ""
@@ -88,6 +95,7 @@ def to_chuc(con, now):
         cur = (d.get("meta") or {}).get("next_cursor")
         if not d.get("results"):
             break
+        time.sleep(0.4)  # giữ nhịp dưới ngưỡng chặn của OpenAlex
     return tong
 
 
@@ -97,6 +105,8 @@ def cong_trinh(con, now):
         u = ("https://api.openalex.org/works?filter=institutions.country_code:VN"
              "&per-page=200&cursor=%s&mailto=%s" % (urllib.parse.quote(cur), MAIL))
         d = lay(u)
+        if d is None:
+            break
         rows = []
         for w in d.get("results", []):
             ten = (w.get("display_name") or "").strip()
@@ -138,6 +148,7 @@ def cong_trinh(con, now):
         cur = (d.get("meta") or {}).get("next_cursor")
         if not d.get("results"):
             break
+        time.sleep(0.4)  # giữ nhịp dưới ngưỡng chặn của OpenAlex
     return tong
 
 
@@ -148,6 +159,8 @@ def chuyen_gia(con, now, tran=200000):
         u = ("https://api.openalex.org/authors?filter=last_known_institutions.country_code:VN"
              "&per-page=200&cursor=%s&mailto=%s" % (urllib.parse.quote(cur), MAIL))
         d = lay(u)
+        if d is None:
+            break
         rows = []
         for a in d.get("results", []):
             ten = (a.get("display_name") or "").strip()
@@ -183,6 +196,7 @@ def chuyen_gia(con, now, tran=200000):
         cur = (d.get("meta") or {}).get("next_cursor")
         if not d.get("results"):
             break
+        time.sleep(0.4)  # giữ nhịp dưới ngưỡng chặn của OpenAlex
     return tong
 
 

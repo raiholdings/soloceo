@@ -1,0 +1,67 @@
+{
+  "ghi_chu": "Danh mục nguồn thu thập cho Data Engine. Chỉ gồm nguồn công khai cho phép đọc máy; mọi lượt crawl đều tôn trọng robots.txt và giữ nhịp chậm. Không thu thập dữ liệu cá nhân (Nghị định 13/2023/NĐ-CP).",
+  "nhom": [
+    {
+      "ma": "chinh-sach",
+      "ten": "Chính sách & pháp luật kinh doanh",
+      "y_nghia": "Căn cứ pháp lý cho phần rủi ro và tuân thủ trong mô hình kinh doanh",
+      "nguon": [
+        { "ma": "chinhphu-kinhte", "ten": "Báo Chính phủ — Kinh tế", "rss": "https://baochinhphu.vn/rss/kinhte.rss", "tan_suat": "6h" },
+        { "ma": "moit", "ten": "Bộ Công Thương — Tin tức", "rss": "https://moit.gov.vn/tin-tuc.rss", "tan_suat": "12h" },
+        { "ma": "mpi", "ten": "Bộ Tài chính (Kế hoạch & Đầu tư) — Tin", "rss": "https://www.mpi.gov.vn/portal/Pages/Tin-Bai.aspx?rss=1", "tan_suat": "12h" }
+      ]
+    },
+    {
+      "ma": "thi-truong",
+      "ten": "Thị trường & doanh nghiệp Việt Nam",
+      "y_nghia": "Tín hiệu cầu, giá, cạnh tranh — nguyên liệu cho bước Phát hiện vấn đề",
+      "nguon": [
+        { "ma": "vnexpress-kd", "ten": "VnExpress — Kinh doanh", "rss": "https://vnexpress.net/rss/kinh-doanh.rss", "tan_suat": "3h" },
+        { "ma": "vnexpress-sohoa", "ten": "VnExpress — Số hoá", "rss": "https://vnexpress.net/rss/so-hoa.rss", "tan_suat": "3h" },
+        { "ma": "vnexpress-startup", "ten": "VnExpress — Khởi nghiệp", "rss": "https://vnexpress.net/rss/startup.rss", "tan_suat": "6h" },
+        { "ma": "cafef", "ten": "CafeF — Thị trường", "rss": "https://cafef.vn/thi-truong-chung-khoan.rss", "tan_suat": "3h" },
+        { "ma": "cafebiz", "ten": "CafeBiz — Câu chuyện kinh doanh", "rss": "https://cafebiz.vn/cau-chuyen-kinh-doanh.rss", "tan_suat": "6h" },
+        { "ma": "vietnamnet-kd", "ten": "VietNamNet — Kinh doanh", "rss": "https://vietnamnet.vn/rss/kinh-doanh.rss", "tan_suat": "6h" },
+        { "ma": "tuoitre-kd", "ten": "Tuổi Trẻ — Kinh doanh", "rss": "https://tuoitre.vn/rss/kinh-doanh.rss", "tan_suat": "6h" },
+        { "ma": "thanhnien-kt", "ten": "Thanh Niên — Kinh tế", "rss": "https://thanhnien.vn/rss/kinh-te.rss", "tan_suat": "6h" },
+        { "ma": "vneconomy", "ten": "VnEconomy", "rss": "https://vneconomy.vn/rss/home.rss", "tan_suat": "6h" },
+        { "ma": "theleader", "ten": "TheLEADER", "rss": "https://theleader.vn/rss/home.rss", "tan_suat": "12h" }
+      ]
+    },
+    {
+      "ma": "cong-nghe",
+      "ten": "Công nghệ & sản phẩm số thế giới",
+      "y_nghia": "Kho giải pháp — công nghệ nào đã có để giải vấn đề nào",
+      "nguon": [
+        { "ma": "techcrunch", "ten": "TechCrunch", "rss": "https://techcrunch.com/feed/", "tan_suat": "6h" },
+        { "ma": "hn-frontpage", "ten": "Hacker News — trang nhất", "rss": "https://hnrss.org/frontpage", "tan_suat": "3h" },
+        { "ma": "arstechnica", "ten": "Ars Technica", "rss": "https://feeds.arstechnica.com/arstechnica/index", "tan_suat": "12h" },
+        { "ma": "theverge", "ten": "The Verge", "rss": "https://www.theverge.com/rss/index.xml", "tan_suat": "12h" },
+        { "ma": "github-blog", "ten": "GitHub Blog", "rss": "https://github.blog/feed/", "tan_suat": "24h" },
+        { "ma": "aws-whatsnew", "ten": "AWS — What's New", "rss": "https://aws.amazon.com/about-aws/whats-new/recent/feed/", "tan_suat": "12h" }
+      ]
+    },
+    {
+      "ma": "khoi-nghiep",
+      "ten": "Khởi nghiệp & mô hình kinh doanh",
+      "y_nghia": "Mô hình nào đã chạy được, thất bại ở đâu",
+      "nguon": [
+        { "ma": "yc-blog", "ten": "Y Combinator Blog", "rss": "https://www.ycombinator.com/blog/rss", "tan_suat": "24h" },
+        { "ma": "a16z", "ten": "Andreessen Horowitz", "rss": "https://a16z.com/feed/", "tan_suat": "24h" },
+        { "ma": "stratechery", "ten": "Stratechery (bản công khai)", "rss": "https://stratechery.com/feed/", "tan_suat": "24h" },
+        { "ma": "indiehackers", "ten": "Indie Hackers", "rss": "https://feed.indiehackers.com/", "tan_suat": "24h" },
+        { "ma": "e27", "ten": "e27 — Đông Nam Á", "rss": "https://e27.co/feed/", "tan_suat": "12h" },
+        { "ma": "techinasia", "ten": "Tech in Asia (bản công khai)", "rss": "https://www.techinasia.com/feed", "tan_suat": "12h" }
+      ]
+    },
+    {
+      "ma": "so-lieu-mo",
+      "ten": "Dữ liệu mở & thống kê",
+      "y_nghia": "Số liệu nền để định cỡ thị trường",
+      "nguon": [
+        { "ma": "worldbank-blog", "ten": "World Bank — Data Blog", "rss": "https://blogs.worldbank.org/en/opendata/rss.xml", "tan_suat": "24h" },
+        { "ma": "oecd", "ten": "OECD — Newsroom", "rss": "https://www.oecd.org/newsroom/index.xml", "tan_suat": "24h" }
+      ]
+    }
+  ]
+}
