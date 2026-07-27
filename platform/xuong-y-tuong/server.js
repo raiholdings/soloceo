@@ -149,19 +149,23 @@ async function doiChieuKho(tu_khoa) {
   // nó nhận, nhưng sai về bản chất. Đã mất một vòng chẩn đoán nhầm vì chỗ này.
   const q = encodeURIComponent(String(tu_khoa).slice(0, 120));
   const ra = {};
-  // Lấy TOÀN BỘ kho đúc, không lọc từ khoá. Lý do: bộ lọc LIKE của bigdata tách tiếng Việt
-  // theo âm tiết nên "bất ĐỘNG sản" khớp trúng "hoạt ĐỘNG", "lao ĐỘNG" — lọc xong còn nhiễu
-  // hơn không lọc. Kho đúc hiện chỉ vài chục mục nên đưa hết bản rút gọn vào ngữ cảnh rẻ hơn
-  // và chính xác hơn nhiều. Khi kho vượt ~300 mục thì mới cần quay lại lọc (bằng FTS, không
-  // phải LIKE) — endpoint ?q= đã sẵn sàng cho lúc đó.
+  // Lấy TOP mục liên quan nhất, xếp bằng bộ khớp bigram tiếng Việt của bigdata (?q=).
+  //
+  // Đã đi qua hai bản sai trước khi tới đây, ghi lại để không lặp:
+  //  1. Gọi trần không kèm q → nhận 40 mục đầu bảng ngẫu nhiên → mọi ý tưởng 0 điểm.
+  //  2. Lấy TOÀN BỘ kho rồi nhét vào ngữ cảnh → chạy tốt lúc kho vài chục mục, nhưng khi
+  //     kho vượt 260 mục thì prompt bị cắt ở 5000 ký tự nên lại thành lọc ngẫu nhiên: cùng
+  //     một dự án chấm hai lần ra 42 rồi 15, có lượt timeout.
+  // Nay bigdata xếp hạng bằng chính thuật toán khớp đã hiệu chuẩn, trả top 25 kèm điểm
+  // liên quan để cổng biết mục nào thật sự sát.
   for (const [ten, url, gon] of [
-    ["van_de", `${BIGDATA}/api/van-de?limit=200`,
-      (r) => ({ id: r.id, van_de: r.tieu_de, ai_dau: r.khach_hang, nganh: r.nganh, dau: r.do_dau })],
-    ["giai_phap", `${BIGDATA}/api/giai-phap?limit=200`,
-      (r) => ({ id: r.id, giai_phap: r.ten, nguyen_ly: (r.nguyen_ly || "").slice(0, 130), nganh: r.nganh })],
-    ["mo_hinh", `${BIGDATA}/api/mo-hinh-kd?limit=200`,
-      (r) => ({ id: r.id, mo_hinh: r.ten, kiem_tien: (r.cach_kiem_tien || "").slice(0, 130), nganh: r.nganh })],
-    ["san_pham", `${BIGDATA}/api/san-pham?limit=60`,
+    ["van_de", `${BIGDATA}/api/van-de?q=${q}&limit=25`,
+      (r) => ({ id: r.id, van_de: r.tieu_de, ai_dau: r.khach_hang, nganh: r.nganh, dau: r.do_dau, sat: r._lien_quan })],
+    ["giai_phap", `${BIGDATA}/api/giai-phap?q=${q}&limit=25`,
+      (r) => ({ id: r.id, giai_phap: r.ten, nguyen_ly: (r.nguyen_ly || "").slice(0, 130), nganh: r.nganh, sat: r._lien_quan })],
+    ["mo_hinh", `${BIGDATA}/api/mo-hinh-kd?q=${q}&limit=25`,
+      (r) => ({ id: r.id, mo_hinh: r.ten, kiem_tien: (r.cach_kiem_tien || "").slice(0, 130), nganh: r.nganh, sat: r._lien_quan })],
+    ["san_pham", `${BIGDATA}/api/san-pham?limit=40`,
       (r) => ({ id: r.id, san_pham: r.ten, mo_ta: (r.mo_ta || "").slice(0, 90) })],
   ]) {
     try {
@@ -196,12 +200,13 @@ async function kiemChung(id) {
 MÔ TẢ: ${da.tom_tat}
 NGÀNH: ${da.nganh || "chưa rõ"}
 
-DỮ LIỆU THẬT ĐỂ ĐỐI CHIẾU — đây là TOÀN BỘ kho đúc, không phải trích chọn, nên nếu không
-tìm thấy gì liên quan ở đây thì đúng là kho chưa có (chỉ được dùng những gì có ở đây làm căn cứ):
+DỮ LIỆU THẬT ĐỂ ĐỐI CHIẾU — đây là những mục LIÊN QUAN NHẤT trong kho, đã xếp hạng sẵn
+(trường "sat" là điểm liên quan 0-100; sat thấp nghĩa là mục đó chỉ gần gần, đừng dựa vào).
+Chỉ được dùng những gì có ở đây làm căn cứ:
 - Nốt tìm được theo từ khoá: ${JSON.stringify(kho.lien_quan).slice(0, 1800)}
-- Toàn bộ ${(kho.van_de || []).length} vấn đề đã ghi nhận: ${JSON.stringify(kho.van_de || []).slice(0, 5000)}
-- Toàn bộ ${(kho.giai_phap || []).length} giải pháp đã có: ${JSON.stringify(kho.giai_phap || []).slice(0, 5000)}
-- Toàn bộ ${(kho.mo_hinh || []).length} mô hình KD đã có: ${JSON.stringify(kho.mo_hinh || []).slice(0, 5000)}
+- ${(kho.van_de || []).length} vấn đề liên quan nhất: ${JSON.stringify(kho.van_de || []).slice(0, 4500)}
+- ${(kho.giai_phap || []).length} giải pháp liên quan nhất: ${JSON.stringify(kho.giai_phap || []).slice(0, 4500)}
+- ${(kho.mo_hinh || []).length} mô hình KD liên quan nhất: ${JSON.stringify(kho.mo_hinh || []).slice(0, 4500)}
 - Cơ sở kinh doanh Việt Nam ĐẾM ĐƯỢC khớp ngành này (tổng ${kho.tong_co_so || 0} cơ sở thật, nguồn OSM/Trang Vàng):
   ${JSON.stringify(kho.thi_truong_vn || []).slice(0, 1200)}
   → Đây là bằng chứng thị trường Việt Nam mạnh nhất trong kho. Nếu con số này lớn hơn 0 và

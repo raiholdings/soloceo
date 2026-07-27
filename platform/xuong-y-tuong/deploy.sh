@@ -52,8 +52,15 @@ docker run -d --name "$TEN" --restart unless-stopped --network coolify \
   --label traefik.http.services.xuong.loadbalancer.server.port=8080 \
   "$TEN:$THE" >/dev/null
 
+# Nối lại mạng MVP. Container mới KHÔNG tự vào mvp-net (docker run chỉ nhận một --network),
+# mà thiếu nó thì proxy /mvp/:slug không tới được MVP nào — trả 502 và mọi dự án đã nghiệm
+# thu bỗng "hỏng". Đã sập một lần đúng kiểu này sau khi nạp thêm biến môi trường.
+docker network inspect mvp-net >/dev/null 2>&1 || docker network create --internal mvp-net >/dev/null
+docker network connect mvp-net "$TEN" 2>/dev/null || true
+
 sleep 4
 docker ps --filter "name=^${TEN}$" --format '  {{.Image}} · {{.Status}}'
+docker inspect "$TEN" --format '  mạng: {{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}'
 docker image prune -f --filter "label!=keep" >/dev/null 2>&1 || true
 CHAY
 

@@ -1588,7 +1588,7 @@ app.get("/api/admin/bulk-status",(req,res)=>res.json(bulkState));
 app.get("/api/mo-hinh-kd",(req,res)=>{
   const n=Number(req.query.limit)||40;
   const rows=req.query.q
-    ? khopKho("biz_models",["ten","mo_ta","cach_kiem_tien","phan_khuc","nganh"],req.query.q,n,0).tatCa
+    ? xepLienQuan("biz_models",["ten","mo_ta","cach_kiem_tien","phan_khuc","nganh"],req.query.q,n)
     : db.prepare("SELECT * FROM biz_models ORDER BY id DESC LIMIT ?").all(n);
   res.json({count:db.prepare("SELECT count(*) n FROM biz_models").get().n,khop:rows.length,mo_hinh:rows});
 });
@@ -1612,6 +1612,23 @@ function khopKho(bang,cols,tuKhoa,nLienQuan,nMoi){
   let moi=[];
   try{moi=db.prepare(`SELECT * FROM ${bang} ORDER BY id DESC LIMIT ?`).all(nLienQuan+nMoi).filter(r=>!ids.has(r.id)).slice(0,nMoi);}catch(e){}
   return {lienQuan,tatCa:lienQuan.concat(moi)};
+}
+
+// Xếp hạng mục trong kho đúc theo độ liên quan, dùng CHÍNH bộ khớp bigram của /api/khop-nhanh.
+//
+// Vì sao không dùng khopKho() (LIKE): nó tách tiếng Việt theo âm tiết nên "bất ĐỘNG sản"
+// khớp trúng "lao ĐỘNG". Vì sao không đưa cả kho vào ngữ cảnh nữa: kho đã vượt 260 mục,
+// prompt bị cắt ở 5000 ký tự nên chỉ ~20 mục lọt qua một cách ngẫu nhiên — điểm kiểm chứng
+// nhảy 42→15 giữa hai lượt chấm cùng một dự án, và có lượt timeout.
+function xepLienQuan(bang, cols, q, n) {
+  let rows = [];
+  try { rows = db.prepare(`SELECT * FROM ${bang}`).all(); } catch (e) { return []; }
+  const ceo = dacTrung(q);
+  return rows
+    .map((r) => ({ r, d: diemGan(ceo, dacTrung(cols.map((c) => r[c] || "").join(" "))) }))
+    .sort((a, b) => b.d - a.d)
+    .slice(0, n)
+    .map((x) => ({ ...x.r, _lien_quan: x.d }));   // trả kèm điểm để cổng biết mục nào sát
 }
 
 // Quy mô thị trường Việt Nam ĐẾM ĐƯỢC theo từ khoá ngành.
@@ -1802,7 +1819,7 @@ Trả DUY NHẤT JSON (tham chiếu [VDx]/[GPx]/[MHx]/[SPx]/[SKx]/#id THẬT ở
 app.get("/api/giai-phap",(req,res)=>{
   const n=Number(req.query.limit)||40;
   const rows=req.query.q
-    ? khopKho("solutions",["ten","mo_ta","nguyen_ly","ap_dung","nganh","cong_nghe"],req.query.q,n,0).tatCa
+    ? xepLienQuan("solutions",["ten","mo_ta","nguyen_ly","ap_dung","nganh","cong_nghe"],req.query.q,n)
     : db.prepare("SELECT * FROM solutions ORDER BY id DESC LIMIT ?").all(n);
   res.json({count:db.prepare("SELECT count(*) n FROM solutions").get().n,khop:rows.length,giai_phap:rows});
 });
@@ -1883,7 +1900,7 @@ JSON hợp lệ, tiếng Việt, lộ trình phải CỤ THỂ đo được, kh�
 app.get("/api/van-de",(req,res)=>{
   const st=req.query.status||"all";
   let rows=req.query.q
-    ? khopKho("problems",["tieu_de","mo_ta","khach_hang","nganh","goc_re","boi_canh"],req.query.q,Number(req.query.limit)||40,0).tatCa
+    ? xepLienQuan("problems",["tieu_de","mo_ta","khach_hang","nganh","goc_re","boi_canh"],req.query.q,Number(req.query.limit)||40)
     : db.prepare(`SELECT p.*, i.ten AS y_tuong FROM problems p LEFT JOIN ideas i ON i.id=p.idea_id ORDER BY p.trang_thai='moi' DESC, p.do_dau DESC, p.id DESC`).all();
   if(st==="moi")rows=rows.filter(r=>r.trang_thai==="moi");
   res.json({count:rows.length,mo:rows.filter(r=>r.trang_thai==="moi").length,van_de:rows.slice(0,Number(req.query.limit)||40)});
