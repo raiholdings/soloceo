@@ -183,3 +183,35 @@ còn xa một sản phẩm bán được giá cao. Giá 5 triệu là mô hình 
 
 **Rủi ro lớn nhất:** không phải kỹ thuật mà là **chưa có người dùng thật**. Mọi con số ở
 trên là năng lực sản xuất, không phải nhu cầu thị trường đã kiểm chứng.
+
+---
+
+## 8. Việc lớn cho phiên sau — khoá học + trang nền tảng (đặt hàng 27/07)
+
+Làm nhiều phiên, nhiều giờ, đến khi xong. **Chuẩn SEO là bắt buộc, không phải tuỳ chọn.**
+
+### 8.1 Ba đầu việc song song cho MỖI nền tảng mã nguồn mở
+
+| Nơi | Sản phẩm | Đường dẫn |
+|---|---|---|
+| soloceo.vn | Bài HTML giới thiệu nền tảng | `/giai-phap/nen-tang/<slug>` |
+| platform.soloceo.vn | Trang bán/triển khai nền tảng | (đã có, cần liên kết chéo) |
+| edu.soloceo.vn | Khoá học đầy đủ về nền tảng đó | Academy LMS |
+
+Trang chủ hiện quảng cáo **110 nền tảng mã nguồn mở** — đó là quy mô công việc. Phải lấy
+danh sách thật từ platform.soloceo.vn (WHMCS) chứ không tự bịa ra.
+
+### 8.2 Yêu cầu SEO cho mỗi trang `/giai-phap/nen-tang/<slug>`
+
+- `<title>` và meta description riêng, viết cho người tìm kiếm tiếng Việt
+- Dữ liệu có cấu trúc `SoftwareApplication` + `BreadcrumbList` (JSON-LD)
+- Thẻ Open Graph + ảnh xem trước riêng từng nền tảng
+- Liên kết nội bộ ba chiều: bài giới thiệu ↔ trang platform ↔ khoá học edu
+- Trang mục lục `/giai-phap/nen-tang` liệt kê toàn bộ, có phân nhóm
+- Thêm vào sitemap.xml
+
+### 8.3 Cách làm đề xuất
+
+Giống dây chuyền MVP: một script điều phối chạy theo lô, mỗi nền tảng một vòng
+(lấy dữ liệu thật → sinh nội dung → dựng HTML từ khuôn cố định → kiểm tra → xuất bản).
+Đừng viết tay 110 lần, và đừng để mô hình sinh cả HTML — dùng lại bài học ở mục 7.
