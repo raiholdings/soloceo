@@ -14,6 +14,11 @@ import {
   BaoCaoPublicController,
 } from "./bao-cao.controller";
 import { BaoCaoService } from "./bao-cao.service";
+import {
+  NenTangAdminController,
+  NenTangPublicController,
+} from "./nen-tang.controller";
+import { NenTangService } from "./nen-tang.service";
 
 @Module({
   imports: [StoreModule],
@@ -26,7 +31,9 @@ import { BaoCaoService } from "./bao-cao.service";
     BaoCaoPublicController,
     BaoCaoPageController,
     BaoCaoAdminController,
+    NenTangPublicController,
+    NenTangAdminController,
   ],
-  providers: [AdminEcosystemService, BaoCaoService],
+  providers: [AdminEcosystemService, BaoCaoService, NenTangService],
 })
 export class AdminModule {}
