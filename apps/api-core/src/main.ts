@@ -1,5 +1,5 @@
-import { json, urlencoded } from "express";
 import { NestFactory } from "@nestjs/core";
+import type { NestExpressApplication } from "@nestjs/platform-express";
 import { ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
@@ -7,14 +7,19 @@ import { AppModule } from "./app.module";
 
 async function bootstrap() {
   // rawBody: giữ body thô cho verify chữ ký webhook Zalo OA (channels/zalo — R7 §2).
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
 
   app.setGlobalPrefix("v1");
   // Hạn mức thân yêu cầu. Mặc định của Express là 100kb — vừa cho JSON nghiệp vụ nhưng
   // KHÔNG vừa cho báo cáo nghiên cứu: một bản thật dài 60-100 nghìn ký tự HTML, nhập vào
   // là 413 ngay. 6mb đủ rộng cho báo cáo mà vẫn chặn được kẻ cố tình nhồi dữ liệu.
-  app.use(json({ limit: "6mb" }));
-  app.use(urlencoded({ limit: "6mb", extended: true }));
+  //
+  // Dùng useBodyParser của Nest, KHÔNG import thẳng từ "express": express không phải phụ
+  // thuộc trực tiếp của gói này (chỉ là phụ thuộc bắc cầu của @nestjs/platform-express),
+  // nên pnpm không phơi nó ra — import thẳng thì biên dịch qua nhưng chạy là
+  // MODULE_NOT_FOUND. Đã làm sập api-core một lần đúng vì lỗi này.
+  app.useBodyParser("json", { limit: "6mb" });
+  app.useBodyParser("urlencoded", { limit: "6mb", extended: true });
   app.use(helmet());
   // CORS whitelist (GĐ7): dev mở localhost; prod chỉ các frontend SoloCEO
   const origins =
