@@ -12,6 +12,7 @@ import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "../prisma/prisma.service";
 import { PLATFORM_CATALOG, type PlatformCatalogEntry } from "./platform-catalog.data";
+import { decryptSecret, encryptSecret } from "../ai/crypto.util";
 
 export interface PlatformProbe {
   key: string;
@@ -934,6 +935,75 @@ ${body}
     // nhiều lần cho tới khi nghiệm thu đạt, mỗi lần đẻ một mẫu mới là rác.
     if (cu) return this.prisma.projectTemplate.update({ where: { id: cu.id }, data: data as never });
     return this.prisma.projectTemplate.create({ data: { ...data, slug } as never });
+  }
+
+  // ═══════════ KHO GHI NHỚ — tài khoản/mật khẩu hệ thống ═══════════
+  //
+  // Dùng lại bảng Secret + AES-256-GCM đã có (CLAUDE.md Phần 7). Điểm khác: những khoá này
+  // thuộc về NỀN TẢNG chứ không thuộc org nào, nên gắn orgId sentinel "he-thong".
+  //
+  // Ba nguyên tắc không được phá:
+  //  1. Danh sách KHÔNG BAO GIỜ trả giá trị — chỉ tên khoá và mô tả. Muốn xem giá trị phải
+  //     gọi riêng từng khoá, để mỗi lần xem là một hành động có chủ đích.
+  //  2. Mỗi lần xem đều ghi vào admin_actions. Kho mật khẩu mà không biết ai xem lúc nào
+  //     thì chỉ là một chỗ để lộ tập trung.
+  //  3. Giá trị không bao giờ đi vào log, kể cả khi lỗi.
+  //
+  // Ghi chú lưu chung trong phần mã hoá (JSON) để khỏi phải thêm cột và chạy migration.
+  private readonly ORG_HE_THONG = "he-thong";
+
+  private goiKhoa(gia_tri: string, ghi_chu?: string, loai?: string) {
+    return encryptSecret(JSON.stringify({ v: gia_tri, n: ghi_chu ?? "", l: loai ?? "khac" }));
+  }
+  private moKhoa(enc: string) {
+    const raw = decryptSecret(enc);
+    try {
+      const o = JSON.parse(raw) as { v?: string; n?: string; l?: string };
+      return { gia_tri: o.v ?? raw, ghi_chu: o.n ?? "", loai: o.l ?? "khac" };
+    } catch {
+      // Khoá cũ lưu thẳng chuỗi, không bọc JSON — vẫn đọc được
+      return { gia_tri: raw, ghi_chu: "", loai: "khac" };
+    }
+  }
+
+  /** Danh sách khoá — CỐ Ý không có giá trị. */
+  async ghiNhoDanhSach() {
+    const rows = await this.prisma.secret.findMany({
+      where: { orgId: this.ORG_HE_THONG },
+      orderBy: { key: "asc" },
+    });
+    return rows.map((r) => {
+      let ghi_chu = "", loai = "khac";
+      try { const o = this.moKhoa(r.valueEnc); ghi_chu = o.ghi_chu; loai = o.loai; } catch { /* khoá hỏng vẫn phải liệt kê */ }
+      return { khoa: r.key, ghi_chu, loai, cap_nhat: r.updatedAt, tao_luc: r.createdAt };
+    });
+  }
+
+  async ghiNhoLuu(khoa: string, gia_tri: string, ghi_chu?: string, loai?: string) {
+    const k = String(khoa || "").trim();
+    if (!k || !gia_tri) throw new BadRequestException("Cần khoa và gia_tri");
+    const valueEnc = this.goiKhoa(gia_tri, ghi_chu, loai);
+    await this.prisma.secret.upsert({
+      where: { orgId_key: { orgId: this.ORG_HE_THONG, key: k } },
+      create: { orgId: this.ORG_HE_THONG, key: k, valueEnc },
+      update: { valueEnc },
+    });
+    return { khoa: k, da_luu: true };   // KHÔNG trả lại giá trị
+  }
+
+  async ghiNhoXem(khoa: string) {
+    const r = await this.prisma.secret.findUnique({
+      where: { orgId_key: { orgId: this.ORG_HE_THONG, key: khoa } },
+    });
+    if (!r) throw new BadRequestException("Không có khoá này");
+    return { khoa, ...this.moKhoa(r.valueEnc), cap_nhat: r.updatedAt };
+  }
+
+  async ghiNhoXoa(khoa: string) {
+    await this.prisma.secret.delete({
+      where: { orgId_key: { orgId: this.ORG_HE_THONG, key: khoa } },
+    });
+    return { khoa, da_xoa: true };
   }
 
   projectList(status?: string) {

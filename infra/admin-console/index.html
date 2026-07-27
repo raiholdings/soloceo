@@ -138,6 +138,7 @@ const NAV = [
   {k:"docs",     ic:"❒", t:"Tài liệu"},
   {k:"projects", ic:"◆", t:"Tạo dự án"},
   {k:"mna",      ic:"⇄", t:"Sàn M&A"},
+  {k:"ghinho",   ic:"⚿", t:"Ghi nhớ (tài khoản)"},
   {k:"audit",    ic:"❑", t:"Nhật ký quản trị"},
 ];
 
@@ -197,7 +198,7 @@ function setBadge(k,n){
 function go(k){
   current=k; renderNav();
   document.getElementById("view").innerHTML='<div class="spin">Đang tải…</div>';
-  ({overview:vOverview,users:vUsers,revenue:vRevenue,ai:vAi,health:vHealth,catalog:vCatalog,infra:vInfra,agents:vAgents,news:vNews,docs:vDocs,projects:vProjects,mna:vMna,audit:vAudit}[k])();
+  ({overview:vOverview,users:vUsers,revenue:vRevenue,ai:vAi,health:vHealth,catalog:vCatalog,infra:vInfra,agents:vAgents,news:vNews,docs:vDocs,projects:vProjects,mna:vMna,ghinho:vGhiNho,audit:vAudit}[k])();
 }
 const H=(title,sub,extra="")=>`<div class="head"><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div><div>${extra}</div></div>`;
 const V=html=>{document.getElementById("view").innerHTML=html;};
@@ -640,6 +641,65 @@ async function vMna(){
   }catch(e){ errBox(e); }
 }
 async function approveListing(id){ try{ await api(`/admin/listings/${id}/approve`,{method:"POST"}); toast("Đã duyệt listing"); vMna(); }catch(e){toast(e.message,true);} }
+
+// ── Ghi nhớ: tài khoản / mật khẩu hệ thống ──
+// Giá trị mã hoá AES-256-GCM trong bảng Secret của api-core. Ba quy tắc dựng nên trang này:
+//  1. Danh sách KHÔNG tải giá trị — chỉ tên khoá. Muốn xem phải bấm từng cái.
+//  2. Mỗi lần bấm Xem là một lời gọi API riêng và bị ghi vào Nhật ký quản trị.
+//  3. Giá trị hiện ra rồi tự ẩn sau 45 giây, phòng khi để màn hình mở rồi bỏ đi.
+const NHOM_GHINHO = {"csdl":"Cơ sở dữ liệu","dich-vu":"Dịch vụ / API","ha-tang":"Hạ tầng","thanh-toan":"Thanh toán","khac":"Khác"};
+async function vGhiNho(){
+  try{
+    const list = await api("/admin/eco/ghi-nho");
+    const nhom = {};
+    list.forEach(x=>{ (nhom[x.loai||"khac"] ||= []).push(x); });
+    V(H("Ghi nhớ — tài khoản & mật khẩu hệ thống",
+        `${list.length} khoá · mã hoá AES-256-GCM · mỗi lần xem đều vào nhật ký`)+
+    `<div class="card" style="margin-bottom:14px">
+      <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr auto;align-items:end">
+        <label>Khoá<input id="gn-k" placeholder="vd: tenant-01/wowonder/db"></label>
+        <label>Giá trị<input id="gn-v" type="password" placeholder="mật khẩu hoặc token"></label>
+        <label>Ghi chú<input id="gn-n" placeholder="ai dùng, ở đâu"></label>
+        <label>Loại<select id="gn-l">${Object.entries(NHOM_GHINHO).map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label>
+      </div>
+      <div style="margin-top:10px"><button class="btn" onclick="gnLuu()">Lưu vào kho</button>
+        <span class="faint" style="margin-left:10px;font-size:12px">Giá trị được mã hoá trước khi rời trình duyệt máy chủ — không ghi log.</span></div>
+    </div>`+
+    (list.length? Object.entries(nhom).map(([l,items])=>
+      `<div class="card" style="padding:0;overflow:auto;margin-bottom:12px">
+        <div style="padding:10px 14px;font-weight:600">${esc(NHOM_GHINHO[l]||l)} <span class="faint">(${items.length})</span></div>
+        <table><thead><tr><th>Khoá</th><th>Ghi chú</th><th>Cập nhật</th><th style="width:190px">Giá trị</th></tr></thead>
+        <tbody>${items.map(x=>`<tr>
+          <td class="mono" style="font-size:12px">${esc(x.khoa)}</td>
+          <td class="faint" style="font-size:12px">${esc(x.ghi_chu||"—")}</td>
+          <td class="faint" style="font-size:11px">${dt(x.cap_nhat)}</td>
+          <td><span id="gv-${esc(x.khoa).replace(/[^a-zA-Z0-9]/g,"_")}" class="mono faint" style="font-size:12px">••••••••</span>
+              <button class="btn" style="padding:3px 9px;font-size:11px;margin-left:6px" onclick="gnXem('${esc(x.khoa)}')">Xem</button></td>
+        </tr>`).join("")}</tbody></table>
+      </div>`).join("")
+      : '<div class="card muted center" style="padding:26px">Kho trống. Thêm khoá đầu tiên ở trên.</div>'));
+  }catch(e){ errBox(e); }
+}
+async function gnLuu(){
+  const k=document.getElementById("gn-k").value.trim(), v=document.getElementById("gn-v").value;
+  if(!k||!v){ alert("Cần cả khoá lẫn giá trị"); return; }
+  try{
+    await api("/admin/eco/ghi-nho",{method:"POST",body:JSON.stringify({khoa:k,gia_tri:v,
+      ghi_chu:document.getElementById("gn-n").value.trim(),loai:document.getElementById("gn-l").value})});
+    document.getElementById("gn-v").value="";   // xoá ngay khỏi ô nhập
+    vGhiNho();
+  }catch(e){ alert("Lỗi: "+e.message); }
+}
+async function gnXem(khoa){
+  const id="gv-"+khoa.replace(/[^a-zA-Z0-9]/g,"_"); const el=document.getElementById(id);
+  if(!el) return;
+  try{
+    const d = await api("/admin/eco/ghi-nho/"+encodeURIComponent(khoa));
+    el.textContent = d.gia_tri; el.classList.remove("faint");
+    // Tự ẩn lại: màn hình quản trị hay bị để mở rồi bỏ đi.
+    setTimeout(()=>{ el.textContent="••••••••"; el.classList.add("faint"); }, 45000);
+  }catch(e){ alert("Không xem được: "+e.message); }
+}
 
 async function vAudit(){
   try{
