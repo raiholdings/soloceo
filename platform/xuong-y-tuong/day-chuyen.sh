@@ -45,10 +45,26 @@ done
 wait
 
 echo "═══ 4. Dựng MVP cho dự án đạt ngưỡng"
-N_DAT=$(curl -s --max-time 30 "$SB/api/du-an" | python3 -c "
-import sys,json;print(sum(1 for r in json.load(sys.stdin)['results'] if r['trang_thai']=='dat'))")
-echo "  số dự án đạt: $N_DAT"
-[ "${N_DAT:-0}" -gt 0 ] && $SSH "/opt/xay-mvp.sh $N_DAT" 2>&1 | sed 's/^/  /'
+# Đếm có thử lại: khâu 3 chạy song song làm sandbox tải nặng, có lượt curl trả rỗng →
+# python vỡ → biến rỗng → điều kiện dưới im lặng bỏ qua cả khâu dựng MVP. Đã xảy ra ở
+# vòng đầu: 2 dự án đạt ngưỡng mà không cái nào được dựng.
+N_DAT=""
+for _ in 1 2 3; do
+  N_DAT=$(curl -s --max-time 40 "$SB/api/du-an" 2>/dev/null | python3 -c "
+import sys,json
+try: print(sum(1 for r in json.load(sys.stdin)['results'] if r['trang_thai']=='dat'))
+except Exception: pass" 2>/dev/null)
+  [ -n "$N_DAT" ] && break
+  sleep 10
+done
+if [ -z "$N_DAT" ]; then
+  echo "  ✗ không đếm được dự án đạt (sandbox không phản hồi) — BỎ QUA khâu dựng MVP"
+elif [ "$N_DAT" -eq 0 ]; then
+  echo "  không có dự án nào đạt ngưỡng"
+else
+  echo "  số dự án đạt: $N_DAT"
+  $SSH "/opt/xay-mvp.sh $N_DAT" 2>&1 | sed 's/^/  /'
+fi
 
 echo "═══ 5. Đưa MVP đã nghiệm thu lên sàn"
 DS=$(curl -s --max-time 30 "$SB/api/du-an" | python3 -c "

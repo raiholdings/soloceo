@@ -1251,7 +1251,13 @@ do_dau 1-10 (10 = rất đau/cấp thiết). Không bịa số liệu. Vấn đ�
 
 // ĐÚC Ý TƯỞNG v2 — ưu tiên GIẢI vấn đề đau nhất trong backlog; hết vấn đề → tự do như cũ
 async function generateIdeaV11(){
-  const prob=db.prepare("SELECT * FROM problems WHERE trang_thai='moi' ORDER BY do_dau DESC, RANDOM() LIMIT 1").get();
+  // Ưu tiên tuyệt đối vấn đề đúc từ CỤM CƠ SỞ KINH DOANH VIỆT NAM (can_cu bắt đầu "Cụm VN").
+  // Vì sao: kho có cả vấn đề đúc từ dự án World Bank, bốc ngẫu nhiên thì máy đẻ ra
+  // "nền tảng viện trợ cho Ukraine", "kết nối đầu tư Ukraine–EU" — cổng kiểm chứng đánh
+  // trượt đúng, nhưng đã tốn tiền sinh ý tưởng lẫn dựng MVP rồi mới trượt. Chặn từ đầu vào
+  // rẻ hơn nhiều. Hết vấn đề VN mới rơi xuống nguồn khác.
+  const prob=db.prepare("SELECT * FROM problems WHERE trang_thai='moi' AND can_cu LIKE 'Cụm VN%' ORDER BY do_dau DESC, RANDOM() LIMIT 1").get()
+    || db.prepare("SELECT * FROM problems WHERE trang_thai='moi' ORDER BY do_dau DESC, RANDOM() LIMIT 1").get();
   const m=mineOpportunity();
   const moHinhs=pickN("SELECT id,name,oneliner FROM items WHERE type='soloceo-mo-hinh'",3);
   const nenTangs=pickN("SELECT id,name,oneliner,category FROM items WHERE type='soloceo-nen-tang'",6);
@@ -1834,7 +1840,13 @@ app.get("/api/admin/gen-solution",async(req,res)=>{
 
 // ── ĐÚC Ý TƯỞNG v3 — TỔNG HỢP: Vấn đề × Giải pháp × Mô hình KD × MVP mẫu × Nền tảng + LỘ TRÌNH ──
 async function generateIdea(){
-  const prob=db.prepare("SELECT * FROM problems WHERE trang_thai='moi' ORDER BY do_dau DESC, RANDOM() LIMIT 1").get();
+  // Ưu tiên tuyệt đối vấn đề đúc từ CỤM CƠ SỞ KINH DOANH VIỆT NAM (can_cu bắt đầu "Cụm VN").
+  // Vì sao: kho có cả vấn đề đúc từ dự án World Bank, bốc ngẫu nhiên thì máy đẻ ra
+  // "nền tảng viện trợ cho Ukraine", "kết nối đầu tư Ukraine–EU" — cổng kiểm chứng đánh
+  // trượt đúng, nhưng đã tốn tiền sinh ý tưởng lẫn dựng MVP rồi mới trượt. Chặn từ đầu vào
+  // rẻ hơn nhiều. Hết vấn đề VN mới rơi xuống nguồn khác.
+  const prob=db.prepare("SELECT * FROM problems WHERE trang_thai='moi' AND can_cu LIKE 'Cụm VN%' ORDER BY do_dau DESC, RANDOM() LIMIT 1").get()
+    || db.prepare("SELECT * FROM problems WHERE trang_thai='moi' ORDER BY do_dau DESC, RANDOM() LIMIT 1").get();
   const sols=db.prepare("SELECT id,ten,nguyen_ly,ap_dung FROM solutions ORDER BY RANDOM() LIMIT 3").all();
   const m=mineOpportunity();
   const moHinhs=pickN("SELECT id,name,oneliner FROM items WHERE type='soloceo-mo-hinh'",3);

@@ -209,9 +209,11 @@ Chỉ được dùng những gì có ở đây làm căn cứ:
 - ${(kho.mo_hinh || []).length} mô hình KD liên quan nhất: ${JSON.stringify(kho.mo_hinh || []).slice(0, 4500)}
 - Cơ sở kinh doanh Việt Nam ĐẾM ĐƯỢC khớp ngành này (tổng ${kho.tong_co_so || 0} cơ sở thật, nguồn OSM/Trang Vàng):
   ${JSON.stringify(kho.thi_truong_vn || []).slice(0, 1200)}
-  → Đây là bằng chứng thị trường Việt Nam mạnh nhất trong kho. Nếu con số này lớn hơn 0 và
-    đúng ngành thì tiêu chí "có chỗ đứng ở Việt Nam" PHẢI được chấm theo nó, không được ghi
-    "chưa có căn cứ". Nếu bằng 0 hoặc lệch ngành thì mới cho điểm thấp.
+  → Con số này CHỈ là bằng chứng khi ý tưởng thật sự nhắm vào chính những cơ sở đó. Nếu
+    khách hàng của ý tưởng ở NƯỚC KHÁC, hoặc là tổ chức quốc tế, chính phủ nước ngoài, nhà
+    tài trợ đa phương — thì tiêu chí "có chỗ đứng ở Việt Nam" phải chấm DƯỚI 20, bất kể
+    bảng trên có bao nhiêu cơ sở. Đã có lần một nền tảng phục vụ doanh nghiệp Ukraine được
+    chấm 90 điểm ở tiêu chí này chỉ vì bảng đếm nằm sẵn trong ngữ cảnh — đó là chấm sai.
 
 Chấm 6 tiêu chí, mỗi tiêu chí 0-100:
 ${TIEU_CHI.map((t) => `- ${t.ma} (${t.ten}, trọng số ${t.trong_so}%): ${t.mo_ta}`).join("\n")}
@@ -246,7 +248,24 @@ Trả về DUY NHẤT JSON:
     tong += (d.diem | 0) * t.trong_so / 100;
   }
   const diem = Math.round(tong);
-  const dat = diem >= NGUONG_DAT;
+
+  // PHỦ QUYẾT — hai tiêu chí không thể bù trừ bằng điểm cao ở chỗ khác.
+  //
+  // Vì sao cần: "BridgeAid — viện trợ xuyên biên giới cho Ukraine" đạt 66/65 và suýt lên
+  // sàn, dù tiêu chí thị trường Việt Nam chỉ được 10 điểm. Nó lọt vì tiêu chí đó chỉ nặng
+  // 10%, nên ba tiêu chí kia kéo tổng lên. Nhưng sàn này bán cho Solo CEO Việt Nam: sản
+  // phẩm không có người mua ở Việt Nam thì vô nghĩa, dù mô hình doanh thu có đẹp đến đâu.
+  // Tương tự, thứ một người không dựng nổi thì không thuộc về đây.
+  const lay = (ma) => ((kq.diem || []).find((x) => x.ma === ma) || {}).diem | 0;
+  const phuQuyet = [];
+  if (lay("thi-truong-vn") < 45)
+    phuQuyet.push(`không có chỗ đứng ở Việt Nam (${lay("thi-truong-vn")}/100)`);
+  if (lay("mot-nguoi-lam-duoc") < 50)
+    phuQuyet.push(`một người + AI không dựng nổi (${lay("mot-nguoi-lam-duoc")}/100)`);
+
+  const dat = diem >= NGUONG_DAT && phuQuyet.length === 0;
+  if (phuQuyet.length)
+    kq.ket_luan = `Phủ quyết: ${phuQuyet.join(" · ")}. (Tổng điểm ${diem} — nhưng hai tiêu chí này không bù trừ được.) ${kq.ket_luan || ""}`;
   db.prepare("UPDATE du_an SET diem_kha_thi=?, trang_thai=?, ly_do=?, cap_nhat=? WHERE id=?")
     .run(diem, dat ? "dat" : "truot", kq.ket_luan || "", now(), id);
   ghi(id, "kiem-chung", dat ? "dat" : "truot", `điểm ${diem}/100 — ${kq.ket_luan || ""}`);
@@ -296,6 +315,17 @@ async function xuatBan(id) {
 
   const nt = await nghiemThu(id); // kiểm lại ngay trước khi lên sàn
   if (!nt.dat) return { ok: false, ly_do: "nghiệm thu lại không đạt", chi_tiet: nt };
+
+  // Chặn lần hai bằng phủ quyết. Cần cả ở đây vì dự án có thể đã được chấm và dựng TRƯỚC
+  // khi luật phủ quyết ra đời — MVP chạy tốt không có nghĩa là nó thuộc về sàn này.
+  const bangCham = db.prepare("SELECT tieu_chi,diem FROM kiem_chung WHERE du_an_id=?").all(id);
+  const d = (ma) => (bangCham.find((x) => x.tieu_chi === ma) || {}).diem | 0;
+  if (d("thi-truong-vn") < 45 || d("mot-nguoi-lam-duoc") < 50) {
+    const ly = `phủ quyết: thị trường VN ${d("thi-truong-vn")}/100 · một người dựng nổi ${d("mot-nguoi-lam-duoc")}/100`;
+    db.prepare("UPDATE du_an SET trang_thai='truot', ly_do=?, cap_nhat=? WHERE id=?").run(ly, now(), id);
+    ghi(id, "xuat-ban", "truot", ly);
+    return { ok: false, ly_do: ly };
+  }
 
   if (!ADMIN_TOKEN) return { ok: false, ly_do: "thiếu ADMIN_TOKEN để gọi api-core" };
   const bmc = (() => { try { return JSON.parse(da.bmc); } catch { return null; } })();
