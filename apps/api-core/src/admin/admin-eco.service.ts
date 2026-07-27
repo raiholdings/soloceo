@@ -8,7 +8,7 @@
  *  - Tin tức (News CRUD)
  *  - Trợ lý AI (proxy DeerFlow gateway)
  */
-import { Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "../prisma/prisma.service";
 import { PLATFORM_CATALOG, type PlatformCatalogEntry } from "./platform-catalog.data";
@@ -895,6 +895,45 @@ ${body}
         status: "DRAFT",
       },
     });
+  }
+
+  /**
+   * Nhập mẫu dự án từ xưởng kiểm chứng (sandbox.soloceo.vn) — KHÔNG qua AI.
+   *
+   * Khác hẳn `projectGenerate`: ở đó AI bịa ra một mẫu dự án từ một câu ý tưởng, và đó
+   * chính là cách 100 mẫu cũ trên marketplace ra đời — nghe hợp lý nhưng không có gì chạy
+   * được đằng sau. Đường này chỉ nhận dự án đã đi hết dây chuyền: ý tưởng đúc từ dữ liệu
+   * thật → qua cổng kiểm chứng 6 tiêu chí → subagent dựng MVP → nghiệm thu HTTP 200 trên
+   * URL công khai. `demoUrl` là bắt buộc vì nó là bằng chứng duy nhất cho việc "chạy thật".
+   */
+  async projectImport(p: {
+    name: string; slug?: string; idea?: string; industry?: string; summary?: string;
+    components?: object; valueProps?: string[]; buildSteps?: string[];
+    priceVnd?: number; monthlyFeeVnd?: number; demoUrl: string; publish?: boolean;
+  }) {
+    if (!p?.name || !p?.demoUrl)
+      throw new BadRequestException("Cần name và demoUrl (bằng chứng MVP chạy thật)");
+
+    let slug = this.slugify(p.slug || p.name) || `du-an-${Date.now()}`;
+    const cu = await this.prisma.projectTemplate.findUnique({ where: { slug } });
+    const data = {
+      name: p.name.slice(0, 200),
+      idea: (p.idea ?? "").slice(0, 2000),
+      industry: p.industry ?? null,
+      summary: (p.summary ?? "").slice(0, 4000),
+      components: (p.components ?? {}) as never,
+      valueProps: (p.valueProps ?? []) as never,
+      buildSteps: (p.buildSteps ?? []) as never,
+      priceVnd: Number(p.priceVnd) || 0,
+      monthlyFeeVnd: Number(p.monthlyFeeVnd) || 0,
+      demoUrl: p.demoUrl,
+      status: p.publish === false ? "DRAFT" : "PUBLISHED",
+      publishedAt: p.publish === false ? null : new Date(),
+    };
+    // Dựng lại MVP cùng slug thì CẬP NHẬT, không tạo bản trùng — xưởng có thể dựng lại
+    // nhiều lần cho tới khi nghiệm thu đạt, mỗi lần đẻ một mẫu mới là rác.
+    if (cu) return this.prisma.projectTemplate.update({ where: { id: cu.id }, data: data as never });
+    return this.prisma.projectTemplate.create({ data: { ...data, slug } as never });
   }
 
   projectList(status?: string) {

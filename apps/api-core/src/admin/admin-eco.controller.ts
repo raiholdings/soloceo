@@ -215,6 +215,20 @@ export class AdminEcosystemController {
     return p;
   }
 
+  // Nhập mẫu dự án từ xưởng kiểm chứng — chỉ nhận thứ đã có MVP chạy thật (demoUrl).
+  // Đây là đường DUY NHẤT nên dùng để đưa hàng lên marketplace; projects/generate ở trên
+  // chỉ để admin phác thảo nháp, không được đăng thẳng.
+  @Post("projects/import")
+  @ApiOperation({ summary: "Nhập mẫu dự án đã nghiệm thu từ sandbox (không qua AI)" })
+  async projectImport(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: { name: string; demoUrl: string } & Record<string, unknown>,
+  ) {
+    const p = await this.eco.projectImport(dto as never);
+    await this.audit(user, "project.import", p.id, { name: p.name, demoUrl: dto.demoUrl });
+    return p;
+  }
+
   @Get("projects")
   @ApiOperation({ summary: "Danh sách mẫu dự án" })
   projects(@Query("status") status?: string) {
