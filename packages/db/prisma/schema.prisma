@@ -201,6 +201,30 @@ model News {
   @@index([status, publishedAt])
 }
 
+/// Báo cáo nghiên cứu — Đội AI sản xuất mỗi ngày một bản toàn diện.
+/// Khác News ở chỗ: News là bài viết ngắn dạng markdown; báo cáo là TÀI LIỆU HTML hoàn
+/// chỉnh, tự chứa CSS và biểu đồ SVG, dài hàng chục nghìn ký tự. Lưu nguyên HTML thay vì
+/// dựng lại từ markdown vì bảng và biểu đồ trong báo cáo không diễn đạt nổi bằng markdown.
+model Report {
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  summary     String? // tóm tắt 2-3 câu cho thẻ danh sách
+  html        String // TOÀN BỘ tài liệu, tự chứa
+  coverUrl    String? // ảnh đại diện (data: URI hoặc URL)
+  category    String    @default("thi-truong") // thi-truong|cong-nghe|y-tuong|tong-hop
+  status      String    @default("DRAFT") // DRAFT|PUBLISHED
+  authorName  String    @default("Đội AI SoloCEO")
+  sources     Json? // nguồn dữ liệu đã dùng, để người đọc truy ngược
+  fbPostId    String? // id bài đã đăng lên Facebook, null = chưa đăng
+  fbPostedAt  DateTime?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, publishedAt])
+}
+
 // Mẫu dự án (Project Builder) — admin "tạo dự án từ ý tưởng" → niêm yết marketplace/M&A
 model ProjectTemplate {
   id            String    @id @default(uuid())
