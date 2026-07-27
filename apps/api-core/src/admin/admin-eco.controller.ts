@@ -215,6 +215,42 @@ export class AdminEcosystemController {
     return p;
   }
 
+  // ─── Kho ghi nhớ: tài khoản/mật khẩu hệ thống nền tảng ───
+  // Danh sách KHÔNG trả giá trị; muốn xem phải gọi riêng từng khoá và lần nào cũng bị ghi
+  // nhật ký. Kho mật khẩu không có vết ai xem lúc nào thì chỉ là chỗ để lộ tập trung.
+  @Get("ghi-nho")
+  @ApiOperation({ summary: "Danh sách khoá đã ghi nhớ (không kèm giá trị)" })
+  ghiNhoDanhSach() {
+    return this.eco.ghiNhoDanhSach();
+  }
+
+  @Post("ghi-nho")
+  @ApiOperation({ summary: "Lưu / cập nhật một khoá" })
+  async ghiNhoLuu(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: { khoa: string; gia_tri: string; ghi_chu?: string; loai?: string },
+  ) {
+    const r = await this.eco.ghiNhoLuu(dto?.khoa, dto?.gia_tri, dto?.ghi_chu, dto?.loai);
+    await this.audit(user, "ghi-nho.luu", dto?.khoa, { loai: dto?.loai });
+    return r;
+  }
+
+  @Get("ghi-nho/:khoa")
+  @ApiOperation({ summary: "Xem giá trị một khoá (có ghi nhật ký)" })
+  async ghiNhoXem(@CurrentUser() user: RequestUser, @Param("khoa") khoa: string) {
+    // Ghi nhật ký TRƯỚC khi trả về: nếu ghi lỗi thì không được lộ giá trị.
+    await this.audit(user, "ghi-nho.xem", khoa, {});
+    return this.eco.ghiNhoXem(khoa);
+  }
+
+  @Delete("ghi-nho/:khoa")
+  @ApiOperation({ summary: "Xoá một khoá khỏi kho ghi nhớ" })
+  async ghiNhoXoa(@CurrentUser() user: RequestUser, @Param("khoa") khoa: string) {
+    const r = await this.eco.ghiNhoXoa(khoa);
+    await this.audit(user, "ghi-nho.xoa", khoa, {});
+    return r;
+  }
+
   // Nhập mẫu dự án từ xưởng kiểm chứng — chỉ nhận thứ đã có MVP chạy thật (demoUrl).
   // Đây là đường DUY NHẤT nên dùng để đưa hàng lên marketplace; projects/generate ở trên
   // chỉ để admin phác thảo nháp, không được đăng thẳng.
