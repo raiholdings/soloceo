@@ -27,7 +27,15 @@ sao_luu="$CFG.truoc-xoay-$luc"
 # Đọc thông tin hiện tại. $sql_db_user / $sql_db_pass / $sql_db_name là quy ước của
 # WoWonder và các sản phẩm cùng dòng (PlayTube, Grupo, Flame đều fork từ đó).
 doc(){ grep -oE "\\\$$1\s*=\s*[\"'][^\"']*[\"']" "$CFG" | head -1 | sed -E "s/.*[\"']([^\"']*)[\"'].*/\1/"; }
+# Kiểu mảng: $config->database = ['username' => '...', 'password' => '...']
+# Grupo dùng kiểu này thay vì $sql_db_* như WoWonder/PlayTube/Flame. Đọc nhầm kiểu thì
+# script sẽ dừng ngay ở bước kiểm tra bên dưới chứ không phá gì.
+doc_mang(){ grep -oE "['\"]$1['\"]\s*=>\s*['\"][^'\"]*['\"]" "$CFG" | head -1 | sed -E "s/.*=>\s*['\"]([^'\"]*)['\"].*/\1/"; }
+
 NGUOI=$(doc sql_db_user); CU=$(doc sql_db_pass); TEN_DB=$(doc sql_db_name)
+if [ -z "$NGUOI" ]; then
+  NGUOI=$(doc_mang username); CU=$(doc_mang password); TEN_DB=$(doc_mang database)
+fi
 
 if [ -z "$NGUOI" ] || [ -z "$CU" ] || [ -z "$TEN_DB" ]; then
   echo "LOI: không đọc được thông tin CSDL từ $CFG — dừng, không đụng gì cả"; exit 1
