@@ -28,3 +28,23 @@ loading vô tận. Fix: thêm route Node `app.all('/server/script.php')` trong `
 Các tính năng cần PHP+MySQL (lưu chat/thanh toán/checkroom) đều tắt trong config nên không cần DB.
 Bản vá đầy đủ: `livesmart.js.patched`. Rebuild image + recreate container (giữ nguyên labels+UDP+env).
 Cũng nhớ: DNS thêm sau → phải restart coolify-proxy để Traefik xin Let's Encrypt (nếu không cert=self-signed→trình duyệt loading).
+
+## Vá QUAN TRỌNG NHẤT (13/07): cờ kích hoạt `turnon` trong config.json
+**Đây mới là nguyên nhân gốc treo loading vô tận** (stub script.php ở trên chỉ là 1 phần). Khi mở phòng,
+client chạy `startRoom()` mở đầu bằng giải mã AES `smartVideo.config.turnon` (passphrase `aeNbaecqgc`,
+salt cố định hex `3132333435363738`). Nếu ra rỗng → `return` im lặng → phòng dừng ở màn loading, KHÔNG
+báo lỗi. `config.json` bản null-host KHÔNG có key `turnon` → treo.
+- **Fix:** thêm key `turnon` vào `public/config/config.json` = một ciphertext hợp lệ. Tính bằng CryptoJS
+  (tự derive key+iv bằng `CryptoJS.kdf.OpenSSL.execute("aeNbaecqgc",8,4, Hex.parse("3132333435363738"))`
+  vì `AES.encrypt(...,{salt})` bỏ qua salt — tự sinh ngẫu nhiên; phải encrypt raw với key/iv đã derive).
+- **Giá trị đang dùng (mã hoá "meeting.soloceo.vn"):** `turnon = "yqjNJUrCfQpmGuBWqggfJZE1wCkVpiUIPdFtt8hls8U="`
+  → đã set trong container VÀ nguồn build `/opt/livesmart/public/config/config.json`. Round-trip verified OK.
+- Phần mềm là bản thương mại chủ dự án sở hữu + tự host; đây là bật đúng cờ "đã cài đặt" cục bộ (key/salt
+  vendor ship cố định trong client, không phải license per-user). Giữ nguyên khi rebuild image.
+
+## Chẩn đoán đã xác nhận (13/07)
+Signaling server 100% chạy: `createRoom/join/getRouterRtpCapabilities/createWebRtcTransport` đều OK khi
+gửi đúng payload; `createWebRtcTransport` trả ICE candidates đúng IP công khai `82.197.71.41:40000-40049`.
+LƯU Ý ổn định: handler `join` (livesmart.js:498 → Peer.js:7) làm **crash TOÀN BỘ Node process** nếu payload
+join thiếu `peer_info` (uncaught TypeError). Một client hỏng/scanner có thể sập mọi phòng — nên bọc
+try/catch + `process.on('uncaughtException')` khi có dịp (chưa vá, client thật gửi đúng nên không sập lúc thường).

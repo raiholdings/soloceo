@@ -77,7 +77,11 @@ Chạy `bash platform/xuong-y-tuong/day-chuyen.sh <số_ý_tưởng>` cho một 
 |---|---|---|---|
 | 1 | 5 (3 hỏng JSON) | 2 | 0 — khâu dựng hụt vì lỗi đếm |
 | 2 | 6 (4 hỏng JSON) | 2 | **2** |
-| 3 | 8 | — | — |
+| 3 | 8 | **5/5** | **4** (1 bị chặn vì mã lỗi cú pháp) |
+
+Vòng 3 nhảy vọt nhờ hai bản vá: ưu tiên sinh ý tưởng từ cụm Việt Nam, và vá JSON bị cắt.
+Cả 5 ý tưởng đều là doanh nghiệp nhỏ Việt Nam — đặt bánh qua Zalo, bán hải sản, tồn kho
+cửa hàng tiện lợi, văn phòng số, tổng đài hành chính xã.
 
 ---
 
@@ -87,14 +91,21 @@ Kiểm tra 100 mẫu đang đăng: **cả 100 dùng chung một `demoUrl`** — 
 một instance Dify chung không liên quan gì tới sản phẩm đang rao. Đã chuyển tất cả về
 `DRAFT` (không xoá; bật lại bằng `POST /v1/admin/eco/projects/:id/publish {"publish":true}`).
 
-Sàn còn **4 sản phẩm**, mỗi cái có demo riêng bấm vào chạy:
+Sàn còn **8 sản phẩm**, mỗi cái có demo riêng bấm vào chạy:
 
-| Sản phẩm | Điểm khả thi |
-|---|---|
-| BankBot AI — Trợ lý Zalo cho chi nhánh ngân hàng | 87 |
-| ReviewMate — Trợ lý phản hồi đánh giá khách sạn | 69 |
-| HomestayBot — Trợ lý đặt chỗ AI | 66 |
-| OpenClawOS | (sản phẩm thật, không qua xưởng) |
+| Sản phẩm | Điểm | Giá |
+|---|---|---|
+| BankBot AI — Trợ lý Zalo cho chi nhánh ngân hàng | 87 | 5tr + 1tr/tháng |
+| ReviewMate — Trợ lý phản hồi đánh giá khách sạn | 69 | 5tr + 500k/tháng |
+| Tổng đài AI Hành chính Cơ sở — VoiceGov | 74 | 5tr + 500k/tháng |
+| Trợ Lý Ảo Văn Phòng Zalo | 79 | 5tr |
+| Đặt Bánh Zalo | 89 | (đang định giá) |
+| BOT BÀN HẢI SẢN – ZALO AI | 88 | chưa đủ căn cứ |
+| HomestayBot — Trợ lý đặt chỗ AI | 66 | chưa đủ căn cứ |
+| OpenClawOS | — | 1,4 tỷ + 15tr/tháng |
+
+Hai sản phẩm để trống giá vì bộ định giá trả "chưa đủ căn cứ" — đúng thiết kế, thà thiếu
+giá còn hơn bịa số. Cần bổ sung mô hình kinh doanh cho chúng rồi định giá lại.
 
 ### Định giá
 

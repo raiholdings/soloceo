@@ -350,7 +350,9 @@ Trả về DUY NHẤT JSON: {"gia_ban":0,"phi_thang":0,"can_cu":""}`;
 async function xuatBan(id) {
   const da = db.prepare("SELECT * FROM du_an WHERE id=?").get(id);
   if (!da) throw new Error("không có dự án");
-  if (da.trang_thai !== "nghiem-thu")
+  // Cho phép cả 'xuat-ban': xuất bản lại để cập nhật giá hoặc mô tả. Vẫn phải qua nghiệm
+  // thu và phủ quyết bên dưới, nên không có đường tắt nào mở ra ở đây.
+  if (da.trang_thai !== "nghiem-thu" && da.trang_thai !== "xuat-ban")
     return { ok: false, ly_do: `chưa nghiệm thu đạt (đang ở '${da.trang_thai}')` };
 
   const nt = await nghiemThu(id); // kiểm lại ngay trước khi lên sàn
