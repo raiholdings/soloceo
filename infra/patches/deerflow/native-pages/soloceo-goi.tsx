@@ -4,10 +4,52 @@ import { useEffect, useState } from "react";
 import { WorkspaceBody, WorkspaceContainer, WorkspaceHeader } from "@/components/workspace/workspace-container";
 import { soloceoApi } from "@/components/workspace/soloceo-api";
 
+// Gói Workspace — mỗi gói KÈM MỘT HOSTING riêng, giống Google Workspace: trả một khoản
+// hằng tháng là có cả hạ tầng lẫn bộ phần mềm. Khác ở chỗ Google cho công cụ văn phòng,
+// còn đây cho một chỗ đứng thật trên Internet (tên miền riêng) và bộ nền tảng vận hành.
+//
+// Vì sao hosting nằm TRONG gói: một Solo CEO mua CRM về mà không có chỗ chạy thì phần mềm
+// đó vô dụng. Bán riêng hai thứ là đẩy phần khó nhất về phía người ít khả năng làm nhất.
+//
+// Số subdomain tính từ RAM THẬT của các nền tảng đang chạy (Perfex ~600MB, Support Board
+// ~500MB, Academy ~900MB), không phải con số cho đẹp quảng cáo.
 const PLANS = [
-  { key: "STARTER", label: "Khởi đầu", price: "299.000", pitch: ["1 doanh nghiệp + trợ lý AI điều hành", "Bộ 6 nhân sự AI đầy đủ phòng ban", "Web bán hàng + danh bạ", "Phê duyệt an toàn: bạn chốt mọi việc chi tiền"] },
-  { key: "GROWTH", label: "Tăng trưởng", price: "990.000", pitch: ["Mọi thứ ở Khởi đầu", "Ngân sách AI gấp 10 lần", "Niêm yết bán lại trên Sàn M&A", "Phí giao dịch 2%"] },
-  { key: "SCALE", label: "Bứt phá", price: "2.900.000", pitch: ["Tối đa 3 doanh nghiệp", "Ưu tiên tài nguyên", "Ngân sách AI cao nhất", "Phí giao dịch 1.5% · M&A 5%"] },
+  {
+    key: "STARTER", label: "Khởi đầu", price: "3.000.000",
+    hosting: "2 vCPU · 4 GB RAM · 60 GB NVMe",
+    pitch: [
+      "Hosting riêng + gắn tên miền của bạn",
+      "3 subdomain cho nền tảng bạn chọn",
+      "Triển khai 1 ý tưởng thành doanh nghiệp thật",
+      "Dùng miễn phí: CRM · Chat đa kênh · Cộng đồng",
+      "Đội AI dựng website bán hàng và vận hành",
+      "Mọi việc chi tiền đều cần bạn duyệt · phí giao dịch 3%",
+    ],
+  },
+  {
+    key: "GROWTH", label: "Tăng trưởng", price: "5.000.000", noiBat: true,
+    hosting: "4 vCPU · 8 GB RAM · 120 GB NVMe",
+    pitch: [
+      "Mọi thứ ở Khởi đầu, hosting gấp đôi",
+      "8 subdomain · triển khai 3 ý tưởng song song",
+      "Thêm miễn phí: Đào tạo · Video · Nhóm chat · Họp video",
+      "Ngân sách AI gấp 4 lần",
+      "Niêm yết bán lại trên Sàn M&A (phí thành công 8%)",
+      "Ưu tiên hàng đợi khi Đội AI dựng sản phẩm · phí giao dịch 2%",
+    ],
+  },
+  {
+    key: "SCALE", label: "Bứt phá", price: "9.000.000",
+    hosting: "8 vCPU · 16 GB RAM · 240 GB NVMe",
+    pitch: [
+      "3 website chính riêng tên miền · subdomain không giới hạn",
+      "Triển khai không giới hạn số ý tưởng",
+      "Toàn bộ 9 nền tảng cộng đồng + ưu tiên tài nguyên",
+      "Ngân sách AI cao nhất, mua thêm theo nhu cầu",
+      "Sàn M&A phí thành công 5% · phí giao dịch 1,5%",
+      "Hỗ trợ trực tiếp từ kiến trúc sư đề án",
+    ],
+  },
 ];
 
 export function SoloceoGoi() {
@@ -69,6 +111,12 @@ export function SoloceoGoi() {
                     {isCurrent && <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800">Đang dùng</span>}
                   </div>
                   <div className="mt-1 text-2xl font-bold">{p.price}<span className="text-muted-foreground text-sm font-normal">đ/tháng</span></div>
+                  {/* Cấu hình hosting hiện ngay dưới giá: đây là thứ phân biệt gói rõ nhất
+                      và cũng là thứ người mua so sánh đầu tiên. Giấu xuống dưới thì họ
+                      tưởng ba gói chỉ khác nhau ở số tính năng. */}
+                  <div className="mt-1.5 rounded-lg border border-emerald-600/25 bg-emerald-600/5 px-2.5 py-1.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-400">
+                    Hosting kèm theo · {p.hosting}
+                  </div>
                   <ul className="mt-3 flex-1 space-y-1.5 text-sm">
                     {p.pitch.map((x) => <li key={x} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />{x}</li>)}
                   </ul>
