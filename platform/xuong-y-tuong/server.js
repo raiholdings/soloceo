@@ -294,13 +294,21 @@ async function xuatBan(id) {
 
   if (!ADMIN_TOKEN) return { ok: false, ly_do: "thiếu ADMIN_TOKEN để gọi api-core" };
   const bmc = (() => { try { return JSON.parse(da.bmc); } catch { return null; } })();
+  const cc = db.prepare("SELECT tieu_chi,diem,nhan_xet FROM kiem_chung WHERE du_an_id=?").all(id);
   const body = {
     name: da.ten, slug: da.slug, idea: da.tom_tat, industry: da.nganh || "khac",
     summary: da.tom_tat,
-    components: { nguon: "sandbox.soloceo.vn", bmc: bmc || undefined },
-    demoUrl: da.demo_url, status: "PUBLISHED",
+    components: {
+      nguon: "sandbox.soloceo.vn",
+      y_tuong_id: da.y_tuong_id,           // truy ngược về ý tưởng gốc trong bigdata
+      diem_kha_thi: da.diem_kha_thi,
+      kiem_chung: cc,                      // để người mua tự đọc căn cứ, không phải tin lời
+      bmc: bmc || undefined,
+    },
+    valueProps: cc.filter((x) => x.diem >= 70).map((x) => x.nhan_xet).slice(0, 5),
+    demoUrl: da.demo_url, publish: true,
   };
-  const r = await fetch(`${API_CORE}/v1/admin/eco/project-templates`, {
+  const r = await fetch(`${API_CORE}/v1/admin/eco/projects/import`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Admin-Token": ADMIN_TOKEN },
     body: JSON.stringify(body), signal: AbortSignal.timeout(30000),
