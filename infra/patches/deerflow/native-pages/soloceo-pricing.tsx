@@ -8,36 +8,80 @@ const CHECKOUT = "/workspace/goi-cuoc";
 
 type Plan = {
   key: string; name: string; price: string; unit: string; tagline: string;
+  hosting: string;
   highlight?: boolean; cta: string; points: string[];
 };
 
+// Gói Workspace — mỗi gói KÈM MỘT HOSTING riêng, mô hình như Google Workspace: trả một
+// khoản hằng tháng là có cả hạ tầng lẫn bộ phần mềm. Khác ở chỗ Google cho công cụ văn
+// phòng, còn đây cho một chỗ đứng thật trên Internet (tên miền riêng) và bộ nền tảng để
+// vận hành doanh nghiệp.
+//
+// Vì sao hosting nằm TRONG gói chứ không bán riêng: một Solo CEO mua CRM về mà không có
+// chỗ chạy thì phần mềm đó vô dụng. Bán riêng hai thứ là đẩy phần khó nhất về phía người
+// ít khả năng làm nhất.
+//
+// Cấu hình hosting lấy từ nhu cầu RAM THẬT của các nền tảng đang chạy (Perfex ~600MB,
+// Support Board ~500MB, Academy ~900MB) — số subdomain cho phép suy từ đó, không phải con
+// số cho đẹp quảng cáo.
 const PLANS: Plan[] = [
   {
-    key: "starter", name: "Starter", price: "299.000đ", unit: "/tháng", tagline: "Khởi động doanh nghiệp một người.",
-    cta: "Bắt đầu với Starter",
-    points: ["1 venture (doanh nghiệp)", "Website + CRM đi kèm", "Đội AI + 8 nền tảng lõi", "50K token-credit AI / tháng", "Phí giao dịch 3%", "Cộng đồng + sự kiện"],
+    key: "starter", name: "Khởi đầu", price: "3.000.000đ", unit: "/tháng",
+    tagline: "Đủ để một người chạy thật một doanh nghiệp.",
+    hosting: "2 vCPU · 4 GB RAM · 60 GB NVMe",
+    cta: "Bắt đầu với Khởi đầu",
+    points: [
+      "Hosting riêng + gắn tên miền của bạn",
+      "3 subdomain cho nền tảng bạn chọn",
+      "Triển khai 1 ý tưởng thành doanh nghiệp thật",
+      "Dùng miễn phí: CRM · Chat đa kênh · Cộng đồng",
+      "Đội AI + 8 nền tảng lõi",
+      "500K token-credit AI / tháng · phí giao dịch 3%",
+    ],
   },
   {
-    key: "growth", name: "Growth", price: "990.000đ", unit: "/tháng", tagline: "Tăng trưởng với AI Studio & tự động hoá.", highlight: true,
-    cta: "Nâng lên Growth",
-    points: ["1 venture", "Tất cả của Starter, cộng thêm:", "AI Studio (chatbot/RAG riêng)", "Tự động hoá quy trình", "500K token-credit AI / tháng", "Phí giao dịch 2%", "Niêm yết Sàn M&A (phí thành công 8%)"],
+    key: "growth", name: "Tăng trưởng", price: "5.000.000đ", unit: "/tháng",
+    tagline: "Nhiều ý tưởng chạy song song, thêm nền tảng.", highlight: true,
+    hosting: "4 vCPU · 8 GB RAM · 120 GB NVMe",
+    cta: "Chọn gói Tăng trưởng",
+    points: [
+      "Mọi thứ ở Khởi đầu, hosting gấp đôi",
+      "8 subdomain · triển khai 3 ý tưởng song song",
+      "Thêm miễn phí: Đào tạo · Video · Nhóm chat · Họp video",
+      "AI Studio riêng + tự động hoá quy trình",
+      "2 triệu token-credit AI / tháng · phí giao dịch 2%",
+      "Niêm yết Sàn M&A (phí thành công 8%)",
+    ],
   },
   {
-    key: "scale", name: "Scale", price: "2.900.000đ", unit: "/tháng", tagline: "Bứt tốc, nhiều venture, ưu tiên tài nguyên.",
-    cta: "Chọn gói Scale",
-    points: ["3 venture", "Tất cả nền tảng + ưu tiên tài nguyên", "2M token-credit AI (mua thêm được)", "Phí giao dịch 1.5%", "Niêm yết Sàn M&A (phí thành công 5%)", "Hỗ trợ ưu tiên"],
+    key: "scale", name: "Bứt phá", price: "9.000.000đ", unit: "/tháng",
+    tagline: "Nhiều thương hiệu, subdomain không giới hạn.",
+    hosting: "8 vCPU · 16 GB RAM · 240 GB NVMe",
+    cta: "Chọn gói Bứt phá",
+    points: [
+      "3 website chính riêng tên miền · subdomain không giới hạn",
+      "Triển khai không giới hạn số ý tưởng",
+      "Toàn bộ 9 nền tảng cộng đồng + ưu tiên tài nguyên",
+      "6 triệu token-credit AI (mua thêm được)",
+      "Phí giao dịch 1,5% · Sàn M&A phí thành công 5%",
+      "Hỗ trợ trực tiếp từ kiến trúc sư đề án",
+    ],
   },
 ];
 
 // So sánh chi tiết
 const COMPARE: [string, string, string, string][] = [
-  ["Số venture", "1", "1", "3"],
+  ["Hosting kèm theo", "2vCPU·4GB·60GB", "4vCPU·8GB·120GB", "8vCPU·16GB·240GB"],
+  ["Website chính (tên miền riêng)", "1", "1", "3"],
+  ["Subdomain cho nền tảng", "3", "8", "không giới hạn"],
+  ["Ý tưởng triển khai", "1", "3", "không giới hạn"],
+  ["Nền tảng cộng đồng miễn phí", "3", "7", "toàn bộ 9"],
   ["Website + CRM", "✓", "✓", "✓"],
   ["Đội AI + 8 nền tảng lõi", "✓", "✓", "✓"],
   ["AI Studio (chatbot/RAG)", "—", "✓", "✓"],
   ["Tự động hoá quy trình", "—", "✓", "✓"],
-  ["Token-credit AI / tháng", "50K", "500K", "2M (+mua thêm)"],
-  ["Phí giao dịch Payments", "3%", "2%", "1.5%"],
+  ["Token-credit AI / tháng", "500K", "2 triệu", "6 triệu (+mua thêm)"],
+  ["Phí giao dịch Payments", "3%", "2%", "1,5%"],
   ["Niêm yết Sàn M&A", "—", "phí 8%", "phí 5%"],
   ["Ưu tiên tài nguyên", "—", "—", "✓"],
 ];
@@ -68,6 +112,12 @@ export function SoloceoPricing() {
               {p.highlight && <span className="absolute -top-3 left-6 rounded-full bg-[#e3b341] px-3 py-1 font-mono text-[10px] font-bold tracking-wide text-[#0b0b0c] uppercase">Phổ biến nhất</span>}
               <div className="text-[15px] font-bold">{p.name}</div>
               <div className="mt-2 flex items-end gap-1"><span className="text-[32px] font-extrabold tracking-[-.02em]">{p.price}</span><span className="mb-1.5 text-[13px] text-[#a2a2aa]">{p.unit}</span></div>
+              {/* Cấu hình hosting đặt NGAY dưới giá: đây là thứ phân biệt ba gói rõ nhất
+                  và cũng là thứ người mua so sánh đầu tiên. Giấu xuống cuối thẻ thì họ
+                  tưởng ba gói chỉ khác nhau ở số tính năng. */}
+              <div className="mt-2.5 rounded-lg border border-[#3fb950]/30 bg-[#3fb950]/8 px-3 py-2 font-mono text-[11.5px] text-[#3fb950]">
+                Hosting kèm theo · {p.hosting}
+              </div>
               <p className="mt-1 text-[13px] text-[#a2a2aa]">{p.tagline}</p>
               <a href={CHECKOUT} className={"mt-5 rounded-xl px-5 py-3 text-center text-[14px] font-bold transition " + (p.highlight ? "bg-[#e3b341] text-[#0b0b0c] hover:opacity-90" : "bg-[#f5f5f6] text-[#0b0b0c] hover:opacity-90")}>{p.cta}</a>
               <ul className="mt-5 space-y-2.5">

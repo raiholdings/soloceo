@@ -44,9 +44,11 @@ const DOMAINS = [
   ["meeting.soloceo.vn","Họp video"],["pitchdeck.soloceo.vn","Pitch deck"],
 ];
 const PLANS = [
-  ["Starter","299.000đ","1 venture · Web + CRM · 50K token AI · phí 3%", false],
-  ["Growth","990.000đ","+ AI Studio + Tự động hoá · 500K token · phí 2% · niêm yết M&A", true],
-  ["Scale","2.900.000đ","3 venture · tất cả nền tảng · 2M token · phí 1.5%", false],
+  // Mỗi gói KÈM một hosting riêng — đó là điểm khác biệt lớn nhất nên phải nằm ngay
+  // trong dòng mô tả, không đợi người đọc bấm vào trang gói cước mới thấy.
+  ["Khởi đầu","3.000.000đ","Hosting 4GB + tên miền riêng · 3 subdomain · CRM+Chat+Cộng đồng · phí 3%", false],
+  ["Tăng trưởng","5.000.000đ","Hosting 8GB · 8 subdomain · 3 ý tưởng · thêm Đào tạo/Video/Họp · phí 2%", true],
+  ["Bứt phá","9.000.000đ","Hosting 16GB · subdomain không giới hạn · toàn bộ 9 nền tảng · phí 1,5%", false],
 ];
 // 8 nền tảng cộng đồng đi kèm mọi Solo CEO (nhúng trong workspace).
 const COMMUNITY: [string, string, string, string][] = [
