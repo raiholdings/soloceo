@@ -210,7 +210,32 @@ danh sách thật từ platform.soloceo.vn (WHMCS) chứ không tự bịa ra.
 - Trang mục lục `/giai-phap/nen-tang` liệt kê toàn bộ, có phân nhóm
 - Thêm vào sitemap.xml
 
-### 8.3 Cách làm đề xuất
+### 8.3 ĐÃ LÀM (27/07) — phần trang giới thiệu
+
+| Hạng mục | Trạng thái |
+|---|---|
+| Model `PlatformArticle` + migration | ✅ |
+| 111 nền tảng đã nạp vào bảng từ `PLATFORM_CATALOG` | ✅ |
+| `/giai-phap/nen-tang` + `/giai-phap/nen-tang/<slug>` | ✅ 200 |
+| SEO: metadata riêng · JSON-LD · canonical · OG · generateStaticParams | ✅ |
+| Mục "Công nghệ mã nguồn mở" trong menu Giải pháp | ✅ |
+| Cron viết 3 bài / 20 phút, tự gỡ khi xong | ✅ `/opt/viet-bai-nen-tang.sh` |
+
+Chất lượng bài mẫu (Activepieces): tiêu đề SEO 55 ký tự, mô tả 162, 8 từ khoá tiếng Việt,
+11,7KB nội dung với bảng so sánh, 4 câu hỏi thường gặp, và mục "không hợp với ai".
+
+### 8.4 CHƯA LÀM — khoá học trên edu.soloceo.vn
+
+`courseUrl` hiện chỉ trỏ tới trang tìm kiếm của Academy, **chưa có khoá học thật cho từng
+nền tảng**. Đây là khối lượng ngang phần trang giới thiệu và cần phiên riêng:
+
+- Tạo khoá học trong Academy LMS cho từng nền tảng (bài giảng, bài kiểm tra, chứng chỉ)
+- Cập nhật `courseUrl` trỏ đúng khoá học thật thay vì trang tìm kiếm
+- Liên kết ngược từ khoá học về bài giới thiệu và trang platform
+
+Đừng để trang giới thiệu hứa "có khoá học đi kèm" trong khi bấm vào chỉ ra ô tìm kiếm rỗng.
+
+### 8.5 Cách làm đề xuất
 
 Giống dây chuyền MVP: một script điều phối chạy theo lô, mỗi nền tảng một vòng
 (lấy dữ liệu thật → sinh nội dung → dựng HTML từ khuôn cố định → kiểm tra → xuất bản).
