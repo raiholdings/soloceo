@@ -1,3 +1,4 @@
+import { json, urlencoded } from "express";
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
@@ -9,6 +10,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
   app.setGlobalPrefix("v1");
+  // Hạn mức thân yêu cầu. Mặc định của Express là 100kb — vừa cho JSON nghiệp vụ nhưng
+  // KHÔNG vừa cho báo cáo nghiên cứu: một bản thật dài 60-100 nghìn ký tự HTML, nhập vào
+  // là 413 ngay. 6mb đủ rộng cho báo cáo mà vẫn chặn được kẻ cố tình nhồi dữ liệu.
+  app.use(json({ limit: "6mb" }));
+  app.use(urlencoded({ limit: "6mb", extended: true }));
   app.use(helmet());
   // CORS whitelist (GĐ7): dev mở localhost; prod chỉ các frontend SoloCEO
   const origins =
