@@ -307,6 +307,46 @@ async function nghiemThu(id) {
 
 // ═══════════════ 4. XUẤT BẢN LÊN MARKETPLACE ═══════════════
 // Chỉ chạy được khi đã nghiệm thu đạt. Đây là điều kiện không thể bỏ qua.
+// ═══════════════ ĐỊNH GIÁ — có căn cứ, không phỏng đoán ═══════════════
+// Ba MVP đầu tiên lên sàn với giá 0 đồng vì tôi quên hẳn khâu này. Một cái chợ bán hàng
+// giá 0 thì không phải chợ. Giá ở đây suy từ hai thứ ĐÃ CÓ THẬT trong hồ sơ dự án:
+// mô hình kinh doanh đã đúc (có mức phí gợi ý theo túi tiền hộ kinh doanh VN) và quy mô
+// thị trường đếm được. Mô hình phải nêu căn cứ; không nêu được thì giữ giá 0 và ghi rõ
+// "chưa định giá" — thà thiếu giá còn hơn bịa một con số để trông chuyên nghiệp.
+async function dinhGia(da, bmc) {
+  const cham = db.prepare("SELECT tieu_chi,diem FROM kiem_chung WHERE du_an_id=?").all(da.id);
+  const prompt = `Định giá một MVP đã dựng xong, bán trên sàn cho Solo CEO Việt Nam.
+
+SẢN PHẨM: ${da.ten}
+MÔ TẢ: ${da.tom_tat || ""}
+NGÀNH: ${da.nganh || "chưa rõ"}
+ĐIỂM KHẢ THI: ${da.diem_kha_thi}/100 — ${JSON.stringify(cham)}
+MÔ HÌNH KINH DOANH ĐÃ ĐÚC: ${JSON.stringify(bmc || {}).slice(0, 1500)}
+
+Người mua là Solo CEO Việt Nam mua lại MVP này để tự vận hành và bán cho khách của họ.
+
+RÀNG BUỘC:
+- gia_ban: mua đứt mã nguồn + quyền vận hành, MỘT LẦN. Đây là MVP một tệp dựng trong
+  vài phút, KHÔNG phải sản phẩm hoàn chỉnh — định giá cho đúng thực tế đó, đừng lấy giá
+  dự án turnkey hàng trăm triệu. Khoảng hợp lý: 2-30 triệu đồng.
+- phi_thang: phí nền tảng SoloCEO thu hằng tháng nếu người mua muốn chạy trên hạ tầng
+  chung. Khoảng hợp lý: 0-2 triệu đồng.
+- can_cu: nói RÕ suy từ đâu — mức phí trong mô hình kinh doanh, quy mô thị trường, độ
+  hoàn chỉnh của MVP. Không viết chung chung.
+- Nếu hồ sơ không đủ để định giá thì trả gia_ban=0 và can_cu="chưa đủ căn cứ".
+
+Trả về DUY NHẤT JSON: {"gia_ban":0,"phi_thang":0,"can_cu":""}`;
+  try {
+    const t = await llm(prompt, 900);
+    const g = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    const gia = Math.max(0, Math.min(Number(g.gia_ban) || 0, 50_000_000));   // trần cứng
+    const thang = Math.max(0, Math.min(Number(g.phi_thang) || 0, 5_000_000));
+    return { gia, thang, can_cu: String(g.can_cu || "").slice(0, 600) };
+  } catch (e) {
+    return { gia: 0, thang: 0, can_cu: "định giá lỗi: " + String(e.message).slice(0, 120) };
+  }
+}
+
 async function xuatBan(id) {
   const da = db.prepare("SELECT * FROM du_an WHERE id=?").get(id);
   if (!da) throw new Error("không có dự án");
@@ -330,6 +370,7 @@ async function xuatBan(id) {
   if (!ADMIN_TOKEN) return { ok: false, ly_do: "thiếu ADMIN_TOKEN để gọi api-core" };
   const bmc = (() => { try { return JSON.parse(da.bmc); } catch { return null; } })();
   const cc = db.prepare("SELECT tieu_chi,diem,nhan_xet FROM kiem_chung WHERE du_an_id=?").all(id);
+  const gia = await dinhGia(da, bmc);
   const body = {
     name: da.ten, slug: da.slug, idea: da.tom_tat, industry: da.nganh || "khac",
     summary: da.tom_tat,
@@ -338,9 +379,11 @@ async function xuatBan(id) {
       y_tuong_id: da.y_tuong_id,           // truy ngược về ý tưởng gốc trong bigdata
       diem_kha_thi: da.diem_kha_thi,
       kiem_chung: cc,                      // để người mua tự đọc căn cứ, không phải tin lời
+      can_cu_gia: gia.can_cu,              // vì sao giá này — người mua tự phán xét
       bmc: bmc || undefined,
     },
     valueProps: cc.filter((x) => x.diem >= 70).map((x) => x.nhan_xet).slice(0, 5),
+    priceVnd: gia.gia, monthlyFeeVnd: gia.thang,
     demoUrl: da.demo_url, publish: true,
   };
   const r = await fetch(`${API_CORE}/v1/admin/eco/projects/import`, {
