@@ -201,3 +201,33 @@ Hiệu chuẩn thực nghiệm (6 câu thử): khớp đúng 91/82/73 · không 
 
 Chỉ mục `khop_mau` tự dựng lại khi lệch số lượng với bảng `ideas` hoặc khi `KHOP_PHIEN_BAN`
 đổi, nên không có chuyện quên đồng bộ.
+
+### 7.4 Đường lên marketplace — chỉ nhận thứ chạy được
+
+Trước đây sandbox gọi `POST /v1/admin/eco/project-templates`, **một endpoint không tồn tại**,
+nên bước xuất bản luôn 404 mà không ai biết. api-core chỉ có `projects/generate`: AI đọc một
+câu ý tưởng rồi bịa ra mẫu dự án — đó chính là cách 100 mẫu cũ trên marketplace ra đời.
+
+Nay có `POST /v1/admin/eco/projects/import`:
+
+| Ràng buộc | Vì sao |
+|---|---|
+| `demoUrl` bắt buộc | Bằng chứng duy nhất cho "chạy thật". Không có thì không lên sàn. |
+| Không gọi AI | Dữ liệu đã đi hết dây chuyền rồi, AI xen vào chỉ làm sai lệch. |
+| Trùng slug thì cập nhật | Xưởng dựng lại nhiều lần cho tới khi nghiệm thu đạt; mỗi lần đẻ một mẫu là rác. |
+| Gửi kèm bảng chấm 6 tiêu chí | Người mua tự đọc căn cứ thay vì phải tin lời quảng cáo. |
+
+Dây chuyền đầy đủ, mỗi khâu đều chặn được:
+
+```
+bigdata: đúc từ dữ liệu thật (World Bank + cơ sở kinh doanh VN)
+   ↓ generateIdea
+sandbox: cổng 6 tiêu chí, ngưỡng 65   ← trượt thì dừng
+   ↓ xay_mvp.py (subagent sinh mã, build, chạy trong mạng --internal)
+sandbox: nghiệm thu /health=200 và /=200  ← trượt thì xoá container, lưu log
+   ↓ projects/import (bắt buộc demoUrl)
+marketplace: hàng có demo bấm vào chạy được
+```
+
+**Deploy api-core:** Coolify không tự deploy khi push nhánh `soloceo-mvp`. Xem
+[[soloceo-deploy-api-core]] trong bộ nhớ — kèm cảnh báo về worktree `/private/tmp/mvp-wt`.
