@@ -36,6 +36,7 @@ const CORE: [string, string, string, string][] = [
 ];
 // Tài nguyên.
 const RESOURCES: [string, string, string, string][] = [
+  ["Báo cáo", "Nghiên cứu thị trường & công nghệ, mỗi ngày một bản", "/bao-cao", "📊"],
   ["Tin tức", "Bài viết & góc nhìn từ Đội AI SoloCEO", "/tin-tuc", "📰"],
   ["Solo CEO điển hình", "Chân dung thành viên tiêu biểu", "/solo-ceo-dien-hinh", "🏆"],
   ["Tài liệu", "Hướng dẫn sử dụng & tài liệu", "/en/docs", "📚"],
