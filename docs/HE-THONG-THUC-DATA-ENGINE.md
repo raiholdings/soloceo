@@ -231,3 +231,20 @@ marketplace: hàng có demo bấm vào chạy được
 
 **Deploy api-core:** Coolify không tự deploy khi push nhánh `soloceo-mvp`. Xem
 [[soloceo-deploy-api-core]] trong bộ nhớ — kèm cảnh báo về worktree `/private/tmp/mvp-wt`.
+
+### 7.5 Dọn marketplace (27/07/2026)
+
+Kiểm tra 100 mẫu dự án đang đăng: **cả 100 đều dùng chung một `demoUrl`** —
+`https://dify.app.soloceo.vn`, một instance Dify chung, không liên quan gì tới sản phẩm
+đang rao. Tức là con số "100% có demo" hoàn toàn ảo.
+
+Đã chuyển cả 100 về `DRAFT` (không xoá — đảo ngược được bằng
+`POST /v1/admin/eco/projects/:id/publish {"publish":true}`). Giữ lại:
+
+| Sản phẩm | Vì sao giữ |
+|---|---|
+| OpenClawOS | Sản phẩm thật, `openclawos.vn` chạy được |
+| Trợ Lý Đặt Chỗ AI – HomestayBot | MVP đầu tiên đi hết dây chuyền, demo riêng bấm vào chạy |
+
+Sàn từ 100 mẫu xuống 2 sản phẩm. Ít hơn nhưng không còn bán thứ không tồn tại.
+`platform/xuong-y-tuong/day-chuyen.sh` chạy trọn 5 khâu để bù dần.
