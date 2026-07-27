@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="Chân dung Phạm Văn Thư">
+<!-- Chân dung cách điệu theo ảnh thật: tóc ngắn gọn, kính gọng mảnh, vest xanh navy,
+     sơ mi trắng. Dùng làm avatar/favicon và ảnh dự phòng khi chưa có ảnh chụp.
+     KHÔNG nhằm thay ảnh thật — ảnh thật luôn thuyết phục hơn hình vẽ. -->
+<defs>
+  <linearGradient id="nen" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#131315"/><stop offset="1" stop-color="#0b0b0c"/>
+  </linearGradient>
+  <clipPath id="tron"><circle cx="200" cy="200" r="196"/></clipPath>
+</defs>
+<g clip-path="url(#tron)">
+  <rect width="400" height="400" fill="url(#nen)"/>
+  <circle cx="200" cy="200" r="196" fill="none" stroke="#232326" stroke-width="2"/>
+  <!-- vai + vest -->
+  <path d="M62 400c0-74 48-118 138-134 90 16 138 60 138 134z" fill="#1e3a6e"/>
+  <path d="M170 268l30 40 30-40 22 10-52 62-52-62z" fill="#f5f5f6"/>
+  <path d="M200 308l-14 92h28z" fill="#2b2b30"/>
+  <!-- cổ -->
+  <path d="M176 240h48v34c0 12-48 12-48 0z" fill="#d9a678"/>
+  <!-- mặt -->
+  <ellipse cx="200" cy="182" rx="62" ry="74" fill="#e8b98c"/>
+  <!-- tóc -->
+  <path d="M138 176c-4-52 26-82 62-82s66 30 62 82c-6-30-20-44-36-48-16 14-58 16-72 4-8 8-14 24-16 44z" fill="#15151a"/>
+  <!-- kính gọng mảnh -->
+  <g fill="none" stroke="#c9c9d1" stroke-width="3">
+    <rect x="152" y="168" width="40" height="28" rx="9"/>
+    <rect x="208" y="168" width="40" height="28" rx="9"/>
+    <path d="M192 180h16M152 178l-16 4M248 178l16 4"/>
+  </g>
+  <!-- mắt + lông mày -->
+  <ellipse cx="172" cy="182" rx="5" ry="4.5" fill="#1a1a1f"/>
+  <ellipse cx="228" cy="182" rx="5" ry="4.5" fill="#1a1a1f"/>
+  <path d="M160 158c8-5 18-5 25-1M215 157c8-4 18-4 25 1" stroke="#15151a" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- mũi + miệng cười -->
+  <path d="M200 192v14l-7 6" stroke="#c98f63" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M178 224c12 12 32 12 44 0" stroke="#8c4a3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M182 226c11 8 25 8 36 0z" fill="#f5f5f6"/>
+</g>
+<circle cx="200" cy="200" r="196" fill="none" stroke="#3fb950" stroke-width="3" opacity="0.6"/>
+</svg>
