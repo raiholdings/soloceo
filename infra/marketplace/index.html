@@ -191,7 +191,13 @@ const esc=s=>(s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt
 const vnd=n=>{n=Number(n)||0; if(!n)return "Liên hệ"; if(n>=1e9)return (n/1e9).toFixed(n%1e9?1:0).replace(".",",")+" tỷ"; if(n>=1e6)return Math.round(n/1e6)+" triệu"; return n.toLocaleString("vi-VN")+"đ";};
 const clean=s=>String(s).replace(/\s*\(.*?\)\s*/g,"").trim();
 const indLabel=p=>INDNAME[p.industry]||p.industry||"Dự án";
-const isFree=p=>Number(p.priceVnd)===0;
+// Giá 0 có HAI nghĩa khác hẳn nhau, không được gộp:
+//  - mẫu miễn phí có chủ đích (seed-free-templates.js) → hiện "Miễn phí"
+//  - MVP từ xưởng mà bộ định giá trả "chưa đủ căn cứ" → phải hiện "Liên hệ báo giá"
+// Gộp lại thì sản phẩm chưa định giá hiện thành "Miễn phí" màu xanh — người mua tưởng
+// được cho không. Sai kiểu đó còn hại hơn để trống giá.
+const chuaDinhGia=p=>Number(p.priceVnd)===0 && !!(p.components&&p.components.can_cu_gia);
+const isFree=p=>Number(p.priceVnd)===0 && !chuaDinhGia(p);
 const WORKSPACE="https://soloceo.vn/workspace/bat-dau";
 const icoCheck='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const icoBox='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>';
@@ -346,7 +352,9 @@ function card(p){
       <div class="m"><div class="v">${free?'Tự dựng':'Turnkey'}</div><div class="l">${free?'Đội AI hỗ trợ':'Bàn giao'}</div></div>
     </div>
     <div class="priceRow">
-      <div>${free?'<span class="p" style="color:var(--ok)">Miễn phí</span>':`<span class="p">${vnd(p.priceVnd)}</span> <span class="f">${Number(p.monthlyFeeVnd)?"+ "+vnd(p.monthlyFeeVnd)+"/th":""}</span>`}</div>
+      <div>${free?'<span class="p" style="color:var(--ok)">Miễn phí</span>'
+        :chuaDinhGia(p)?'<span class="p" style="color:var(--mut)">Liên hệ báo giá</span>'
+        :`<span class="p">${vnd(p.priceVnd)}</span> <span class="f">${Number(p.monthlyFeeVnd)?"+ "+vnd(p.monthlyFeeVnd)+"/th":""}</span>`}</div>
       <span class="cta-arrow">Chi tiết →</span>
     </div>
   </a>`;
