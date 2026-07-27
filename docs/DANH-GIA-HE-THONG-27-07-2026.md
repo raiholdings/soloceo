@@ -141,9 +141,12 @@ Hiệu chuẩn 6 câu thử: khớp đúng 91/82/73 · không có mẫu 44/14/11
 5. **Quyết định có báo cho 7 CEO** về cửa sổ lộ OIDC hay không.
 
 ### Tôi làm tiếp được ngay
-6. **Định giá lại 3 MVP đang có giá 0** — code đã xong, chỉ cần xuất bản lại.
+6. **Bổ sung mô hình kinh doanh cho 2 sản phẩm chưa định giá được** (BOT BÀN HẢI SẢN,
+   HomestayBot) rồi xuất bản lại. Bộ định giá trả "chưa đủ căn cứ" — cần dữ liệu, không
+   phải chỉnh mã.
 7. **Kiểm tra `company` đã hồi phục** về ~49.700 sau lượt refresh có bản vá.
-8. **Chạy thêm vòng dây chuyền** để sàn dày lên. Tỉ lệ hiện tại ~2 MVP / 6-8 ý tưởng.
+8. **Chạy thêm vòng dây chuyền** để sàn dày lên. Tỉ lệ vòng 3: 5/5 ý tưởng đạt cổng,
+   4 lên sàn — tốt hơn hẳn hai vòng đầu (2/5 và 2/6).
 9. **Tỉ lệ hỏng JSON khi sinh ý tưởng** — đã vá (vá JSON cắt + nâng token 3000→4800),
    cần đo lại ở vòng sau xem còn hỏng không.
 
@@ -160,12 +163,12 @@ Hiệu chuẩn 6 câu thử: khớp đúng 91/82/73 · không có mẫu 44/14/11
 ## 7. Đánh giá thẳng
 
 **Đã thật:** hạ tầng 17 dịch vụ, gần 1 triệu bản ghi có nguồn, dây chuyền chạy đầu-cuối
-và **đã tự sản xuất 3 MVP bấm vào chạy được**, cổng chất lượng chặn thật (đã chặn 2 sản
-phẩm sai thị trường trong chính phiên này).
+và **đã tự sản xuất 7 MVP bấm vào chạy được**, cổng chất lượng chặn thật — trong chính
+phiên này nó đã chặn 2 sản phẩm sai thị trường và 1 MVP có mã lỗi cú pháp.
 
-**Chưa thật:** sàn mới 4 sản phẩm, chưa có giao dịch nào. Chưa có CEO nào ngoài đội dùng
-dây chuyền này. Ba MVP là ứng dụng một tệp dựng trong vài phút — chạy được, nhưng còn xa
-một sản phẩm bán được giá cao.
+**Chưa thật:** sàn 8 sản phẩm nhưng **chưa có giao dịch nào**. Chưa có CEO nào ngoài đội
+dùng dây chuyền này. Các MVP là ứng dụng một tệp dựng trong vài phút — chạy được, nhưng
+còn xa một sản phẩm bán được giá cao. Giá 5 triệu là mô hình đề xuất, chưa ai trả.
 
 **Rủi ro lớn nhất:** không phải kỹ thuật mà là **chưa có người dùng thật**. Mọi con số ở
 trên là năng lực sản xuất, không phải nhu cầu thị trường đã kiểm chứng.
