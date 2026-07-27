@@ -59,6 +59,7 @@ const COMMUNITY: [string, string, string, string][] = [
   ["Họp video", "Họp trực tuyến chất lượng cao", "/giai-phap/hop-video", "📹"],
   ["Affiliate", "Tiếp thị liên kết đa merchant", "/giai-phap/aff", "🤝"],
   ["Tin tức", "Nền tảng media & tin tức của bạn", "/giai-phap/tin-tuc", "📰"],
+  ["Công nghệ mã nguồn mở", "Hơn 100 nền tảng — giới thiệu, demo & khoá học", "/giai-phap/nen-tang", "🧱"],
 ];
 // 8 nền tảng lõi (lớp n0) — năng lực engine AI + hạ tầng vận hành an toàn.
 // Ba khâu của một dây chuyền: dữ liệu → kiểm chứng → bán.
@@ -80,7 +81,11 @@ const CORE: [string, string, string, string][] = [
   ["Kiểm soát mạng", "Kiểm soát mọi kết nối AI ra ngoài", "/tinh-nang/kiem-soat-mang", "🌐"],
 ];
 // Tài nguyên — nội dung, tài liệu (Sự kiện tách thành thanh riêng; bỏ Cộng đồng).
+// ⚠ NỢ KỸ THUẬT: hai mảng COMMUNITY và RESOURCES ở đây TRÙNG với soloceo-nav.tsx.
+// Thêm một mục menu phải sửa hai chỗ, và đã có lần quên chỗ này nên menu trang chủ
+// thiếu mục trong khi các trang khác đã có. Nên đổi trang chủ sang dùng <SiteHeader />.
 const RESOURCES: [string, string, string, string][] = [
+  ["Báo cáo", "Nghiên cứu thị trường & công nghệ, mỗi ngày một bản", "/bao-cao", "📊"],
   ["Tin tức", "Bài viết & góc nhìn từ Đội AI SoloCEO", "/tin-tuc", "📰"],
   ["Tài liệu", "Hướng dẫn sử dụng & tài liệu", "/en/docs", "📚"],
   ["Solo CEO điển hình", "Chân dung thành viên tiêu biểu", "/solo-ceo-dien-hinh", "🏆"],
