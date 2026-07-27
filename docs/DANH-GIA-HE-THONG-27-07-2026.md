@@ -49,6 +49,9 @@ hỏi Wikidata SPARQL từng nước — nước nào lỗi 429/504 thì dữ li
 upsert, không xoá, và ghi cảnh báo. Áp cho 5 điểm: company, ingestVN (nguy hơn — xoá vô
 điều kiện, toàn dữ liệu Việt Nam), founder/ceo, technology, news.
 
+**Đã khôi phục:** chạy lại `refresh?scope=full` với bản vá — logic an toàn xác nhận thu
+hoạch trọn vẹn rồi mới cho thay mới: **15.122 → 47.752** doanh nghiệp, tổng về 990.995.
+
 **Bài học:** nguồn ngoài LUÔN có ngày hỏng. Thiết kế phải chịu được điều đó thay vì tin nó.
 
 ---
@@ -99,13 +102,17 @@ Sàn còn **8 sản phẩm**, mỗi cái có demo riêng bấm vào chạy:
 | ReviewMate — Trợ lý phản hồi đánh giá khách sạn | 69 | 5tr + 500k/tháng |
 | Tổng đài AI Hành chính Cơ sở — VoiceGov | 74 | 5tr + 500k/tháng |
 | Trợ Lý Ảo Văn Phòng Zalo | 79 | 5tr |
-| Đặt Bánh Zalo | 89 | (đang định giá) |
-| BOT BÀN HẢI SẢN – ZALO AI | 88 | chưa đủ căn cứ |
-| HomestayBot — Trợ lý đặt chỗ AI | 66 | chưa đủ căn cứ |
+| Đặt Bánh Zalo | 89 | Liên hệ báo giá |
+| BOT BÀN HẢI SẢN – ZALO AI | 88 | Liên hệ báo giá |
+| HomestayBot — Trợ lý đặt chỗ AI | 66 | Liên hệ báo giá |
 | OpenClawOS | — | 1,4 tỷ + 15tr/tháng |
 
-Hai sản phẩm để trống giá vì bộ định giá trả "chưa đủ căn cứ" — đúng thiết kế, thà thiếu
-giá còn hơn bịa số. Cần bổ sung mô hình kinh doanh cho chúng rồi định giá lại.
+Ba sản phẩm hiện "Liên hệ báo giá" vì bộ định giá trả "chưa đủ căn cứ" — đúng thiết kế,
+thà thiếu giá còn hơn bịa số.
+
+**Lỗi hiển thị đã sửa:** `isFree()` coi mọi sản phẩm giá 0 là miễn phí, nên hàng chưa định
+giá hiện thành **"Miễn phí" màu xanh** — người mua tưởng được cho không. Nay phân biệt qua
+`components.can_cu_gia`: có thì "Liên hệ báo giá", không có thì mới là mẫu miễn phí thật.
 
 ### Định giá
 
@@ -132,6 +139,11 @@ Hiệu chuẩn 6 câu thử: khớp đúng 91/82/73 · không có mẫu 44/14/11
 
 ## 6. Việc còn tồn — ưu tiên cho phiên sau
 
+### Sao lưu mã nguồn (làm xong hôm nay)
+Nhánh `hoan-thien-v2` đã đẩy lên GitHub, và **bản mirror trên core-01** tại
+`/opt/backup-repo/soloceo.git` (86MB) tự đồng bộ mỗi 6 giờ qua `/opt/backup-repo/dong-bo.sh`.
+Khôi phục: `git clone /opt/backup-repo/soloceo.git`.
+
 ### Cần bạn làm (tôi không làm thay được)
 1. **DNS `sandbox` → 82.197.71.41** (DNS only). Hiện chạy nhờ Traefik nhưng chưa có bản ghi riêng.
 2. **Thay token Cloudflare đã thu hồi** trước ~11/09/2026.
@@ -141,10 +153,9 @@ Hiệu chuẩn 6 câu thử: khớp đúng 91/82/73 · không có mẫu 44/14/11
 5. **Quyết định có báo cho 7 CEO** về cửa sổ lộ OIDC hay không.
 
 ### Tôi làm tiếp được ngay
-6. **Bổ sung mô hình kinh doanh cho 2 sản phẩm chưa định giá được** (BOT BÀN HẢI SẢN,
-   HomestayBot) rồi xuất bản lại. Bộ định giá trả "chưa đủ căn cứ" — cần dữ liệu, không
-   phải chỉnh mã.
-7. **Kiểm tra `company` đã hồi phục** về ~49.700 sau lượt refresh có bản vá.
+6. **Bổ sung mô hình kinh doanh cho 3 sản phẩm "Liên hệ báo giá"** rồi xuất bản lại. Bộ
+   định giá trả "chưa đủ căn cứ" — cần dữ liệu, không phải chỉnh mã.
+7. ~~Kiểm tra `company` hồi phục~~ — **xong**: 47.752, tổng 990.995.
 8. **Chạy thêm vòng dây chuyền** để sàn dày lên. Tỉ lệ vòng 3: 5/5 ý tưởng đạt cổng,
    4 lên sàn — tốt hơn hẳn hai vòng đầu (2/5 và 2/6).
 9. **Tỉ lệ hỏng JSON khi sinh ý tưởng** — đã vá (vá JSON cắt + nâng token 3000→4800),
