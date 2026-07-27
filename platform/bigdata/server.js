@@ -63,6 +63,32 @@ const upsertMany=db.transaction(rows=>{
 function ingestRows(rows){upsertMany(rows); return rows.length;}
 function delType(t){db.prepare("DELETE FROM items WHERE type=?").run(t);}
 
+/**
+ * Thay toàn bộ một loại dữ liệu, NHƯNG chỉ xoá khi mẻ mới đủ lớn.
+ *
+ * Vì sao: kiểu "xoá sạch rồi tải lại" đã ăn mất 34.580 doanh nghiệp ngày 27/07/2026 —
+ * Wikidata SPARQL trả lỗi giữa chừng, phần đã xoá không bao giờ quay lại, và không có
+ * một dòng cảnh báo nào. Nguồn ngoài LUÔN có ngày hỏng; thiết kế phải chịu được điều đó.
+ *
+ * Mẻ mới nhỏ hơn `nguong` lần số đang có → coi là thu hoạch thiếu: chỉ upsert phần lấy
+ * được và giữ nguyên dữ liệu cũ. Thà cũ còn hơn mất.
+ */
+function thayAnToan(loai, rows, nguong=0.8){
+  const cu=db.prepare("SELECT count(*) n FROM items WHERE type=?").get(loai).n;
+  if(!rows.length){
+    console.warn(`[antoan] ${loai}: mẻ mới RỖNG, giữ nguyên ${cu} bản ghi cũ`);
+    return 0;
+  }
+  if(cu>0 && rows.length < cu*nguong){
+    ingestRows(rows);
+    console.warn(`[antoan] ${loai}: mẻ mới ${rows.length} < ${Math.round(cu*nguong)} (${Math.round(nguong*100)}% của ${cu}) — CHỈ upsert, KHÔNG xoá`);
+    return rows.length;
+  }
+  delType(loai); ingestRows(rows);
+  console.log(`[antoan] ${loai}: thay trọn bộ ${cu} → ${rows.length}`);
+  return rows.length;
+}
+
 // ---------- SOURCES ----------
 function batchYear(b){const m=(b||"").match(/(19|20)\d{2}/);return m?parseInt(m[0]):null;}
 function outcomeOf(s){if(s==="Public"||s==="Acquired")return "thanh-cong";if(s==="Inactive")return "dong-cua";return "dang-hoat-dong";}
@@ -129,7 +155,8 @@ async function ingestFounders(){
       oneliner:x.pDesc?x.pDesc.value:"CEO",category:"CEO",logo:x.img?x.img.value:""}));
     rows=rows.concat(ceos);
   }catch(e){console.error("ceo SPARQL lỗi",e.message);}
-  if(rows.length){delType("founder");delType("ceo");ingestRows(rows);}
+  // founder+ceo cùng một mẻ: chỉ thay khi mẻ mới đủ lớn (xem thayAnToan)
+  if(rows.length){thayAnToan("founder",rows.filter(r=>r.type==="founder"));thayAnToan("ceo",rows.filter(r=>r.type==="ceo"));}
   return rows.length;
 }
 
@@ -156,7 +183,15 @@ const COUNTRIES=[
   {q:"Q27",vi:"Ireland",lim:600},{q:"Q37",vi:"Litva",lim:300},
 ];
 async function ingestByCountry(){
-  let total=0; delType("company");
+  // KHÔNG xoá trước khi tải. Bản cũ gọi delType("company") ngay dòng đầu rồi mới lần lượt
+  // hỏi Wikidata từng nước — nước nào lỗi thì dữ liệu nước đó mất vĩnh viễn. Wikidata SPARQL
+  // trả 429/504 khá thường xuyên, và ngày 27/07/2026 nó đã ăn mất 34.580 doanh nghiệp
+  // (49.702 → 15.122) trong một lượt refresh đêm, không một dòng cảnh báo.
+  //
+  // Nay: gom hết rồi mới ghi. Chỉ dọn bản ghi cũ khi thu hoạch THÀNH CÔNG TRỌN VẸN; thu
+  // thiếu thì chỉ upsert phần lấy được, giữ nguyên phần cũ. Thà dữ liệu cũ còn hơn mất.
+  let total=0, loi=0;
+  const tatCa=[];
   for(const c of COUNTRIES){
     const q=`SELECT ?c ?cLabel ?cDesc ?indLabel ?web (SAMPLE(?logo) AS ?logo) WHERE {
       ?c wdt:P31/wdt:P279* wd:Q4830453 . ?c wdt:P17 wd:${c.q} .
@@ -172,8 +207,18 @@ async function ingestByCountry(){
         oneliner:x.indLabel&&!/^Q\d+$/.test(x.indLabel.value)?x.indLabel.value:"",
         category:(x.indLabel&&!/^Q\d+$/.test(x.indLabel.value))?x.indLabel.value:"Doanh nghiệp",
         region:c.vi,logo:x.logo?x.logo.value:""}));
-      ingestRows(rows); total+=rows.length; console.log(`[country] ${c.vi}: ${rows.length}`);
-    }catch(e){console.error(`[country] ${c.vi} lỗi`,e.message);}
+      tatCa.push(...rows); total+=rows.length; console.log(`[country] ${c.vi}: ${rows.length}`);
+    }catch(e){loi++; console.error(`[country] ${c.vi} lỗi`,e.message);}
+  }
+  const cu=db.prepare("SELECT count(*) n FROM items WHERE type='company'").get().n;
+  if(loi===0 && total>=cu*0.8){
+    // Thu hoạch trọn vẹn và không teo bất thường → thay mới hoàn toàn
+    delType("company"); ingestRows(tatCa);
+    console.log(`[country] thay mới trọn bộ: ${cu} → ${total}`);
+  }else{
+    // Thiếu nguồn hoặc số liệu teo bất thường → chỉ bổ sung, TUYỆT ĐỐI không xoá
+    ingestRows(tatCa);
+    console.warn(`[country] GIỮ DỮ LIỆU CŨ: ${loi} nước lỗi, thu được ${total} so với ${cu} đang có — chỉ upsert, không xoá`);
   }
   return total;
 }
@@ -190,7 +235,7 @@ async function ingestVN(defn){
     type:defn.type,source:"wikidata",ext_key:r.x.value.split("/").pop(),
     name:r.xLabel.value,url:r.x.value,description:r.xDesc?r.xDesc.value:defn.desc,
     oneliner:r.xDesc?r.xDesc.value:defn.desc,category:defn.cat,region:"Việt Nam"}));
-  delType(defn.type); ingestRows(rows); console.log(`[VN] ${defn.type}: ${rows.length}`); return rows.length;
+  thayAnToan(defn.type, rows); console.log(`[VN] ${defn.type}: ${rows.length}`); return rows.length;
 }
 async function ingestVietnamRich(){
   let t=0;
@@ -233,7 +278,7 @@ async function ingestTech(){
         tags:(r.topics||[]).join(", "),score:r.stargazers_count||0,top:(r.stargazers_count>50000)?1:0});
     }catch(e){console.error("github lỗi",q,e.message);}
   }
-  if(all.length){delType("technology");ingestRows(all);}
+  if(all.length){thayAnToan("technology",all);}
   return all.length;
 }
 
@@ -253,7 +298,8 @@ async function ingestNews(){
       url:a.url,description:a.description||a.title,oneliner:(a.tag_list||[]).join(", "),
       category:"Lập trình",tags:(a.tag_list||[]).join(", "),score:a.positive_reactions_count||0,published:a.published_at||""});}
   }catch(e){console.error("devto lỗi",e.message);}
-  if(rows.length){delType("news");ingestRows(rows);}
+  // tin tức đổi nhanh, ngưỡng thấp hơn: mẻ mới bằng nửa mẻ cũ vẫn chấp nhận thay
+  if(rows.length){thayAnToan("news",rows,0.5);}
   return rows.length;
 }
 
