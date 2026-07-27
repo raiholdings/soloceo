@@ -201,6 +201,32 @@ model News {
   @@index([status, publishedAt])
 }
 
+/// Bài giới thiệu nền tảng mã nguồn mở — soloceo.vn/giai-phap/nen-tang/<slug>
+/// Mỗi nền tảng một bài, viết chuẩn SEO, liên kết ba chiều: bài ↔ trang bán ở
+/// platform.soloceo.vn ↔ khoá học ở edu.soloceo.vn.
+model PlatformArticle {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  name        String
+  category    String
+  summary     String?
+  html        String    @default("")
+  coverUrl    String?
+  seoTitle    String?
+  seoDesc     String?
+  keywords    Json?
+  demoUrl     String?
+  platformUrl String?
+  courseUrl   String?
+  usesAI      Boolean   @default(false)
+  status      String    @default("DRAFT") // DRAFT|PUBLISHED
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, category])
+}
+
 /// Báo cáo nghiên cứu — Đội AI sản xuất mỗi ngày một bản toàn diện.
 /// Khác News ở chỗ: News là bài viết ngắn dạng markdown; báo cáo là TÀI LIỆU HTML hoàn
 /// chỉnh, tự chứa CSS và biểu đồ SVG, dài hàng chục nghìn ký tự. Lưu nguyên HTML thay vì

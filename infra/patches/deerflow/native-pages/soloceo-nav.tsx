@@ -22,6 +22,7 @@ const COMMUNITY: [string, string, string, string][] = [
   ["Họp video", "Họp trực tuyến chất lượng cao", "/giai-phap/hop-video", "📹"],
   ["Affiliate", "Tiếp thị liên kết đa merchant", "/giai-phap/aff", "🤝"],
   ["Tin tức", "Nền tảng media & tin tức của bạn", "/giai-phap/tin-tuc", "📰"],
+  ["Công nghệ mã nguồn mở", "Hơn 100 nền tảng — giới thiệu, demo & khoá học", "/giai-phap/nen-tang", "🧱"],
 ];
 // 8 nền tảng lõi (Tính năng).
 const CORE: [string, string, string, string][] = [
@@ -75,7 +76,7 @@ export function SiteHeader() {
       <nav className="hidden items-center gap-1 md:flex">
         <Mega label="Sản phẩm" items={PRODUCTS} cols={1} width="w-[480px]" note="Dây chuyền: dữ liệu → kiểm chứng → bán" />
         <Mega label="Tính năng" items={CORE} width="w-[560px]" note="8 nền tảng lõi · engine AI vận hành an toàn" />
-        <Mega label="Giải pháp" items={COMMUNITY} width="w-[560px]" note="9 nền tảng cộng đồng · đi kèm mọi Solo CEO" />
+        <Mega label="Giải pháp" items={COMMUNITY} width="w-[560px]" note="9 nền tảng cộng đồng · hơn 100 công nghệ mã nguồn mở" />
         <Mega label="Tài nguyên" items={RESOURCES} width="w-[520px]" note="Tin tức · chân dung · tài liệu" />
         <a href="/su-kien" className="rounded-lg px-3 py-2 text-[13.5px] text-[#a2a2aa] transition hover:bg-[#1a1a1d] hover:text-[#f5f5f6]">Sự kiện</a>
         <a href="/goi-cuoc" className="rounded-lg px-3 py-2 text-[13.5px] text-[#a2a2aa] transition hover:bg-[#1a1a1d] hover:text-[#f5f5f6]">Gói cước</a>
