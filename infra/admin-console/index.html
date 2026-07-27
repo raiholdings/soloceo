@@ -138,6 +138,7 @@ const NAV = [
   {k:"docs",     ic:"❒", t:"Tài liệu"},
   {k:"projects", ic:"◆", t:"Tạo dự án"},
   {k:"mna",      ic:"⇄", t:"Sàn M&A"},
+  {k:"baocao",   ic:"📊", t:"Báo cáo nghiên cứu"},
   {k:"ghinho",   ic:"⚿", t:"Ghi nhớ (tài khoản)"},
   {k:"audit",    ic:"❑", t:"Nhật ký quản trị"},
 ];
@@ -198,7 +199,7 @@ function setBadge(k,n){
 function go(k){
   current=k; renderNav();
   document.getElementById("view").innerHTML='<div class="spin">Đang tải…</div>';
-  ({overview:vOverview,users:vUsers,revenue:vRevenue,ai:vAi,health:vHealth,catalog:vCatalog,infra:vInfra,agents:vAgents,news:vNews,docs:vDocs,projects:vProjects,mna:vMna,ghinho:vGhiNho,audit:vAudit}[k])();
+  ({overview:vOverview,users:vUsers,revenue:vRevenue,ai:vAi,health:vHealth,catalog:vCatalog,infra:vInfra,agents:vAgents,news:vNews,docs:vDocs,projects:vProjects,mna:vMna,baocao:vBaoCao,ghinho:vGhiNho,audit:vAudit}[k])();
 }
 const H=(title,sub,extra="")=>`<div class="head"><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div><div>${extra}</div></div>`;
 const V=html=>{document.getElementById("view").innerHTML=html;};
@@ -641,6 +642,64 @@ async function vMna(){
   }catch(e){ errBox(e); }
 }
 async function approveListing(id){ try{ await api(`/admin/listings/${id}/approve`,{method:"POST"}); toast("Đã duyệt listing"); vMna(); }catch(e){toast(e.message,true);} }
+
+// ── Báo cáo nghiên cứu ──
+// Luồng cố ý có bước duyệt: SINH → nháp → người đọc → XUẤT BẢN → đăng Facebook.
+// Báo cáo do AI viết; đăng thẳng lên trang chính thức nghĩa là một con số sai ra công
+// chúng dưới tên thương hiệu, mà Facebook thì không cho rút lại êm.
+async function vBaoCao(){
+  try{
+    const list = await api("/admin/eco/bao-cao");
+    const nhan = {DRAFT:'<span class="tag t-mut">Nháp</span>', PUBLISHED:'<span class="tag t-ok">Đã xuất bản</span>'};
+    V(H("Báo cáo nghiên cứu", `${list.length} bản · Đội AI viết từ kho dữ liệu thật`)+
+    `<div class="card" style="margin-bottom:14px">
+      <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+        <label style="flex:1;min-width:260px">Chủ đề (để trống = báo cáo tổng hợp trong ngày)
+          <input id="bc-cd" placeholder="vd: cơ hội ngành F&B cho Solo CEO"></label>
+        <button class="btn" onclick="bcSinh()">Đội AI viết báo cáo</button>
+      </div>
+      <div class="faint" style="margin-top:9px;font-size:12px">
+        Mất 1-3 phút. Báo cáo ra ở dạng <b>nháp</b> — đọc rồi mới xuất bản.
+        Xuất bản xong mới đăng Facebook được.</div>
+    </div>`+
+    (list.length? `<div class="card" style="padding:0;overflow:auto">
+      <table><thead><tr><th style="width:74px"></th><th>Tiêu đề</th><th>Trạng thái</th><th>Facebook</th><th style="width:250px">Thao tác</th></tr></thead>
+      <tbody>${list.map(b=>`<tr>
+        <td>${b.coverUrl?`<img src="${b.coverUrl}" style="width:64px;border-radius:6px;display:block">`:""}</td>
+        <td><div style="font-weight:600">${esc(b.title)}</div>
+            <div class="faint" style="font-size:11.5px">${esc((b.summary||"").slice(0,96))}</div>
+            <div class="faint mono" style="font-size:10.5px;margin-top:3px">${esc(b.slug)}</div></td>
+        <td>${nhan[b.status]||esc(b.status)}<div class="faint" style="font-size:10.5px">${b.publishedAt?dt(b.publishedAt):""}</div></td>
+        <td>${b.fbPostId?'<span class="tag t-ok">đã đăng</span>':'<span class="faint" style="font-size:12px">—</span>'}</td>
+        <td>
+          <a class="btn" style="padding:3px 9px;font-size:11px" href="https://soloceo.vn/bao-cao/${esc(b.slug)}" target="_blank">Xem</a>
+          <button class="btn" style="padding:3px 9px;font-size:11px" onclick="bcDang('${b.id}',${b.status!=="PUBLISHED"})">${b.status==="PUBLISHED"?"Gỡ xuống":"Xuất bản"}</button>
+          ${b.status==="PUBLISHED"&&!b.fbPostId?`<button class="btn" style="padding:3px 9px;font-size:11px" onclick="bcFb('${b.id}')">Đăng FB</button>`:""}
+        </td></tr>`).join("")}</tbody></table></div>`
+      : '<div class="card muted center" style="padding:26px">Chưa có báo cáo nào.</div>'));
+  }catch(e){ errBox(e); }
+}
+async function bcSinh(){
+  const b=event.target; b.disabled=true; b.textContent="Đang viết…";
+  try{
+    const r=await api("/admin/eco/bao-cao/sinh",{method:"POST",
+      body:JSON.stringify({chu_de:document.getElementById("bc-cd").value.trim()||undefined})});
+    if(r.ok===false){ alert("Không viết được: "+r.ly_do); } else { alert("Xong: "+r.tieu_de+" ("+r.so_muc+" mục). Đọc rồi xuất bản nhé."); }
+    vBaoCao();
+  }catch(e){ alert("Lỗi: "+e.message); b.disabled=false; b.textContent="Đội AI viết báo cáo"; }
+}
+async function bcDang(id,publish){
+  try{ await api(`/admin/eco/bao-cao/${id}/dang`,{method:"POST",body:JSON.stringify({publish})}); vBaoCao(); }
+  catch(e){ alert("Lỗi: "+e.message); }
+}
+async function bcFb(id){
+  if(!confirm("Đăng báo cáo này lên trang Facebook SoloCEO? Bài đã đăng không rút lại êm được.")) return;
+  try{
+    const r=await api(`/admin/eco/bao-cao/${id}/facebook`,{method:"POST",body:"{}"});
+    alert(r.ok? "Đã đăng lên Facebook." : "Không đăng được: "+r.ly_do);
+    vBaoCao();
+  }catch(e){ alert("Lỗi: "+e.message); }
+}
 
 // ── Ghi nhớ: tài khoản / mật khẩu hệ thống ──
 // Giá trị mã hoá AES-256-GCM trong bảng Secret của api-core. Ba quy tắc dựng nên trang này:
