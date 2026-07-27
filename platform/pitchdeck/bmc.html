@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mô hình kinh doanh SoloCEO OS — Business Model Canvas</title>
+<meta name="description" content="Business Model Canvas của hệ điều hành doanh nghiệp một người SoloCEO: bốn dòng doanh thu, cấu trúc chi phí, và đánh giá rủi ro thật.">
+<meta property="og:title" content="Mô hình kinh doanh SoloCEO OS — BMC">
+<meta property="og:description" content="Bốn dòng doanh thu, kinh tế đơn vị, và những rủi ro chưa giải quyết.">
+<style>
+*{box-sizing:border-box}
+:root{--nen:#0b0b0c;--the:#131315;--chu:#e6e6e6;--mo:#a2a2aa;--nhat:#6b6b73;
+      --vien:#232326;--xanh:#3fb950;--vang:#e3b341;--do:#e06c5a}
+body{margin:0;background:var(--nen);color:var(--chu);line-height:1.68;font-size:16px;
+     font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.bao{max-width:1120px;margin:0 auto;padding:0 22px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+a{color:var(--xanh)}
+
+header{border-bottom:1px solid #1a1a1d;padding:16px 0}
+header .bao{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.ten{display:flex;align-items:center;gap:10px;font-weight:650;font-size:15px;text-decoration:none;color:inherit}
+.ve{font-size:13px;color:var(--mo);text-decoration:none}
+
+.mo-dau{padding:52px 0 30px}
+.nhan{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--vang);margin-bottom:13px}
+h1{font-size:clamp(30px,4.8vw,46px);line-height:1.14;letter-spacing:-.022em;margin:0 0 15px;
+   font-weight:700;color:#f5f5f6}
+.dan{font-size:17px;color:var(--mo);max-width:64ch;margin:0}
+
+section{padding:44px 0;border-top:1px solid #17171a}
+.tieu{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--nhat);margin-bottom:11px}
+h2{font-size:clamp(23px,3.2vw,31px);line-height:1.2;letter-spacing:-.018em;margin:0 0 13px;
+   font-weight:650;color:#f5f5f6}
+.loi{color:var(--mo);max-width:68ch;margin:0 0 24px}
+
+/* Khung BMC 9 ô — bố cục chuẩn Osterwalder */
+.canvas{display:grid;gap:10px;grid-template-columns:repeat(5,1fr);
+        grid-template-areas:
+          "dt hd gt qh pk"
+          "dt nl gt kp pk"
+          "cp cp cp dt2 dt2"}
+.o{background:var(--the);border:1px solid var(--vien);border-radius:14px;padding:15px 16px}
+.o h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--vang);
+      margin:0 0 9px;font-weight:650}
+.o ul{margin:0;padding-left:17px}
+.o li{font-size:13.2px;color:var(--mo);margin:5px 0;line-height:1.55}
+.o li b{color:#f5f5f6;font-weight:600}
+.a-dt{grid-area:dt}.a-hd{grid-area:hd}.a-nl{grid-area:nl}.a-gt{grid-area:gt}
+.a-qh{grid-area:qh}.a-kp{grid-area:kp}.a-pk{grid-area:pk}
+.a-cp{grid-area:cp;border-color:#3a2a2a}.a-dt2{grid-area:dt2;border-color:#1e4a29}
+.a-cp h3{color:var(--do)}.a-dt2 h3{color:var(--xanh)}
+.a-gt{border-color:#2f4a34;background:#0f1a12}
+@media(max-width:900px){.canvas{grid-template-columns:1fr 1fr;
+  grid-template-areas:"gt gt" "dt hd" "nl qh" "kp pk" "cp cp" "dt2 dt2"}}
+@media(max-width:560px){.canvas{grid-template-columns:1fr;
+  grid-template-areas:"gt" "dt" "hd" "nl" "qh" "kp" "pk" "cp" "dt2"}}
+
+/* Bảng dòng doanh thu */
+.bang{overflow-x:auto;border:1px solid var(--vien);border-radius:14px;background:var(--the)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:660px}
+th{text-align:left;padding:12px 15px;color:var(--nhat);font-size:11.5px;font-weight:600;
+   text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--vien)}
+td{padding:12px 15px;border-bottom:1px solid #1c1c1f;vertical-align:top;color:var(--mo)}
+td b{color:#f5f5f6}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10.5px;font-weight:650;
+     font-family:ui-monospace,monospace}
+.t-chay{background:#0f2413;color:var(--xanh);border:1px solid #1e4a29}
+.t-som{background:#1a160c;color:var(--vang);border:1px solid #3a3116}
+.t-xa{background:#1e1416;color:var(--do);border:1px solid #3d2326}
+
+/* Khối rủi ro */
+.rui{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.rui div{background:#150f0f;border:1px solid #3a2a2a;border-left:3px solid var(--do);
+         border-radius:13px;padding:16px 18px}
+.rui h3{font-size:14.5px;margin:0 0 7px;color:#f5f5f6}
+.rui p{font-size:13.2px;color:var(--mo);margin:0}
+
+.ghi{background:var(--the);border:1px solid var(--vien);border-radius:14px;padding:20px 22px;
+     font-size:14px;color:var(--mo);margin-top:22px}
+.ghi b{color:#f5f5f6}
+
+footer{border-top:1px solid #17171a;padding:26px 0 42px;text-align:center}
+footer p{font-size:11.5px;color:var(--nhat);margin:4px 0}
+</style>
+</head>
+<body>
+
+<header><div class="bao">
+  <a class="ten" href="/">
+    <svg width="24" height="24" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="none" stroke="#f5f5f6" stroke-width="7"/><circle cx="50" cy="50" r="12" fill="#e3b341"/></svg>
+    SoloCEO OS
+  </a>
+  <a class="ve" href="/">← Về pitch deck</a>
+</div></header>
+
+<div class="bao mo-dau">
+  <div class="nhan mono">Business Model Canvas</div>
+  <h1>Mô hình kinh doanh của<br>hệ điều hành doanh nghiệp một người</h1>
+  <p class="dan">
+    Bản đồ đầy đủ chín ô theo khung Osterwalder, cộng bốn dòng doanh thu và những rủi ro
+    chưa giải quyết. Phần rủi ro đặt ngay trong tài liệu này chứ không giấu — người đọc có
+    kinh nghiệm sẽ tìm ra nó trong mười phút, và tìm được rồi thì họ nghi ngờ luôn phần còn lại.
+  </p>
+</div>
+
+<section>
+  <div class="bao">
+    <div class="tieu mono">Chín ô</div>
+    <h2>Business Model Canvas</h2>
+    <div class="canvas">
+
+      <div class="o a-dt">
+        <h3>Đối tác chính</h3>
+        <ul>
+          <li><b>Cộng đồng mã nguồn mở</b> — 111 nền tảng đã triển khai; giá trị lõi đến từ đây</li>
+          <li><b>Nhà cung cấp hạ tầng</b> — VPS, DNS, chứng chỉ</li>
+          <li><b>Nhà cung cấp mô hình AI</b> — qua cổng LiteLLM, đổi được nhà cung cấp</li>
+          <li><b>Cổng thanh toán</b> — PayOS (VN), Stripe (quốc tế)</li>
+          <li><b>Nhà đăng ký tên miền</b> — Nhân Hoà cho tên miền .vn</li>
+        </ul>
+      </div>
+
+      <div class="o a-hd">
+        <h3>Hoạt động chính</h3>
+        <ul>
+          <li>Đúc dữ liệu thật thành ý tưởng có căn cứ</li>
+          <li>Kiểm chứng và dựng MVP qua xưởng tự động</li>
+          <li>Đóng gói &amp; vận hành nền tảng mã nguồn mở</li>
+          <li>Cấp hosting và tự động hoá triển khai</li>
+          <li>Biên soạn nội dung đào tạo &amp; báo cáo</li>
+        </ul>
+      </div>
+
+      <div class="o a-nl">
+        <h3>Nguồn lực chính</h3>
+        <ul>
+          <li><b>Kho dữ liệu</b> — gần 1 triệu bản ghi có nguồn, trọng tâm Việt Nam</li>
+          <li><b>Dây chuyền ý tưởng → MVP</b> có cổng chất lượng</li>
+          <li>Hạ tầng 4 máy chủ + Coolify</li>
+          <li>Đội AI vận hành (DeerFlow + agent)</li>
+          <li>Kiến trúc sư trưởng đề án</li>
+        </ul>
+      </div>
+
+      <div class="o a-gt">
+        <h3>Giá trị mang lại</h3>
+        <ul>
+          <li><b>Một người chạy được cả doanh nghiệp</b> — thứ trước đây cần một đội</li>
+          <li><b>Chỗ đứng thật trên Internet</b>: hosting + tên miền riêng + bộ nền tảng, trả một khoản hằng tháng</li>
+          <li><b>Ý tưởng có căn cứ</b>, không phải cảm tính — đúc từ dữ liệu thị trường thật</li>
+          <li><b>Chỉ bán thứ chạy được</b> — mọi sản phẩm trên sàn đều có demo bấm vào thử</li>
+          <li><b>Lối thoát</b>: bán lại doanh nghiệp trên Sàn M&amp;A với doanh thu đã xác thực</li>
+        </ul>
+      </div>
+
+      <div class="o a-qh">
+        <h3>Quan hệ khách hàng</h3>
+        <ul>
+          <li>Tự phục vụ qua workspace + Đội AI hỗ trợ</li>
+          <li>Cộng đồng Solo CEO (my.soloceo.vn)</li>
+          <li>Đào tạo &amp; chứng chỉ (edu.soloceo.vn)</li>
+          <li>Cố vấn trực tiếp ở gói cao nhất</li>
+          <li>Báo cáo nghiên cứu hằng ngày — giữ liên hệ bằng giá trị, không bằng quảng cáo</li>
+        </ul>
+      </div>
+
+      <div class="o a-kp">
+        <h3>Kênh phân phối</h3>
+        <ul>
+          <li>soloceo.vn — hơn 100 trang nền tảng chuẩn SEO</li>
+          <li>platform.soloceo.vn — cổng bán hạ tầng &amp; tên miền</li>
+          <li>marketplace.soloceo.vn — sàn sản phẩm</li>
+          <li>Cộng đồng &amp; mạng xã hội</li>
+          <li>Truyền miệng từ Solo CEO đã thành công</li>
+        </ul>
+      </div>
+
+      <div class="o a-pk">
+        <h3>Phân khúc khách hàng</h3>
+        <ul>
+          <li><b>Solo CEO đang khởi nghiệp</b> — có ý tưởng, thiếu đội và hạ tầng</li>
+          <li><b>Hộ kinh doanh muốn số hoá</b> — 44.728 cơ sở đã lập bản đồ</li>
+          <li><b>Người làm nghề tự do</b> muốn có nền tảng riêng</li>
+          <li><b>Người mua doanh nghiệp</b> tìm venture có doanh thu xác thực</li>
+        </ul>
+      </div>
+
+      <div class="o a-cp">
+        <h3>Cấu trúc chi phí</h3>
+        <ul>
+          <li><b>Hạ tầng</b> — 4 VPS, ~3,5 triệu/tháng, tăng theo số khách</li>
+          <li><b>Mô hình AI</b> — biến đổi theo lượng dùng, có hạn mức từng org</li>
+          <li><b>Giấy phép phần mềm thương mại</b> — WHMCS, Support Board, Academy…</li>
+          <li><b>Tên miền &amp; chứng chỉ</b> — cố định, nhỏ</li>
+          <li><b>Con người</b> — hiện là chi phí cơ hội của một người; đây là khoản chưa được tính đúng</li>
+        </ul>
+      </div>
+
+      <div class="o a-dt2">
+        <h3>Dòng doanh thu</h3>
+        <ul>
+          <li><b>Thuê bao Workspace</b> — 3 / 5 / 9 triệu mỗi tháng, kèm hosting</li>
+          <li><b>Bán lẻ sản phẩm công nghệ</b> — MVP &amp; nền tảng đóng gói trên sàn</li>
+          <li><b>Đào tạo</b> — khoá học &amp; chứng chỉ</li>
+          <li><b>Hoa hồng M&amp;A</b> — 5–8% giá trị giao dịch</li>
+          <li><b>Phí giao dịch</b> — 1,5–3% doanh thu venture đi qua Payments</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="bao">
+    <div class="tieu mono">Dòng tiền</div>
+    <h2>Bốn dòng doanh thu — và dòng nào đã thật</h2>
+    <p class="loi">
+      Nhiều dòng doanh thu chỉ là đa dạng hoá khi từng dòng có khách trả tiền. Bảng dưới
+      ghi đúng trạng thái hiện tại của mỗi dòng, kể cả những dòng còn là giả thuyết.
+    </p>
+    <div class="bang">
+      <table>
+        <thead><tr><th>Dòng</th><th>Cách thu</th><th>Mô hình tương đương</th><th>Trạng thái</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Thuê bao Workspace</b></td>
+            <td>3 / 5 / 9 triệu mỗi tháng, kèm hosting và bộ nền tảng</td>
+            <td>Google Workspace · Shopify</td>
+            <td><span class="tag t-som">Sẵn sàng bán</span></td>
+          </tr>
+          <tr>
+            <td><b>Bán lẻ sản phẩm công nghệ</b></td>
+            <td>Bán đứt MVP &amp; nền tảng đóng gói, 5–50 triệu mỗi sản phẩm</td>
+            <td>Envato · Shopify App Store</td>
+            <td><span class="tag t-chay">Có hàng thật</span></td>
+          </tr>
+          <tr>
+            <td><b>Đào tạo</b></td>
+            <td>Khoá học &amp; chứng chỉ trên edu.soloceo.vn</td>
+            <td>Coursera · Udemy</td>
+            <td><span class="tag t-som">Hạ tầng xong, nội dung đang xây</span></td>
+          </tr>
+          <tr>
+            <td><b>Hoa hồng M&amp;A</b></td>
+            <td>5–8% giá trị mỗi thương vụ chuyển nhượng venture</td>
+            <td>Flippa · Empire Flippers</td>
+            <td><span class="tag t-xa">Còn xa — cần venture đủ 90 ngày &amp; có doanh thu</span></td>
+          </tr>
+          <tr>
+            <td><b>Phí giao dịch</b></td>
+            <td>1,5–3% doanh thu venture đi qua module Payments</td>
+            <td>Stripe · Shopify Payments</td>
+            <td><span class="tag t-xa">Chờ venture có doanh thu thật</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ghi">
+      <b>Vì sao không phải mô hình Google.</b> Google kiếm hơn 85% doanh thu từ quảng cáo,
+      dựa trên lớp sản phẩm miễn phí ở quy mô hàng tỷ người dùng. SoloCEO không có lớp đó —
+      mọi dòng đều thu tiền trực tiếp. Điều này khiến tăng trưởng chậm hơn nhưng không phụ
+      thuộc quảng cáo, và mỗi khách hàng có giá trị đo được ngay từ tháng đầu.
+      Mô hình gần nhất là <b>Shopify</b> (thuê bao + chợ ứng dụng + phí giao dịch) cộng
+      <b>Flippa</b> (sàn mua bán doanh nghiệp online).
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="bao">
+    <div class="tieu mono">Nói thẳng</div>
+    <h2>Bốn rủi ro chưa giải quyết</h2>
+    <p class="loi">
+      Phần này đặt trong chính tài liệu giới thiệu, không để ở phụ lục. Người đọc có kinh
+      nghiệm sẽ tìm ra những điều này trong mười phút — và nếu họ phải tự tìm, họ sẽ nghi
+      ngờ luôn phần còn lại.
+    </p>
+    <div class="rui">
+      <div>
+        <h3>Chưa có khách trả tiền</h3>
+        <p>Bốn dòng doanh thu nhưng chưa dòng nào có giao dịch thật. Ở trạng thái này đó
+        chưa phải đa dạng hoá, mà là bốn giả thuyết. Việc cần làm tiếp không phải thêm tính
+        năng, mà là mười khách hàng đầu tiên.</p>
+      </div>
+      <div>
+        <h3>Bán đóng gói của phần mềm miễn phí</h3>
+        <p>Giá trị nằm ở việc cài, cấu hình, vận hành và hỗ trợ tiếng Việt — không nằm ở
+        bản thân mã nguồn. Biên lợi nhuận này chỉ giữ được khi việc tự làm còn đủ khó. Nếu
+        công cụ tự triển khai dễ đi, phần chênh lệch sẽ co lại.</p>
+      </div>
+      <div>
+        <h3>Sàn M&amp;A là bài toán con gà quả trứng</h3>
+        <p>Cần cả người bán có doanh thu xác thực lẫn người mua sẵn tiền. Không bên nào tới
+        trước nếu bên kia chưa có. Đây là dòng doanh thu giá trị nhất nhưng cũng xa nhất,
+        có thể 12–18 tháng.</p>
+      </div>
+      <div>
+        <h3>Phụ thuộc một người</h3>
+        <p>Toàn bộ kiến trúc hiện nằm trong đầu một người. Đó vừa là tốc độ vừa là điểm gãy
+        duy nhất. Tài liệu hoá và chuyển giao được kiến trúc là việc phải làm trước khi mở
+        rộng, không phải sau.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="bao">
+  <p class="mono">SoloCEO OS — Business Model Canvas · cập nhật 27/07/2026</p>
+  <p class="mono"><a href="https://soloceo.vn">soloceo.vn</a> · <a href="/">pitch deck</a></p>
+</div></footer>
+
+</body>
+</html>
