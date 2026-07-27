@@ -1452,7 +1452,24 @@ CREATE TABLE IF NOT EXISTS mkt_events (
   tac_dong TEXT, nguon_id INTEGER, nganh TEXT, created_at TEXT
 );
 `);
-const jparse=r=>JSON.parse(r.replace(/^\s*\`\`\`json?\s*/i,"").replace(/\`\`\`\s*$/,"").trim());
+// Đọc JSON từ mô hình, có VÁ khi bị cắt cuối.
+// Vì sao cần vá: một vòng sinh 6 ý tưởng thì 4 lượt hỏng vì "JSON trả về không hợp lệ" —
+// nhìn nội dung thì thấy nó bị cắt giữa chừng chứ không sai cú pháp. Bỏ cả lượt nghĩa là
+// vứt một lời gọi mô hình đắt tiền vì thiếu vài dấu ngoặc đóng.
+const jparse=(r)=>{
+  let t=String(r||"").replace(/^\s*```json?\s*/i,"").replace(/```\s*$/,"").trim();
+  const i=t.indexOf("{"); if(i>0)t=t.slice(i);
+  try{return JSON.parse(t);}catch(e){}
+  try{return JSON.parse(t.slice(0,t.lastIndexOf("}")+1));}catch(e){}
+  // Cắt lùi tới ranh giới hợp lệ gần nhất rồi thử đóng dần các ngoặc còn thiếu.
+  for(let cat=t.length-1;cat>Math.max(t.length-3000,0);cat--){
+    if(!'",}]'.includes(t[cat]))continue;
+    for(const dong of ['"}','"}}','"}}}',"]}","}]}","}","}}","}}}"]){
+      try{return JSON.parse(t.slice(0,cat+1)+dong);}catch(e){}
+    }
+  }
+  throw new Error("JSON hỏng, không vá được: "+t.slice(0,120));
+};
 
 // ── ĐÚC LẠI GIẢI PHÁP từ 1 nốt công nghệ/startup THẬT chưa đúc ──
 async function distillSolution(){
@@ -1798,7 +1815,7 @@ Trả DUY NHẤT JSON (tham chiếu [VDx]/[GPx]/[MHx]/[SPx]/[SKx]/#id THẬT ở
 "van_de":"vấn đề ý tưởng giải","giai_phap":"giải pháp + khác biệt so với sản phẩm đã có","thi_truong":"phân khúc + ước lượng thận trọng (ghi rõ ước lượng)","vi_sao_bay_gio":"...",
 "bmc":{"phan_khuc_khach_hang":"...","gia_tri_cot_loi":"...","kenh_phan_phoi":"...","quan_he_khach_hang":"...","dong_doanh_thu":"...","nguon_luc_chinh":"...","hoat_dong_chinh":"...","doi_tac_chinh":"...","co_cau_chi_phi":"..."},
 "lo_trinh":[{"giai_doan":"Tuần 1-2","viec":["..."],"muc_tieu":"đo được"},{"giai_doan":"Tháng 1","viec":["..."],"muc_tieu":"..."},{"giai_doan":"Tháng 2-3","viec":["..."],"muc_tieu":"..."}],
-"soloceo_stack":["nền tảng/khung SoloCEO kèm #id"],"can_cu":["#id"]}`,3000);
+"soloceo_stack":["nền tảng/khung SoloCEO kèm #id"],"can_cu":["#id"]}`,4800);
     const j=jparse(raw);
     if(!j.ten||!j.bmc)throw new Error("Engine trả thiếu ten/bmc — thử lại.");
     const info=db.prepare(`INSERT INTO ideas(ten,nganh,tom_tat,van_de,giai_phap,thi_truong,vi_sao_bay_gio,bmc,can_cu,buoc_dau,soloceo_stack,lo_trinh,tac_gia,nguon,created_at)
@@ -1882,7 +1899,7 @@ ${ctx}
 "bmc":{"phan_khuc_khach_hang":"...","gia_tri_cot_loi":"...","kenh_phan_phoi":"...","quan_he_khach_hang":"...","dong_doanh_thu":"...","nguon_luc_chinh":"...","hoat_dong_chinh":"...","doi_tac_chinh":"...","co_cau_chi_phi":"..."},
 "lo_trinh":[{"giai_doan":"Tuần 1-2","viec":["việc cụ thể"],"muc_tieu":"mốc đo được"},{"giai_doan":"Tháng 1","viec":["..."],"muc_tieu":"..."},{"giai_doan":"Tháng 2-3","viec":["..."],"muc_tieu":"..."},{"giai_doan":"Tháng 4-6","viec":["..."],"muc_tieu":"..."}],
 "buoc_dau":["3-5 việc tuần đầu"],"soloceo_stack":["mô hình + nền tảng + MVP mẫu + khoá học, kèm #id"],"can_cu":["#id"]}
-JSON hợp lệ, tiếng Việt, lộ trình phải CỤ THỂ đo được, không bịa số.`,3000);
+JSON hợp lệ, tiếng Việt, lộ trình phải CỤ THỂ đo được, không bịa số.`,4800);
   let j;try{j=JSON.parse(raw.replace(/^\`\`\`json?\s*/i,"").replace(/\`\`\`\s*$/,"").trim());}
   catch(e){throw new Error("LLM trả JSON hỏng: "+raw.slice(0,120));}
   if(!j.ten||!j.bmc)throw new Error("Thiếu ten/bmc");
